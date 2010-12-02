@@ -1,0 +1,15 @@
+/*
+ * Random shit
+ */
+
+
+| .arch tilepro64
+| .actionlist alist
+
+void lol()
+{
+	| add r2, r4, r23
+	| sub r0, r1, r19
+	| add r9, r0, zero
+}
+

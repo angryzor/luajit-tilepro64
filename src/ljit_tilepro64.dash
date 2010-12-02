@@ -1,0 +1,11 @@
+|.arch tilepro64
+|.section code
+
+|// Types
+|.type L,		lua_State,	r49
+|.type BASE,	TValue,		r50
+|.type TOP,		TValue,		r51
+|.type CI,		CallInfo,	r52
+|.type LCL,		LClosure,	r53
+
+
