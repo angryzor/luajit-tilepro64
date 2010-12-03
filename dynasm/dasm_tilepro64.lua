@@ -443,8 +443,8 @@ end
 local function wrap_put_nop_X1(parser)
 	return function(params)
 		local i = instr_combine(make_instr(0x400B8800,0,{}), parser(params))
-		wputw(i.hi)
 		wputw(i.lo)
+		wputw(i.hi)
 	end
 end
 
