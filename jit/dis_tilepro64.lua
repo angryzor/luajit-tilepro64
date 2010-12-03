@@ -49,12 +49,15 @@ end
 
 local function wstmt(ctx, mnemonic, ...)
 	local fmt = "%s"
+
 	if ... then
+		local siz = #{...}
+
 		fmt = fmt .. " "
-		for i = 1, #... - 1 do
+		for i = 1, siz - 1 do
 			fmt = fmt .. "%s, "
 		end
-		if #... ~= 0 then
+		if siz ~= 0 then
 			fmt = fmt .. "%s"
 		end
 	end
@@ -64,12 +67,12 @@ end
 
 --------------------------------------------------------------------------------
 
-local function process_X0_Unary_0(ctx, shopcex, opcex, Dest, A)
-	wstmt(ctx, map_X0_Unary_0[opcex], map_reg[Dst], map_reg[A])
+local function process_X0_Unary_0(ctx, shopcex, opcex, Dst, A)
+	wstmt(ctx, map_X0_Unary_0[opcex])
 end
 
-local function process_X1_Unary_0(ctx, shopcex, opcex, Dest, A)
-	wstmt(ctx, map_X1_Unary_0[opcex], map_reg[Dst], map_reg[A])
+local function process_X1_Unary_0(ctx, shopcex, opcex, Dst, A)
+	wstmt(ctx, map_X1_Unary_0[opcex])
 end
 
 --
@@ -195,4 +198,6 @@ local function process(code)
 	ctx.out:flush()
 end
 
-process(string.char(0x02, 0x71, 0x0D, 0x00, 0x00, 0x88, 0x0B, 0x40))
+process(string.char(0x02, 0x71, 0x0D, 0x00, 0x00, 0x88, 0x0B, 0x40,
+					0x40, 0x30, 0x75, 0x01, 0x00, 0x88, 0x0B, 0x40,
+					0x09, 0xF0, 0x0F, 0x00, 0x00, 0x88, 0x0B, 0x40))
