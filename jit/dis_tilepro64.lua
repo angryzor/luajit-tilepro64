@@ -65,6 +65,12 @@ local function wstmt(ctx, mnemonic, ...)
 	wtxt(ctx, string.format(fmt, mnemonic, ...))
 end
 
+local function newlabel(ctx, pos)
+	if not ctx.labels[pos] then
+		ctx.labels[pos] = "label_" .. bit.tohex(pos)
+	end
+end
+
 --------------------------------------------------------------------------------
 
 local function process_X0_Unary_0(ctx, shopcex, opcex, Dst, A)
@@ -136,11 +142,41 @@ local function process_X1_Unary(ctx, hi, lo)
 	map_X1_Unary_Sh[shopcex](ctx, shopcex, opcex, Dst, A)
 end
 
+
+
+--------------------------------------------------------------
+local function process_X1_J__extract_JOff(hi, lo)
+	local j = bit.band(bit.rshift(hi, 11), 0x7FFF);
+	j = bit.bor(j, bit.lshift(bit.band(bit.rshift(hi, 3), 3), 15))
+	j = bit.bor(j, bit.lshift(bit.bor(bit.lshift(bit.band(hi, 7), 1), bit.rshift(lo, 31)), 17))
+	j = bit.bor(j, bit.lshift(bit.band(bit.rshift(hi, 5), 0x3F), 21))
+	j = bit.bor(j, bit.lshift(bit.band(bit.rshift(hi, 26), 1), 27))
+	return j
+end
+
+local function process_X1_J__jb(ctx, hi, lo)
+	local j = process_X1_J__extract_JOff(hi, lo)
+	local nextpos = ctx.pos + bit.tobit(0x80000000) + bit.lshift(j, 3)
+
+	newlabel(ctx, nextpos)
+	wstmt(ctx, "jb", ctx.labels[nextpos])
+end
+
+local function process_X1_J__jf(ctx, hi, lo)
+	local j = process_X1_J__extract_JOff(hi, lo)
+	local nextpos = ctx.pos + bit.lshift(j, 3)
+
+	newlabel(ctx, nextpos)
+	wstmt(ctx, "jf", ctx.labels[nextpos])
+end
 	
 local map_X1 = {
-	[1] = process_X1_RRR,
-	[8] = process_X1_Unary
+	[0x1] = process_X1_RRR,
+	[0x8] = process_X1_Unary,
+	[0xA] = process_X1_J__jf,
+	[0xB] = process_X1_J__jb
 }
+
 
 
 
@@ -183,13 +219,24 @@ local function process_instruction(ctx)
 	ctx.pos = pos + 8
 end
 
+local function write_label(ctx)
+	local cpos = ctx.pos
+	wcb(ctx,function()
+		if ctx.labels[cpos] then
+			ctx.out:write(bit.tohex(cpos) .. " | \t" .. ctx.labels[cpos] .. ":\n")
+		end
+		ctx.out:write(bit.tohex(cpos) .. " | \t\t")
+	end)
+end
+
 local function process(code)
-	local ctx = {	code = code,
-					pos = 1,
+	local ctx = {	code = "PADDING" .. code,
+					pos = 8,
 					labels = {},
 					actions = {},
 					out = io.stdout }
-	while ctx.pos < string.len(code) do
+	while ctx.pos < string.len(ctx.code) do
+		write_label(ctx)
 		process_instruction(ctx)
 	end
 	for i,v in ipairs(ctx.actions) do
@@ -200,4 +247,11 @@ end
 
 process(string.char(0x02, 0x71, 0x0D, 0x00, 0x00, 0x88, 0x0B, 0x40,
 					0x40, 0x30, 0x75, 0x01, 0x00, 0x88, 0x0B, 0x40,
-					0x09, 0xF0, 0x0F, 0x00, 0x00, 0x88, 0x0B, 0x40))
+					0x09, 0xF0, 0x0F, 0x00, 0x00, 0x20, 0x00, 0x50,
+					0x09, 0xF0, 0x0F, 0x00, 0x00, 0x88, 0x0B, 0x40,
+					0x09, 0xF0, 0x0F, 0x80, 0xFF, 0xF7, 0xFF, 0x5F,
+					0x40, 0x30, 0x75, 0x01, 0x00, 0x88, 0x0B, 0x40,
+					0x09, 0xF0, 0x0F, 0x00, 0x00, 0x88, 0x0B, 0x40,
+					0x40, 0x30, 0x75, 0x01, 0x00, 0x88, 0x0B, 0x40,
+					0x09, 0xF0, 0x0F, 0x00, 0x00, 0x88, 0x0B, 0x40
+			))
