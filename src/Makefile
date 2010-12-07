@@ -51,7 +51,7 @@ JITCFLAGS= -I$(DASMDIR)
 JIT_O= ljit_core.o ljit_mem.o ljit_dasm.o ljit_backend.o
 JITLIB_O=  ljitlib.o
 
-ALL_DH = ljit_x86.h
+ALL_DH = ljit_tilepro64.h
 # -- LuaJIT =========
 
 LUA_A=	liblua.a
@@ -93,11 +93,11 @@ $(LUAC_T): $(LUAC_O) $(LUA_A)
 	$(CC) -o $@ $(MYLDFLAGS) $(LUAC_O) $(LUA_A) $(LIBS)
 
 # ++ LuaJIT =========
-ljit_x86.h: ljit_x86.dasc ljit_x86_inline.dash ljit_x86.dash
-	$(DASM) $(DASMFLAGS) -o $@ ljit_x86.dasc
+ljit_tilepro64.h: ljit_tilepro64.dasc ljit_tilepro64_inline.dash ljit_tilepro64.dash
+	$(DASM) $(DASMFLAGS) -o $@ ljit_tilepro64.dasc
 
 distclean:	clean
-	$(DASM) $(DASMDISTFLAGS) -o ljit_x86.h ljit_x86.dasc
+	$(DASM) $(DASMDISTFLAGS) -o ljit_tilepro64.h ljit_tilepro64.dasc
 
 cleaner:	clean
 	$(RM) $(ALL_DH)
@@ -199,12 +199,12 @@ liolib.o: liolib.c lua.h luaconf.h lauxlib.h lualib.h
 ljit_backend.o: ljit_backend.c lua.h luaconf.h lobject.h llimits.h \
   lstate.h ltm.h lzio.h lmem.h lcoco.h ldo.h lfunc.h lgc.h lstring.h \
   ltable.h lvm.h lopcodes.h ldebug.h ljit.h ljit_hints.h ljit_dasm.h \
-  ../dynasm/dasm_proto.h ljit_x86.h
+  ../dynasm/dasm_proto.h ljit_tilepro64.h
 ljit_core.o: ljit_core.c lua.h luaconf.h lobject.h llimits.h lstate.h \
   ltm.h lzio.h lmem.h lcoco.h ldo.h lstring.h lgc.h ltable.h ldebug.h \
   lopcodes.h ljit.h ljit_hints.h luajit.h
 ljit_dasm.o: ljit_dasm.c lua.h luaconf.h ljit.h lobject.h llimits.h \
-  ljit_dasm.h ../dynasm/dasm_proto.h lmem.h ../dynasm/dasm_x86.h
+  ljit_dasm.h ../dynasm/dasm_proto.h lmem.h ../dynasm/dasm_tilepro64.h
 ljit_mem.o: ljit_mem.c lua.h luaconf.h lmem.h llimits.h ldo.h lobject.h \
   lstate.h ltm.h lzio.h lcoco.h ljit.h ljit_dasm.h ../dynasm/dasm_proto.h
 ljitlib.o: ljitlib.c lua.h luaconf.h lauxlib.h luajit.h lualib.h \

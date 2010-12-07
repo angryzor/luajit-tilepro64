@@ -236,119 +236,6 @@ end
 
 ------------------------------------------------------------------------------
 
-------------------------------------------------------------------------------
-
---[[ Label pseudo-opcode (converted from trailing colon form).
-map_op[".label_2"] = function(params)
-  if not params then return "[1-9] | ->global | =>pcexpr  [, addr]" end
-  local a = parseoperand(params[1])
-  local mode, imm = a.mode, a.imm
-  if type(imm) == "number" and (mode == "iJ" or (imm >= 1 and imm <= 9)) then
-    -- Local label (1: ... 9:) or global label (->global:).
-    waction("LABEL_LG", nil, 1)
-    wputxw(imm)
-  elseif mode == "iJ" then
-    -- PC label (=>pcexpr:).
-    waction("LABEL_PC", imm)
-  else
-    werror("bad label definition")
-  end
-  -- SETLABEL must immediately follow LABEL_LG/LABEL_PC.
-  local addr = params[2]
-  if addr then
-    local a = parseoperand(params[2])
-    if a.mode == "iPJ" then
-      waction("SETLABEL", a.imm) -- !x64 (secpos)
-    else
-      werror("bad label assignment")
-    end
-  end
-end
-map_op[".label_1"] = map_op[".label_2"]
---]]
-------------------------------------------------------------------------------
---[==[
--- Alignment pseudo-opcode.
-map_op[".align_1"] = function(params)
-  if not params then return "numpow2" end
-  local align = tonumber(params[1]) or map_opsizenum[map_opsize[params[1]]]
-  if align then
-    local x = align
-    -- Must be a power of 2 in the range (2 ... 256).
-    for i=1,8 do
-      x = x / 2
-      if x == 1 then
-	waction("ALIGN", nil, 1)
-	wputxw(align-1) -- Action byte is 2**n-1.
-	return
-      end
-    end
-  end
-  werror("bad alignment")
-end
---]==]
--- Spacing pseudo-opcode.
---[[
-map_op[".space_2"] = function(params)
-  if not params then return "num [, filler]" end
-  waction("SPACE", params[1])
-  local fill = params[2]
-  if fill then
-    fill = tonumber(fill)
-    if not fill or fill < 0 or fill > 255 then werror("bad filler") end
-  end
-  wputxw(fill or 0)
-end
-map_op[".space_1"] = map_op[".space_2"]
---]]
-
-------------------------------------------------------------------------------
---[[
--- Pseudo-opcode for (primitive) type definitions (map to C types).
-map_op[".type_3"] = function(params, nparams)
-  if not params then
-    return nparams == 2 and "name, ctype" or "name, ctype, reg"
-  end
-  local name, ctype, reg = params[1], params[2], params[3]
-  if not match(name, "^[%a_][%w_]*$") then
-    werror("bad type name `"..name.."'")
-  end
-  local tp = map_type[name]
-  if tp then
-    werror("duplicate type `"..name.."'")
-  end
-  if reg and not map_reg_valid_base[reg] then
-    werror("bad base register `"..(map_reg_rev[reg] or reg).."'")
-  end
-  -- Add #type to defines. A bit unclean to put it in map_archdef.
-  map_archdef["#"..name] = "sizeof("..ctype..")"
-  -- Add new type and emit shortcut define.
-  local num = ctypenum + 1
-  map_type[name] = {
-    ctype = ctype,
-    ctypefmt = format("Dt%X(%%s)", num),
-    reg = reg,
-  }
-  wline(format("#define Dt%X(_V) (int)&(((%s *)0)_V)", num, ctype))
-  ctypenum = num
-end
-map_op[".type_2"] = map_op[".type_3"]
-
--- Dump type definitions.
-local function dumptypes(out, lvl)
-  local t = {}
-  for name in pairs(map_type) do t[#t+1] = name end
-  sort(t)
-  out:write("Type definitions:\n")
-  for _,name in ipairs(t) do
-    local tp = map_type[name]
-    local reg = tp.reg and map_reg_rev[tp.reg] or ""
-    out:write(format("  %-20s %-20s %s\n", name, tp.ctype, reg))
-  end
-  out:write("\n")
-end
---]]
-
 
 local operand = {
 	patterns = {
@@ -366,6 +253,10 @@ local operand = {
 		}
 	}
 }
+
+function operand.is_reg(str)
+	return string.match(str,operand.patterns.reg.gpr) or operand.patterns.reg.sprs[str]
+end
 
 function operand.parsereg(str)
 	local t
@@ -451,6 +342,8 @@ end
 -----------------------------------------------------------------
 -- ops
 
+local ctypenum = 0
+local map_type = {}
 local map_op = {
 	add_3 = wrap_put_nop_X1(instr_parsers.X0_RRR(0, 3)),
 	adds_3 = wrap_put_nop_X1(instr_parsers.X0_RRR(0, 0x60)),
@@ -472,6 +365,120 @@ map_op[".globals_1"] = function(params)
   wline(function(out) writeglobals(out, prefix) end)
 end
 
+
+------------------------------------------------------------------------------
+
+--[[ Label pseudo-opcode (converted from trailing colon form).
+map_op[".label_2"] = function(params)
+  if not params then return "[1-9] | ->global | =>pcexpr  [, addr]" end
+  local a = parseoperand(params[1])
+  local mode, imm = a.mode, a.imm
+  if type(imm) == "number" and (mode == "iJ" or (imm >= 1 and imm <= 9)) then
+    -- Local label (1: ... 9:) or global label (->global:).
+    waction("LABEL_LG", nil, 1)
+    wputxw(imm)
+  elseif mode == "iJ" then
+    -- PC label (=>pcexpr:).
+    waction("LABEL_PC", imm)
+  else
+    werror("bad label definition")
+  end
+  -- SETLABEL must immediately follow LABEL_LG/LABEL_PC.
+  local addr = params[2]
+  if addr then
+    local a = parseoperand(params[2])
+    if a.mode == "iPJ" then
+      waction("SETLABEL", a.imm) -- !x64 (secpos)
+    else
+      werror("bad label assignment")
+    end
+  end
+end
+map_op[".label_1"] = map_op[".label_2"]
+--]]
+------------------------------------------------------------------------------
+--[==[
+-- Alignment pseudo-opcode.
+map_op[".align_1"] = function(params)
+  if not params then return "numpow2" end
+  local align = tonumber(params[1]) or map_opsizenum[map_opsize[params[1]]]
+  if align then
+    local x = align
+    -- Must be a power of 2 in the range (2 ... 256).
+    for i=1,8 do
+      x = x / 2
+      if x == 1 then
+	waction("ALIGN", nil, 1)
+	wputxw(align-1) -- Action byte is 2**n-1.
+	return
+      end
+    end
+  end
+  werror("bad alignment")
+end
+--]==]
+-- Spacing pseudo-opcode.
+--[[
+map_op[".space_2"] = function(params)
+  if not params then return "num [, filler]" end
+  waction("SPACE", params[1])
+  local fill = params[2]
+  if fill then
+    fill = tonumber(fill)
+    if not fill or fill < 0 or fill > 255 then werror("bad filler") end
+  end
+  wputxw(fill or 0)
+end
+map_op[".space_1"] = map_op[".space_2"]
+--]]
+
+------------------------------------------------------------------------------
+---[[
+-- Pseudo-opcode for (primitive) type definitions (map to C types).
+map_op[".type_3"] = function(params, nparams)
+  if not params then
+    return nparams == 2 and "name, ctype" or "name, ctype, reg"
+  end
+  local name, ctype, reg = params[1], params[2], params[3]
+  if not match(name, "^[%a_][%w_]*$") then
+    werror("bad type name `"..name.."'")
+  end
+  local tp = map_type[name]
+  if tp then
+    werror("duplicate type `"..name.."'")
+  end
+  if reg and not operand.is_reg(reg) then
+    werror("bad base register `"..reg.."'")
+  end
+  -- Add #type to defines. A bit unclean to put it in map_archdef.
+  map_archdef["#"..name] = "sizeof("..ctype..")"
+  -- Add new type and emit shortcut define.
+  local num = ctypenum + 1
+  map_type[name] = {
+    ctype = ctype,
+    ctypefmt = format("Dt%X(%%s)", num),
+    reg = reg,
+  }
+  wline(format("#define Dt%X(_V) (int)&(((%s *)0)_V)", num, ctype))
+  ctypenum = num
+end
+map_op[".type_2"] = map_op[".type_3"]
+
+--[[
+-- Dump type definitions.
+local function dumptypes(out, lvl)
+  local t = {}
+  for name in pairs(map_type) do t[#t+1] = name end
+  sort(t)
+  out:write("Type definitions:\n")
+  for _,name in ipairs(t) do
+    local tp = map_type[name]
+    local reg = tp.reg and map_reg_rev[tp.reg] or ""
+    out:write(format("  %-20s %-20s %s\n", name, tp.ctype, reg))
+  end
+  out:write("\n")
+end
+--]]
 
 
 ------------------------------------------------------------------------------

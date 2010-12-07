@@ -2,9 +2,9 @@
  * Random shit
  */
 
-
-| .arch tilepro64
-| .actionlist alist
+|.include ljit_tilepro64.dash
+|.actionlist alist
+|.globals JSUB_
 
 void lol()
 {

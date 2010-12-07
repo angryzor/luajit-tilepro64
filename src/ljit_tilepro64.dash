@@ -1,11 +1,44 @@
 |.arch tilepro64
 |.section code
-
+|
 |// Types
 |.type L,		lua_State,	r49
-|.type BASE,	TValue,		r50
+|.type BASE,		TValue,		r50
 |.type TOP,		TValue,		r51
 |.type CI,		CallInfo,	r52
 |.type LCL,		LClosure,	r53
-
+|
+|// Types
+|.type GL,			global_State
+|.type TVALUE,		TValue
+|.type VALUE,		Value
+|.type CINFO,		CallInfo
+|.type GCOBJECT,	GCObject
+|.type TSTRING,		TString
+|.type TABLE,		Table
+|.type CCLOSURE,	CClosure
+|.type PROTO,		Proto
+|.type UPVAL,		UpVal
+|.type NODE,		Node
+|
+|// Definitions copied to DynASM domain to avoid unnecessary constant args.
+|// CHECK: must match with the definitions in lua.h!
+|.define LUA_TNIL,			0
+|.define LUA_TBOOLEAN,			1
+|.define LUA_TLIGHTUSERDATA,		2
+|.define LUA_TNUMBER,			3
+|.define LUA_TSTRING,			4
+|.define LUA_TTABLE,			5
+|.define LUA_TFUNCTION,			6
+|.define LUA_TUSERDATA,			7
+|.define LUA_TTHREAD,			8
+|
+|.define LUA_TNUM_NUM,		0x33
+|.define LUA_TNUM_NUM_NUM,	0x333
+|.define LUA_TSTR_STR,		0x44
+|.define LUA_TSTR_NUM,		0x43
+|.define LUA_TSTR_NUM_NUM,	0x433
+|.define LUA_TTABLE_NUM,	0x53
+|.define LUA_TTABLE_STR,	0x54
+|
 
