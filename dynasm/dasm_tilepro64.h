@@ -8,7 +8,7 @@
 enum {
 	DASM_IMM_B = 2147483638,
 	DASM_IMM_H, DASM_LG, DASM_PC, DASM_LABEL_LG, DASM_LABEL_PC,
-	DASM_ALIGN, DASM_ALIGN, DASM_ESC, DASM_SECTION, DASM_STOP
+	DASM_ALIGN, DASM_ESC, DASM_SECTION, DASM_STOP
 };
 
 
@@ -173,18 +173,26 @@ void dasm_put(Dst_DECL, int start, ...)
     if (action < DASM_IMM_B) {
 		ofs++;
     }
-	switch(action) {
-	case DASM_ESC:
-		p++;
+	else if (action <= DASM_PC) {
+		int n = va_arg(ap,int);
+		b[pos++] = n;
+		// TODO: switch
 		ofs++;
-		break;
-	case DASM_SECTION:
-		n = *p;
-		CK(n < D->maxsection, RANGE_SEC); 
-		D->section = &D->sections[n];
-	case DASM_STOP:
-		goto stop;
-    }
+	}
+	else {
+		switch(action) {
+		case DASM_ESC:
+			p++;
+			ofs++;
+			break;
+		case DASM_SECTION:
+			n = *p;
+			CK(n < D->maxsection, RANGE_SEC); 
+			D->section = &D->sections[n];
+		case DASM_STOP:
+			goto stop;
+	    }
+	}
   }
 stop:
   va_end(ap);
@@ -233,6 +241,7 @@ int dasm_link(Dst_DECL, size_t *szp)
 			switch (action) {
 			case DASM_IMM_B:
 			case DASM_IMM_H:
+				pos++;
 			case DASM_ESC:
 				p++;
 			case DASM_SECTION:
@@ -258,6 +267,9 @@ int dasm_link(Dst_DECL, size_t *szp)
 #define dasmh(x)	do { dasmb(x); dasmb((x)>>8); } while (0)
 #endif
 
+#define cur_instr_hi	*((unsigned long*)(cp - 8))
+#define cur_instr_lo	*((unsigned long*)(cp - 4))
+
 /* Pass 3: Encode sections. */
 int dasm_encode(Dst_DECL, void *buffer)
 {
@@ -277,22 +289,35 @@ int dasm_encode(Dst_DECL, void *buffer)
 		unsigned char *mark = NULL;
 		while (1) {
 			int action = *p++;
-			int n = (action >= DASM_DISP && action <= DASM_ALIGN) ? *b++ : 0;
-			switch (action) {
-			case DASM_IMM_B:
-				dasmb(n);
-				break;
-			case DASM_IMM_H:
-				dasmw(n);
-				break;
-			case DASM_ESC:
-				action = *p++;
-			default:
-				*cp++ = action;
-				break;
-			case DASM_SECTION:
-			case DASM_STOP:
-				goto stop;
+			int n = (action >= DASM_IMM_B && action <= DASM_ALIGN) ? *b++ : 0;
+
+			if(action == DASM_IMM_B || action == DASM_IMM_H) {
+				int refactoring_offset = *p++;
+				unsigned long long t = 0;
+				
+				switch (action) {
+				case DASM_IMM_B:
+					t = (*((unsigned long*)b++) & 0xFF) << refactoring_offset;
+					break;
+				case DASM_IMM_H:
+					t = (*((unsigned long*)b++) & 0xFFFF) << refactoring_offset;
+					break;
+				}
+
+				cur_instr_lo |= (unsigned long)t;
+				cur_instr_hi |= (unsigned long)(t >> 32);
+			}
+			else {
+				switch(action) {
+				case DASM_ESC:
+					action = *p++;
+				default:
+					*cp++ = action;
+					break;
+				case DASM_SECTION:
+				case DASM_STOP:
+					goto stop;
+				}
 			}
 		}
 		stop: (void)0;

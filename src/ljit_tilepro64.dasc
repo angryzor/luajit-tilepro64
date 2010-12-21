@@ -11,5 +11,7 @@ void lol()
 	| add r2, r4, r23
 	| sub r0, r1, r19
 	| add r9, r0, zero
+	| sub r2, r11, BASE->value
+	| add BASE->value, r3, r4
 }
 

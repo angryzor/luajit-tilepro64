@@ -72,7 +72,10 @@ local actargs = { 0 }
 local secpos = 1
 
 ------------------------------------------------------------------------------
-
+local ctypenum = 0
+local map_type = {}
+local map_op = {}
+------------------------------------------------------------------------------
 -- Compute action numbers for action names.
 for n,name in ipairs(action_names) do
   local num = actfirst + n - 1
@@ -117,9 +120,17 @@ end
 
 -- Add action to list with optional arg. Advance buffer pos, too.
 local function waction(action, a, num)
-  wputxw(assert(map_action[action], "bad action name `"..action.."'"))
+ -- wputxw(assert(map_action[action], "bad action name `"..action.."'"))
+ -- TODO: debug, remove
+  actlist[#actlist+1] = "DASM_" .. action
   if a then actargs[#actargs+1] = a end
   if a or num then secpos = secpos + (num or 1) end
+end
+
+-- Write action param
+local function waparam(a)
+	actargs[#actargs+1] = a
+	secpos = secpos + 1
 end
 
 -- Add call to embedded DynASM C code.
@@ -236,11 +247,21 @@ end
 
 ------------------------------------------------------------------------------
 
+local function table_append(...)
+	local t = {}
+	local args = { ... }
+	for j,a in ipairs(args) do
+		for i,v in ipairs(a) do
+			t[#t+1] = v
+		end
+	end
+	return t
+end
 
-local operand = {
-	patterns = {
+------------------------------------------------------------------------------
+local patterns = {
 		reg = {
-			gpr = "r%d+",
+			gpr = "^r%d+$",
 			sprs = {
 				zero = 63
 			}
@@ -251,56 +272,159 @@ local operand = {
 		ref = {
 			ref = "[%w_][%w%d_%[%]%.%-%>]"
 		}
-	}
 }
 
-function operand.is_reg(str)
-	return string.match(str,operand.patterns.reg.gpr) or operand.patterns.reg.sprs[str]
+local function make_operand(val, posts)
+	return { val = val,
+			 posts = posts }
 end
 
-function operand.parsereg(str)
+local function is_reg(str)
+	return string.match(str,patterns.reg.gpr) or patterns.reg.sprs[str]
+end
+
+local function parsereg(str)
 	local t
-	if string.match(str,operand.patterns.reg.gpr) then
+	if string.match(str,patterns.reg.gpr) then
 		local regnum = str.sub(str,2) + 0
 		if regnum > 53 then
 			error("register does not exist: " .. str)
 		end
 		
-		return regnum
-	else
-		t = operand.patterns.reg.sprs[str]
-		if t then
-			return t
-		end
+		return make_operand(regnum, {})
 	end
+
+	t = patterns.reg.sprs[str]
+	if t then
+		return make_operand(t, {})
+	end
+
 	error("operand must be register: " .. str)
 end
 
-local function make_param(off, siz)
-	return { offset = off,
-			 size = siz }
+local function parsetype(str, isdst)
+	local expr, accessor = string.match(str, "^([%w_:]+)%s*(.*)$")
+	local typename, reg_override = string.match(str, "^([%w_]+):([%w_]+)$")
+	local post = nil
+
+	if not typename then
+		typename = expr
+	end
+
+	local t = map_type[typename]
+	if not t then
+		error("not a valid type: " .. t)
+	end
+
+	if reg_override then
+		reg = reg_override
+	elseif t.reg then
+		reg = t.reg
+	else
+		error("type needs register override")
+	end
+
+	local immexpr = format(t.ctypefmt, accessor)
+
+	if not isdst then
+		--[[
+		We need to add the offset that we get to the address already in the reg
+		We do this with the following ASM code:
+	
+		r53 is a reserved register 
+	
+			addli	r53, *REG*, lo16(off)
+			auli	r53, r53, ha16(off)
+			lw		r53, r53
+			instr   blahblah r53
+		]]
+		map_op.addli_3({ "r53" , reg , "lo16(" .. immexpr .. ")" })
+		map_op.auli_3({ "r53" , "r53" , "ha16(" .. immexpr .. ")" })
+		map_op.lw_2({ "r52" , "r53" })
+		return make_operand(52, {})
+	else
+		post = function()
+			map_op.addli_3({ "r53" , reg , "lo16(" .. immexpr .. ")" })
+			map_op.auli_3({ "r53" , "r53" , "ha16(" .. immexpr .. ")" })
+			map_op.sw_2({ "r53" , "r52" })
+		end
+		return make_operand(52, {post})
+	end
 end
 
-local function make_instr(hi, lo, params)
+
+local function parseregortype(str, isdst)
+	if is_reg(str) then
+		return parsereg(str)
+	else
+		return parsetype(str,isdst)
+	end
+end
+
+--[[
+local function parseglobal(expr)
+	return make_operand(map_global[expr], {})
+end
+
+local function parselocal(dir,num)
+	return make_operand(num + (dir == ">" and 246 or 0))
+end
+
+local function parsepc(expr)
+	return make_operand(
+]]
+
+-- Parse immediate expression.
+local function parseimm(expr, offset, size)
+--[[
+	-- &expr (pointer)
+	if sub(expr, 1, 1) == "&" then
+		return "iPJ", format("(ptrdiff_t)(%s)", sub(expr,2))
+	end
+	
+	local prefix = sub(expr, 1, 2)
+	-- =>expr (pc label reference)
+	if prefix == "=>" then
+		return "iJ", sub(expr, 3)
+	end
+	-- ->name (global label reference)
+	if prefix == "->" then
+		return "iJ", map_global[sub(expr, 3)]
+	end
+	
+	-- [<>][1-9] (local label reference)
+	local dir, lnum = match(expr, "^([<>])([1-9])$")
+	if dir then -- Fwd: 247-255, Bkwd: 1-9.
+		return "iJ", lnum + (dir == ">" and 246 or 0)
+	end
+]]
+	-- constant immediate value
+	local n = tonumber(expr)
+	if n then
+		return make_operand(n, {})
+	end
+
+	-- halfconstant immediate value
+	return make_operand(0, { function()
+			waction("IMM_" .. size)
+			waparam(offset)
+			waparam(expr)
+		end })
+end
+
+local function make_instr(hi, lo, posts)
 	return { hi = hi,
 			 lo = lo,
-			 params = params }
+			 posts = posts }
 end
 
 -----------------------------------------------------------------
 -- Instruction combine
 function instr_combine(a, b, c)
-	local combinedparams = a.params
-	for i,v in ipairs(b.params) do
-		combinedparams[#params] = v
-	end
-	local combined = make_instr(bit.bor(a.hi,b.hi), bit.bor(a.lo,b.lo), combinedparams)
+	local combined = make_instr(bit.bor(a.hi,b.hi), bit.bor(a.lo,b.lo), table_append(a.posts, b.posts))
 
 	if c then
-		for i,v in ipairs(c.params) do
-			combinedparams[#params] = v
-		end
-		combined = make_instr(bit.bor(combined.hi,c.hi), bit.bor(combined.lo,c.lo), combinedparams)
+		combined = make_instr(bit.bor(combined.hi,c.hi), bit.bor(combined.lo,c.lo), table_append(combined.posts, c.posts))
 	end
 
 	return combined
@@ -310,12 +434,44 @@ end
 -- Instruction builders
 local instr_builders = {}
 function instr_builders.X0_RRR(opcode, opcodeextension, Dst, A, B)
-	local instr = Dst
-	instr = bit.bor(instr, bit.lshift(A, 6))
-	instr = bit.bor(instr, bit.lshift(B, 12))
+	local instr = Dst.val
+	instr = bit.bor(instr, bit.lshift(A.val, 6))
+	instr = bit.bor(instr, bit.lshift(B.val, 12))
 	instr = bit.bor(instr, bit.lshift(opcodeextension, 18))
 	instr = bit.bor(instr, bit.lshift(opcode, 28))
-	return make_instr(0, instr, {})
+	return make_instr(0, instr, table_append(Dst.posts, A.posts, B.posts))
+end
+
+function instr_builders.X0_Imm16(opcode, Dst, A, Imm16)
+	local instr = Dst.val
+	instr = bit.bor(instr, bit.lshift(A.val, 6))
+	instr = bit.bor(instr, bit.lshift(Imm16.val, 12))
+	instr = bit.bor(instr, bit.lshift(opcode,28))
+	return make_instr(0, instr, table_append(Dst.posts, A.posts, Imm16.posts))
+end
+
+---
+function instr_builders.X1_RRR(opcode, s, opcodeex, Dst, A, B)
+	local lo = bit.lshift(Dst.val, 31)
+	local hi = bit.rshift(Dst.val, 1)
+	hi = bit.bor(hi, bit.lshift(A.val, 5))
+	hi = bit.bor(hi, bit.lshift(B.val, 11))
+	hi = bit.bor(hi, bit.lshift(opcodeex, 17))
+	hi = bit.bor(hi, bit.lshift(s, 26))
+	hi = bit.bor(hi, bit.lshift(opcode, 27))
+	return make_instr(hi, lo, table_append(Dst.posts, A.posts, B.posts))
+end
+
+
+function instr_builders.X1_Unary(opcode, s, shopcodeex, opcodeex, Dst, A)
+	local lo = bit.lshift(Dst.val, 31)
+	local hi = bit.rshift(Dst.val, 1)
+	hi = bit.bor(hi, bit.lshift(A.val, 5))
+	hi = bit.bor(hi, bit.lshift(opcodeex, 11))
+	hi = bit.bor(hi, bit.lshift(shopcodeex, 16))
+	hi = bit.bor(hi, bit.lshift(s, 26))
+	hi = bit.bor(hi, bit.lshift(opcode, 27))
+	return make_instr(hi, lo, table_append(Dst.posts, A.posts))
 end
 
 ------------------------------------------------------------------
@@ -324,30 +480,73 @@ local instr_parsers = {}
 function instr_parsers.X0_RRR(opcode, opcodeextension)
 	return function(params)
 		local Dst, A, B = params[1], params[2], params[3]
-		local i = instr_builders.X0_RRR(opcode, opcodeextension, operand.parsereg(Dst), operand.parsereg(A), operand.parsereg(B))
-		return i
+		return instr_builders.X0_RRR(opcode, opcodeextension, parseregortype(Dst,true), parseregortype(A), parseregortype(B))
 	end
 end
 
+function instr_parsers.X0_Imm16(opcode)
+	return function(params)
+		local Dst, A, Imm16 = params[1], params[2], params[3]
+		return instr_builders.X0_Imm16(opcode, parseregortype(Dst), parseregortype(A), parseimm(Imm16, 12, "H"))
+	end
+end
+
+---
+
+function instr_parsers.X1_Unary(opcode, s, shopcodeex, opcodeex)
+	return function(params)
+		local Dst, A = params[1], params[2]
+		return instr_builders.X1_Unary(opcode, s, shopcodeex, opcodeex, parseregortype(Dst), parseregortype(A))
+	end
+end
+
+
+------------------------------------------------------------------
+local cust_instr_parsers = {}
+function cust_instr_parsers.sw_2()
+	return function(params)
+		local A, B = params[1], params[2]
+		return instr_builders.X1_RRR(1, 0, 0x40, make_operand(0, {}), parseregortype(A), parseregortype(B))
+	end
+end
 ------------------------------------------------------------------
 -- Temporary workaround.
+local function wrap_put_nop_X0(parser)
+	return function(params)
+		local i = instr_combine(make_instr(0,0x70165000,{}), parser(params))
+		wputw(i.lo)
+		wputw(i.hi)
+		for i,v in ipairs(i.posts) do
+			v()
+		end
+	end
+end
+
 local function wrap_put_nop_X1(parser)
 	return function(params)
 		local i = instr_combine(make_instr(0x400B8800,0,{}), parser(params))
 		wputw(i.lo)
 		wputw(i.hi)
+		for i,v in ipairs(i.posts) do
+			v()
+		end
 	end
 end
 
------------------------------------------------------------------
+----------------------------------------------------------------
 -- ops
 
-local ctypenum = 0
-local map_type = {}
-local map_op = {
+map_op = {
+	-- Arithmetic opcodes
 	add_3 = wrap_put_nop_X1(instr_parsers.X0_RRR(0, 3)),
+	addli_3 = wrap_put_nop_X1(instr_parsers.X0_Imm16(2)),
 	adds_3 = wrap_put_nop_X1(instr_parsers.X0_RRR(0, 0x60)),
-	sub_3 = wrap_put_nop_X1(instr_parsers.X0_RRR(0,0x5D))
+	auli_3 = wrap_put_nop_X1(instr_parsers.X0_Imm16(3)),
+	sub_3 = wrap_put_nop_X1(instr_parsers.X0_RRR(0,0x5D)),
+
+	-- Memory opcodes
+	lw_2 = wrap_put_nop_X0(instr_parsers.X1_Unary(8, 0, 0xB, 0xE)),
+	sw_2 = wrap_put_nop_X0(cust_instr_parsers.sw_2())
 }
 
 
@@ -447,7 +646,7 @@ map_op[".type_3"] = function(params, nparams)
   if tp then
     werror("duplicate type `"..name.."'")
   end
-  if reg and not operand.is_reg(reg) then
+  if reg and not is_reg(reg) then
     werror("bad base register `"..reg.."'")
   end
   -- Add #type to defines. A bit unclean to put it in map_archdef.
