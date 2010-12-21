@@ -2,11 +2,11 @@
 |.section code
 |
 |// Types
-|.type L,		lua_State,	r49
-|.type BASE,		TValue,		r50
-|.type TOP,		TValue,		r51
-|.type CI,		CallInfo,	r52
-|.type LCL,		LClosure,	r53
+|.type L,		lua_State,	r45
+|.type BASE,	TValue,		r46
+|.type TOP,		TValue,		r47
+|.type CI,		CallInfo,	r48
+|.type LCL,		LClosure,	r49
 |
 |// Types
 |.type GL,			global_State
@@ -23,9 +23,9 @@
 |
 |// Definitions copied to DynASM domain to avoid unnecessary constant args.
 |// CHECK: must match with the definitions in lua.h!
-|.define LUA_TNIL,			0
+|.define LUA_TNIL,				0
 |.define LUA_TBOOLEAN,			1
-|.define LUA_TLIGHTUSERDATA,		2
+|.define LUA_TLIGHTUSERDATA,	2
 |.define LUA_TNUMBER,			3
 |.define LUA_TSTRING,			4
 |.define LUA_TTABLE,			5
@@ -41,4 +41,27 @@
 |.define LUA_TTABLE_NUM,	0x53
 |.define LUA_TTABLE_STR,	0x54
 |
+|.macro istt, idx, tp; sub r50, BASE[idx].tt, tp; .endmacro
+|.macro isnil, idx; istt idx, LUA_TNIL; .endmacro
+|.macro isnumber, idx;  istt idx, LUA_TNUMBER; .endmacro
+|.macro isstring, idx;  istt idx, LUA_TSTRING; .endmacro
+|.macro istable, idx;  istt idx, LUA_TTABLE; .endmacro
+|.macro isfunction, idx;  istt idx, LUA_TFUNCTION; .endmacro
+|
+|
+|// Assembler pseudo instructions. Should actually be put in dynasm, putting them here for now
+|.macro move, dst, src; or dst, src, zero; .endmacro
+|.macro movei, dst, simm8; ori dst, zero, simm8; .endmacro
+|.macro moveli, dst, simm16; addli dst, zero, simm16; .endmacro
+|.macro movelis, dst, simm16; addlis dst, zero, simm16; .endmacro
+|.macro prefetch src; lb_u zero, src; .endmacro
+|.macro bpt; ill; .endmacro
+|.macro info simm8; andi zero, zero, simm8; .endmacro
+|.macro infol simm16; auli zero, zero, simm16; .endmacro
+|
+|
+|// Pseudo instructions specific to this project
+|.macro push reg; sw sp, reg; addi sp, sp, 4; .endmacro
+|.macro pop reg; addi sp, sp, -4; lw reg, sp; .endmacro
+
 
