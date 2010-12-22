@@ -3,7 +3,9 @@
  */
 
 |.include ljit_tilepro64.dash
+|.actionnames jit_actionnames
 |.actionlist jit_actionlist
+|.immencmodes jit_encmodes
 |.globals JSUB_
 
 /* ------------------------------------------------------------------------ */
@@ -21,42 +23,6 @@ static void jit_settable_fb(lua_State *L, Table *t, StkId val);
 /* Detect CPU features and set JIT flags. */
 static int jit_cpudetect(jit_State *J)
 {
-	/* only support for TILEPro64, so ignoring this for now */
-	void *mcode;
-	size_t sz;
-	int status;
-	/* Some of the jsubs need the flags. So compile this separately. */
-	/*unsigned int feature;
-	dasm_setup(Dst, jit_actionlist);
-	|  // Check for CPUID support first.
-	|  pushfd
-	|  pop edx
-	|  mov ecx, edx
-	|  xor edx, 0x00200000		// Toggle ID bit in flags.
-	|  push edx
-	|  popfd
-	|  pushfd
-	|  pop edx
-	|  xor eax, eax			// Zero means no features supported.
-	|  cmp ecx, edx
-	|  jz >1				// No ID toggle means no CPUID support.
-	|
-	|  inc eax				// CPUID function 1.
-	|  push ebx				// Callee-save ebx modified by CPUID.
-	|  cpuid
-	|  pop ebx
-	|  mov eax, edx			// Return feature support bits.
-	|1:
-	|  ret
-	(void)dasm_checkstep(Dst, DASM_SECTION_CODE);
-	status = luaJIT_link(J, &mcode, &sz);
-	if (status != JIT_S_OK)
-	  return status;*/
-	/* Check feature bits. See the Intel/AMD manuals for the bit definitions. */
-	/*feature = ((unsigned int (*)(void))mcode)();
-	if (feature & (1<<15)) J->flags |= JIT_F_CPU_CMOV;
-	if (feature & (1<<26)) J->flags |= JIT_F_CPU_SSE2;
-	luaJIT_freemcode(J, mcode, sz);*/  /* We don't need this code anymore. */
 	return JIT_S_OK;
 }
 
@@ -99,8 +65,14 @@ static int jit_compile_jsub(jit_State *J)
 	|
 	|.code
 	|//-----------------------------------------------------------------------
-	|.align 64
-	|->GATE_LJ:
+	|//.align 64
+	|//->GATE_LJ:
+	|	prologue 28
+	|	storeonstack BASE, 8
+	|	storeonstack L, 12
+	|	storeonstack TOP, 16
+	|	storeonstack LCL, 20
+	|	storeonstack CI, 24
 	|	move BASE, r1
 	|	move L, r0
 	|	move TOP, L->top
@@ -108,4 +80,9 @@ static int jit_compile_jsub(jit_State *J)
 	|	move CI, L->ci
 	|	// Prevent stackless yield. TODO: figure out what a stackless yield is.
 	|	addi L->nCcalls, L->nCcalls, 1
-
+	|	loadfromstack CI, 24
+	|	loadfromstack LCL, 20
+	|	loadfromstack TOP, 16
+	|	loadfromstack L, 12
+	|	loadfromstack BASE, 8
+	|	epilogue 28

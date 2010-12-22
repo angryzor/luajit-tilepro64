@@ -37,7 +37,7 @@ local wline, werror, wfatal, wwarn
 -- CHECK: Keep this in sync with the C code!
 local action_names = {
   -- int arg, 1 buffer pos:
-  "IMM_B", "IMM_H",
+  "IMM",
   -- action arg (1 byte) or int arg, 1 buffer pos (link):
   "LG", "PC",
   -- action arg (1 byte) or int arg, 1 buffer pos (offset):
@@ -114,7 +114,7 @@ end
 
 -- Add byte to action list.
 local function wputxw(n)
-  assert(n >= -214748364 and n <= 2147483647 and n % 1 == 0, "byte out of range")
+  assert(n >= -2147483648 and n <= 2147483647 and n % 1 == 0, "byte out of range")
   actlist[#actlist+1] = n
 end
 
@@ -156,7 +156,7 @@ local function wflush(term)
   local offset = actargs[1]
   if #actlist == offset then return end -- Nothing to flush.
   if not term then waction("STOP") end -- Terminate action list.
- -- dedupechunk(offset)
+  -- dedupechunk(offset)
   wcall("put", actargs) -- Add call to dasm_put().
   actargs = { #actlist } -- Actionlist offset is 1st arg to next dasm_put().
   secpos = 1 -- The actionlist offset occupies a buffer position, too.
@@ -224,25 +224,10 @@ local function wputlabel(aprefix, imm, num)
   end
 end
 
--- Put signed byte or arg.
-local function wputbarg(n)
-  if type(n) == "number" then
-    if n < -128 or n > 127 then
-      werror("signed immediate byte out of range")
-    end
---    if n < 0 then n = n + 256 end
-    wputxw(n)
-  else waction("IMM_B", n) end
-end
-
--- Put signed halfword or arg.
-local function wputharg(n)
-  if type(n) == "number" then
-    if n < -32768 or n > 32767 then
-      werror("signed immediate halfword out of range")
-    end
-    wputxw(n);
-  else waction("IMM_H", n) end
+local function wputimm(immtype, expr)
+	waction("IMM")
+	waparam(immtype)
+	waparam(expr)
 end
 
 ------------------------------------------------------------------------------
@@ -263,6 +248,8 @@ local patterns = {
 		reg = {
 			gpr = "^r%d+$",
 			sprs = {
+				sp = 54,
+				lr = 55,
 				zero = 63
 			}
 		},
@@ -273,6 +260,19 @@ local patterns = {
 			ref = "[%w_][%w%d_%[%]%.%-%>]"
 		}
 }
+local cur_scratch_reg = {}
+local function begin_instruction()
+	cur_scratch_reg[#cur_scratch_reg+1] = 50
+end
+
+local function end_instruction()
+	cur_scratch_reg[#cur_scratch_reg] = nil
+end
+
+local function get_scratch_reg()
+	cur_scratch_reg[#cur_scratch_reg] = cur_scratch_reg[#cur_scratch_reg] + 1
+	return cur_scratch_reg[#cur_scratch_reg]
+end
 
 local function make_operand(val, posts)
 	return { val = val,
@@ -323,9 +323,15 @@ local function parsetype(str, isdst)
 	else
 		error("type needs register override")
 	end
+	
+	-- is of type    move BASE, r3 ?
+	if accessor == "" then
+		return parsereg(reg)
+	end
 
+	-- is of type    move BASE->value, r3 ?
 	local immexpr = format(t.ctypefmt, accessor)
-
+	local screg = get_scratch_reg()
 	if not isdst then
 		--[[
 		We need to add the offset that we get to the address already in the reg
@@ -335,20 +341,20 @@ local function parsetype(str, isdst)
 	
 			addli	r53, *REG*, lo16(off)
 			auli	r53, r53, ha16(off)
-			lw		r53, r53
+			lw		r52, r53
 			instr   blahblah r53
 		]]
-		map_op.addli_3({ "r53" , reg , "lo16(" .. immexpr .. ")" })
-		map_op.auli_3({ "r53" , "r53" , "ha16(" .. immexpr .. ")" })
-		map_op.lw_2({ "r52" , "r53" })
-		return make_operand(52, {})
+		map_op.addli_3({ "r50" , reg , "lo16(" .. immexpr .. ")" })
+		map_op.auli_3({ "r50" , "r50" , "ha16(" .. immexpr .. ")" })
+		map_op.lw_2({ "r" .. screg , "r50" })
+		return make_operand(screg, {})
 	else
 		post = function()
-			map_op.addli_3({ "r53" , reg , "lo16(" .. immexpr .. ")" })
-			map_op.auli_3({ "r53" , "r53" , "ha16(" .. immexpr .. ")" })
-			map_op.sw_2({ "r53" , "r52" })
+			map_op.addli_3({ "r50" , reg , "lo16(" .. immexpr .. ")" })
+			map_op.auli_3({ "r50" , "r50" , "ha16(" .. immexpr .. ")" })
+			map_op.sw_2({ "r50" , "r" .. screg })
 		end
-		return make_operand(52, {post})
+		return make_operand(screg, {post})
 	end
 end
 
@@ -374,8 +380,15 @@ local function parsepc(expr)
 	return make_operand(
 ]]
 
+----------------------------------------------------
+
+local imm_enc_modes = {
+	X0_Imm8 = "IEM_X0_Imm8",
+	X0_Imm16 = "IEM_X0_Imm16",
+}
+
 -- Parse immediate expression.
-local function parseimm(expr, offset, size)
+local function parseimm(expr, immtype)
 --[[
 	-- &expr (pointer)
 	if sub(expr, 1, 1) == "&" then
@@ -406,10 +419,8 @@ local function parseimm(expr, offset, size)
 
 	-- halfconstant immediate value
 	return make_operand(0, { function()
-			waction("IMM_" .. size)
-			waparam(offset)
-			waparam(expr)
-		end })
+				wputimm(immtype, expr)
+			end })
 end
 
 local function make_instr(hi, lo, posts)
@@ -433,19 +444,30 @@ end
 -----------------------------------------------------------------
 -- Instruction builders
 local instr_builders = {}
-function instr_builders.X0_RRR(opcode, opcodeextension, Dst, A, B)
+function instr_builders.X0_RRR(opcode, s, opcodeextension, Dst, A, B)
 	local instr = Dst.val
 	instr = bit.bor(instr, bit.lshift(A.val, 6))
 	instr = bit.bor(instr, bit.lshift(B.val, 12))
 	instr = bit.bor(instr, bit.lshift(opcodeextension, 18))
+	instr = bit.bor(instr, bit.lshift(s, 27))
 	instr = bit.bor(instr, bit.lshift(opcode, 28))
 	return make_instr(0, instr, table_append(Dst.posts, A.posts, B.posts))
+end
+
+function instr_builders.X0_Imm8(opcode, s, immopcodeex, Dst, A, Imm8)
+	local instr = Dst.val
+	instr = bit.bor(instr, bit.lshift(A.val, 6))
+	instr = bit.bor(instr, bit.lshift(bit.band(Imm8.val,0xFF), 12))
+	instr = bit.bor(instr, bit.lshift(immopcodeex, 20))
+	instr = bit.bor(instr, bit.lshift(s, 27))
+	instr = bit.bor(instr, bit.lshift(opcode,28))
+	return make_instr(0, instr, table_append(Dst.posts, A.posts, Imm8.posts))
 end
 
 function instr_builders.X0_Imm16(opcode, Dst, A, Imm16)
 	local instr = Dst.val
 	instr = bit.bor(instr, bit.lshift(A.val, 6))
-	instr = bit.bor(instr, bit.lshift(Imm16.val, 12))
+	instr = bit.bor(instr, bit.lshift(bit.band(Imm16.val,0xFFFF), 12))
 	instr = bit.bor(instr, bit.lshift(opcode,28))
 	return make_instr(0, instr, table_append(Dst.posts, A.posts, Imm16.posts))
 end
@@ -477,17 +499,24 @@ end
 ------------------------------------------------------------------
 -- Instruction parsers
 local instr_parsers = {}
-function instr_parsers.X0_RRR(opcode, opcodeextension)
+function instr_parsers.X0_RRR(opcode, s, opcodeextension)
 	return function(params)
 		local Dst, A, B = params[1], params[2], params[3]
-		return instr_builders.X0_RRR(opcode, opcodeextension, parseregortype(Dst,true), parseregortype(A), parseregortype(B))
+		return instr_builders.X0_RRR(opcode, s, opcodeextension, parseregortype(Dst,true), parseregortype(A), parseregortype(B))
+	end
+end
+
+function instr_parsers.X0_Imm8(opcode, s, immopcodeex)
+	return function(params)
+		local Dst, A, Imm8 = params[1], params[2], params[3]
+		return instr_builders.X0_Imm8(opcode, s, immopcodeex, parseregortype(Dst,true), parseregortype(A), parseimm(Imm8, imm_enc_modes.X0_Imm8))
 	end
 end
 
 function instr_parsers.X0_Imm16(opcode)
 	return function(params)
 		local Dst, A, Imm16 = params[1], params[2], params[3]
-		return instr_builders.X0_Imm16(opcode, parseregortype(Dst), parseregortype(A), parseimm(Imm16, 12, "H"))
+		return instr_builders.X0_Imm16(opcode, parseregortype(Dst,true), parseregortype(A), parseimm(Imm16, imm_enc_modes.X0_Imm16))
 	end
 end
 
@@ -496,7 +525,7 @@ end
 function instr_parsers.X1_Unary(opcode, s, shopcodeex, opcodeex)
 	return function(params)
 		local Dst, A = params[1], params[2]
-		return instr_builders.X1_Unary(opcode, s, shopcodeex, opcodeex, parseregortype(Dst), parseregortype(A))
+		return instr_builders.X1_Unary(opcode, s, shopcodeex, opcodeex, parseregortype(Dst,true), parseregortype(A))
 	end
 end
 
@@ -513,23 +542,35 @@ end
 -- Temporary workaround.
 local function wrap_put_nop_X0(parser)
 	return function(params)
+		begin_instruction()
+
+		if secpos+2 > maxsecpos then wflush() end
+
 		local i = instr_combine(make_instr(0,0x70165000,{}), parser(params))
 		wputw(i.lo)
 		wputw(i.hi)
 		for i,v in ipairs(i.posts) do
 			v()
 		end
+
+		end_instruction()
 	end
 end
 
 local function wrap_put_nop_X1(parser)
 	return function(params)
+		begin_instruction()
+
+		if secpos+2 > maxsecpos then wflush() end
+
 		local i = instr_combine(make_instr(0x400B8800,0,{}), parser(params))
 		wputw(i.lo)
 		wputw(i.hi)
 		for i,v in ipairs(i.posts) do
 			v()
 		end
+
+		end_instruction()
 	end
 end
 
@@ -538,11 +579,16 @@ end
 
 map_op = {
 	-- Arithmetic opcodes
-	add_3 = wrap_put_nop_X1(instr_parsers.X0_RRR(0, 3)),
+	add_3 = wrap_put_nop_X1(instr_parsers.X0_RRR(0, 0, 3)),
+	addi_3 = wrap_put_nop_X1(instr_parsers.X0_Imm8(4, 0, 3)),
 	addli_3 = wrap_put_nop_X1(instr_parsers.X0_Imm16(2)),
-	adds_3 = wrap_put_nop_X1(instr_parsers.X0_RRR(0, 0x60)),
+	adds_3 = wrap_put_nop_X1(instr_parsers.X0_RRR(0, 0, 0x60)),
 	auli_3 = wrap_put_nop_X1(instr_parsers.X0_Imm16(3)),
-	sub_3 = wrap_put_nop_X1(instr_parsers.X0_RRR(0,0x5D)),
+	sub_3 = wrap_put_nop_X1(instr_parsers.X0_RRR(0, 0, 0x5D)),
+
+	-- Logical opcodes
+	or_3 = wrap_put_nop_X1(instr_parsers.X0_RRR(0, 0, 0x33)),
+	ori_3 = wrap_put_nop_X1(instr_parsers.X0_Imm8(4, 0, 8)),
 
 	-- Memory opcodes
 	lw_2 = wrap_put_nop_X0(instr_parsers.X1_Unary(8, 0, 0xB, 0xE)),
@@ -678,6 +724,32 @@ local function dumptypes(out, lvl)
   out:write("\n")
 end
 --]]
+
+map_op[".actionnames_1"] = function(params)
+	wline("enum	" .. params[1] .. " {")
+	for i,v in ipairs(action_names) do
+		if i == 1 then
+			wline("\tDASM_" .. v .. " = " .. actfirst .. ",")
+		else
+			wline("\tDASM_" .. v .. ",")
+		end
+	end
+	wline("};");
+end
+
+map_op[".immencmodes_1"] = function(params)
+	local t = false
+	wline("enum	" .. params[1] .. " {")
+	for k,v in pairs(imm_enc_modes) do
+		if not t then
+			wline("\t" .. v .. " = 0,")
+			t = true
+		else
+			wline("\t" .. v .. ",")
+		end
+	end
+	wline("};");
+end
 
 
 ------------------------------------------------------------------------------

@@ -2,11 +2,11 @@
 |.section code
 |
 |// Types
-|.type L,		lua_State,	r45
-|.type BASE,	TValue,		r46
-|.type TOP,		TValue,		r47
-|.type CI,		CallInfo,	r48
-|.type LCL,		LClosure,	r49
+|.type L,		lua_State,	r42
+|.type BASE,	TValue,		r43
+|.type TOP,		TValue,		r44
+|.type CI,		CallInfo,	r45
+|.type LCL,		LClosure,	r46
 |
 |// Types
 |.type GL,			global_State
@@ -41,7 +41,7 @@
 |.define LUA_TTABLE_NUM,	0x53
 |.define LUA_TTABLE_STR,	0x54
 |
-|.macro istt, idx, tp; sub r50, BASE[idx].tt, tp; .endmacro
+|.macro istt, idx, tp; sub r47, BASE[idx].tt, tp; .endmacro
 |.macro isnil, idx; istt idx, LUA_TNIL; .endmacro
 |.macro isnumber, idx;  istt idx, LUA_TNUMBER; .endmacro
 |.macro isstring, idx;  istt idx, LUA_TSTRING; .endmacro
@@ -54,14 +54,31 @@
 |.macro movei, dst, simm8; ori dst, zero, simm8; .endmacro
 |.macro moveli, dst, simm16; addli dst, zero, simm16; .endmacro
 |.macro movelis, dst, simm16; addlis dst, zero, simm16; .endmacro
-|.macro prefetch src; lb_u zero, src; .endmacro
+|.macro prefetch, src; lb_u zero, src; .endmacro
 |.macro bpt; ill; .endmacro
-|.macro info simm8; andi zero, zero, simm8; .endmacro
-|.macro infol simm16; auli zero, zero, simm16; .endmacro
+|.macro info, simm8; andi zero, zero, simm8; .endmacro
+|.macro infol, simm16; auli zero, zero, simm16; .endmacro
 |
 |
 |// Pseudo instructions specific to this project
-|.macro push reg; sw sp, reg; addi sp, sp, 4; .endmacro
-|.macro pop reg; addi sp, sp, -4; lw reg, sp; .endmacro
-
+|// Stack-related
+|.macro prologue, size
+|	sw sp, lr
+|	addi sp, sp, -size
+|.endmacro
+|
+|.macro epilogue, size
+|	addi sp, sp, size
+|	lw lr, sp
+|.endmacro
+|
+|.macro loadfromstack, reg, idx
+|	addi r47, sp, idx
+|	lw reg, r47
+|.endmacro
+|
+|.macro storeonstack, reg, idx
+|	addi r47, sp, idx
+|	sw r47, reg
+|.endmacro
 
