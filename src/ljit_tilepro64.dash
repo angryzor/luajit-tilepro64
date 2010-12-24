@@ -41,7 +41,7 @@
 |.define LUA_TTABLE_NUM,	0x53
 |.define LUA_TTABLE_STR,	0x54
 |
-|.macro istt, idx, tp; sub r47, BASE[idx].tt, tp; .endmacro
+|.macro istt, idx, tp; sub r25, BASE[idx].tt, tp; .endmacro
 |.macro isnil, idx; istt idx, LUA_TNIL; .endmacro
 |.macro isnumber, idx;  istt idx, LUA_TNUMBER; .endmacro
 |.macro isstring, idx;  istt idx, LUA_TSTRING; .endmacro
@@ -73,12 +73,29 @@
 |.endmacro
 |
 |.macro loadfromstack, reg, idx
-|	addi r47, sp, idx
-|	lw reg, r47
+|	addi r25, sp, idx
+|	lw reg, r25
 |.endmacro
 |
 |.macro storeonstack, reg, idx
-|	addi r47, sp, idx
-|	sw r47, reg
+|	addi r25, sp, idx
+|	sw r25, reg
 |.endmacro
-
+|
+|// Easier word multiply
+|.macro mulw_uu, d, a, b
+|	mulhl_uu d, a, b
+|	mulhla_uu d, b, a
+|	shli d, d, 8
+|	mullla_uu d, a, b
+|	mulhhsa_uu d, a, b
+|.endmacro
+|
+|.macro mulw_ss, d, a, b
+|	mulhl_ss d, a, b
+|	mulhla_ss d, b, a
+|	shli d, d, 8
+|	mullla_ss d, a, b
+|	mulhhsa_ss d, a, b
+|.endmacro
+|

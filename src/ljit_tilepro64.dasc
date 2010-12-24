@@ -65,14 +65,19 @@ static int jit_compile_jsub(jit_State *J)
 	|
 	|.code
 	|//-----------------------------------------------------------------------
+	|// Procedure: GATE_LJ(lua_State* L, TValue func, int nresults)
+	|//---------------------
 	|//.align 64
 	|//->GATE_LJ:
 	|	prologue 28
+	|	// Preserve "global type" registers.
 	|	storeonstack BASE, 8
 	|	storeonstack L, 12
 	|	storeonstack TOP, 16
 	|	storeonstack LCL, 20
 	|	storeonstack CI, 24
+	|
+	|	// Init our global types
 	|	move BASE, r1
 	|	move L, r0
 	|	move TOP, L->top
@@ -80,6 +85,37 @@ static int jit_compile_jsub(jit_State *J)
 	|	move CI, L->ci
 	|	// Prevent stackless yield. TODO: figure out what a stackless yield is.
 	|	addi L->nCcalls, L->nCcalls, 1
+	|
+	|	// We need to keep arg 3. We move it to a "callee-saved reg"
+	|	// This way, it only gets pushed on the stack if a function wants
+	|	// to use this reg, and that's possibly 2 memory ops less
+	|	move r20, r2
+	|
+	|	// Call the compiled code.
+	|	jalr LCL->jit_gate
+	|
+	|	// Set callinfo, set lua state 
+	|	move CI, L->ci
+	|	move L->top, TOP
+	|	move L->savedpc, CI->savedpc
+	|	move L->base, CI->base
+	|
+	|	// Check if arg 3 was LUA_MULTRET
+	|	addi r0, r20, 1 
+	|	bz r0, >2		// If so, we can skip this
+	|
+	|	// Multiply number of values on stack by value size
+	|	movei r5, #TOP
+	|	mulw_uu r4, r2, r5
+	|
+	|	// Get index right above the last nresults. All 
+	|	add BASE, BASE, r4
+	|	
+	|	// 
+	|
+	|	// Set all stack slots to nil
+	|
+	|	// Restore "global type" registers
 	|	loadfromstack CI, 24
 	|	loadfromstack LCL, 20
 	|	loadfromstack TOP, 16
