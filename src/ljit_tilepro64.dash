@@ -130,10 +130,10 @@
 |.endmacro
 |
 |.macro addidx, dst, src, idx
-|	addi dst, src, (idx)*#ptr
+|	addi dst, src, (idx)*#src
 |.endmacro
 |
 |.macro subidx, dst, src, idx
-|	addi dst, src, -(idx)*#ptr
+|	addi dst, src, -(idx)*#src
 |.endmacro
 |
