@@ -795,9 +795,22 @@ dostmt = function(stmt)
   end
 end
 
+local inlargecomment = false
 -- Process a single line.
 local function doline(line)
   if g_opt.flushline then wflush() end
+
+  if inlargecomment then
+    if line == "#endif" then
+	  inlargecomment = false
+	end
+	return
+  end
+
+  if line == "#if 0" then
+    inlargecomment = true
+    return
+  end
 
   -- Assembler line?
   local indent, aline = match(line, "^(%s*)%|(.*)$")

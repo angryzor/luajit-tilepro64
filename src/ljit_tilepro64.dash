@@ -41,13 +41,6 @@
 |.define LUA_TTABLE_NUM,	0x53
 |.define LUA_TTABLE_STR,	0x54
 |
-|.macro istt, idx, tp; sub r25, BASE[idx].tt, tp; .endmacro
-|.macro isnil, idx; istt idx, LUA_TNIL; .endmacro
-|.macro isnumber, idx;  istt idx, LUA_TNUMBER; .endmacro
-|.macro isstring, idx;  istt idx, LUA_TSTRING; .endmacro
-|.macro istable, idx;  istt idx, LUA_TTABLE; .endmacro
-|.macro isfunction, idx;  istt idx, LUA_TFUNCTION; .endmacro
-|
 |
 |// Assembler pseudo instructions. Should actually be put in dynasm, putting them here for now
 |.macro move, dst, src; or dst, src, zero; .endmacro
@@ -97,5 +90,50 @@
 |	shli d, d, 8
 |	mullla_ss d, a, b
 |	mulhhsa_ss d, a, b
+|.endmacro
+|
+|.macro istt, dst, idx, tp; seqi dst, BASE[idx].tt, tp; .endmacro
+|.macro isnil, dst, idx; istt dst, idx, LUA_TNIL; .endmacro
+|.macro isnumber, dst, idx;  istt dst, idx, LUA_TNUMBER; .endmacro
+|.macro isstring, dst, idx;  istt dst, idx, LUA_TSTRING; .endmacro
+|.macro istable, dst, idx;  istt dst, idx, LUA_TTABLE; .endmacro
+|.macro isfunction, dst, idx;  istt dst, idx, LUA_TFUNCTION; .endmacro
+|
+|
+|.macro settti, val, tp; movei val.tt, tp; .endmacro
+|
+|
+|.macro copyslot, D, S
+|	move D.value, S.value
+|	move D.value.na[1], S.value.na[1]
+|	move D.tt, S.tt
+|.endmacro
+|
+|.macro loadnumber, reg1, reg2, src
+|	lw reg1, src
+|	addi reg2, src, 4
+|	lw reg2, reg2
+|.endmacro
+|
+|.macro storenumber, dst, reg1, reg2
+|	sw dst, reg1
+|	addi r25, dst, 4
+|	sw r25, reg2
+|.endmacro
+|
+|.macro loadnumberi, reg1, reg2, src
+|	addli r25, zero, lo16(src)
+|	auli r25, r25, ha16(src)
+|	lw reg1, r25
+|	addi reg2, r25, 4
+|	lw reg2, reg2
+|.endmacro
+|
+|.macro addidx, dst, src, idx
+|	addi dst, src, (idx)*#ptr
+|.endmacro
+|
+|.macro subidx, dst, src, idx
+|	addi dst, src, -(idx)*#ptr
 |.endmacro
 |

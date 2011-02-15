@@ -9,7 +9,7 @@ require("bit")
 local map_reg = {	[54] = "sp",
 					[55] = "lr",
 					[63] = "zero" }
-for i = 0, 53 do
+for i = 0, 52 do
 	map_reg[i] = "r" .. i
 end
 

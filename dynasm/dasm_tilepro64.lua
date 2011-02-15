@@ -36,12 +36,14 @@ local wline, werror, wfatal, wwarn
 -- Action name list.
 -- CHECK: Keep this in sync with the C code!
 local action_names = {
-  -- int arg, 1 buffer pos:
+  -- int arg, 1 buffer pos, dereferenced:
   "IMM",
+  -- int arg, 1 buffer pos, not dereferenced:
+  "REF",
   -- action arg (1 byte) or int arg, 1 buffer pos (link):
-  "LG", "PC",
+  "L","G", "PC",
   -- action arg (1 byte) or int arg, 1 buffer pos (offset):
-  "LABEL_LG", "LABEL_PC",
+  "LABEL_L","LABEL_G", "LABEL_PC",
   -- action arg (1 byte), 1 buffer pos (offset):
   "ALIGN",
   -- action arg (1 byte), no buffer pos.
@@ -114,7 +116,7 @@ end
 
 -- Add byte to action list.
 local function wputxw(n)
-  assert(n >= -2147483648 and n <= 2147483647 and n % 1 == 0, "byte out of range")
+  assert(n >= -2147483648 and n <= 2147483647 and n % 1 == 0, "word out of range")
   actlist[#actlist+1] = n
 end
 
@@ -253,16 +255,10 @@ local patterns = {
 				zero = 63
 			}
 		},
-		imm = {
-			imm = "%-?%d+"
-		},
-		ref = {
-			ref = "[%w_][%w%d_%[%]%.%-%>]"
-		}
 }
 local cur_scratch_reg = {}
 local function begin_instruction()
-	cur_scratch_reg[#cur_scratch_reg+1] = 50
+	cur_scratch_reg[#cur_scratch_reg+1] = 26
 end
 
 local function end_instruction()
@@ -287,7 +283,7 @@ local function parsereg(str)
 	local t
 	if string.match(str,patterns.reg.gpr) then
 		local regnum = str.sub(str,2) + 0
-		if regnum > 53 then
+		if regnum > 52 then
 			error("register does not exist: " .. str)
 		end
 		
@@ -299,12 +295,12 @@ local function parsereg(str)
 		return make_operand(t, {})
 	end
 
-	error("operand must be register: " .. str)
+	werror("operand must be register: " .. str)
 end
 
 local function parsetype(str, isdst)
 	local expr, accessor = string.match(str, "^([%w_:]+)%s*(.*)$")
-	local typename, reg_override = string.match(str, "^([%w_]+):([%w_]+)$")
+	local typename, reg_override = string.match(expr, "^([%w_]+):([%w_]+)$")
 	local post = nil
 
 	if not typename then
@@ -313,7 +309,7 @@ local function parsetype(str, isdst)
 
 	local t = map_type[typename]
 	if not t then
-		error("not a valid type: " .. t)
+		werror("not a valid type: " .. typename)
 	end
 
 	if reg_override then
@@ -321,7 +317,7 @@ local function parsetype(str, isdst)
 	elseif t.reg then
 		reg = t.reg
 	else
-		error("type needs register override")
+		werror("type needs register override")
 	end
 	
 	-- is of type    move BASE, r3 ?
@@ -336,23 +332,16 @@ local function parsetype(str, isdst)
 		--[[
 		We need to add the offset that we get to the address already in the reg
 		We do this with the following ASM code:
-	
-		r53 is a reserved register 
-	
-			addli	r53, *REG*, lo16(off)
-			auli	r53, r53, ha16(off)
-			lw		r52, r53
-			instr   blahblah r53
 		]]
-		map_op.addli_3({ "r50" , reg , "lo16(" .. immexpr .. ")" })
-		map_op.auli_3({ "r50" , "r50" , "ha16(" .. immexpr .. ")" })
-		map_op.lw_2({ "r" .. screg , "r50" })
+		map_op.addli_3({ "r26" , reg , "lo16(" .. immexpr .. ")" })
+		map_op.auli_3({ "r26" , "r26" , "ha16(" .. immexpr .. ")" })
+		map_op.lw_2({ "r" .. screg , "r26" })
 		return make_operand(screg, {})
 	else
 		post = function()
-			map_op.addli_3({ "r50" , reg , "lo16(" .. immexpr .. ")" })
-			map_op.auli_3({ "r50" , "r50" , "ha16(" .. immexpr .. ")" })
-			map_op.sw_2({ "r50" , "r" .. screg })
+			map_op.addli_3({ "r26" , reg , "lo16(" .. immexpr .. ")" })
+			map_op.auli_3({ "r26" , "r26" , "ha16(" .. immexpr .. ")" })
+			map_op.sw_2({ "r26" , "r" .. screg })
 		end
 		return make_operand(screg, {post})
 	end
@@ -385,6 +374,7 @@ local function parsepc(expr)
 local imm_enc_modes = {
 	X0_Imm8 = "IEM_X0_Imm8",
 	X0_Imm16 = "IEM_X0_Imm16",
+	X1_Br = "IEM_X1_Br"
 }
 
 -- Parse immediate expression.
@@ -496,6 +486,46 @@ function instr_builders.X1_Unary(opcode, s, shopcodeex, opcodeex, Dst, A)
 	return make_instr(hi, lo, table_append(Dst.posts, A.posts))
 end
 
+function instr_builders.X1_Br(opcode, s, brtype, A, Off)
+	local lo = bit.lshift(brtype, 31)
+	local hi = bit.rshift(brtype, 1)
+	local off1400 = bit.band(Off.val, 0x7FFF)
+	local off1615 = bit.band(bit.rshift(Off.val, 15), 0x3)
+	hi = bit.bor(hi, bit.lshift(A.val, 5))
+	hi = bit.bor(hi, bit.lshift(off1615, 3))
+	hi = bit.bor(hi, bit.lshift(off1400, 11))
+	hi = bit.bor(hi, bit.lshift(s, 26))
+	hi = bit.bor(hi, bit.lshift(opcode, 27))
+	return make_instr(hi, lo, table_append(A.posts, Off.posts))
+end
+
+function instr_builders.X1_Shift(opcode, s, shopcodeextension, Dst, A, ShAmt)
+	local lo = bit.lshift(Dst.val, 31)
+	local hi = bit.rshift(Dst.val, 1)
+	hi = bit.bor(hi, bit.lshift(A.val, 5))
+	hi = bit.bor(hi, bit.lshift(ShAmt.val, 11))
+	hi = bit.bor(hi, bit.lshift(shopcodeextension, 16))
+	hi = bit.bor(hi, bit.lshift(s, 26))
+	hi = bit.bor(hi, bit.lshift(opcode, 27))
+	return make_instr(hi, lo, table_append(Dst.posts, A.posts, ShAmt.posts))
+end
+
+function instr_builders.X1_J(opcode, off)
+	local off1400 = bit.band(off.val, 0x7FFF)
+	local off1615 = bit.band(bit.rshift(off.val, 15), 0x3)
+	local off2017 = bit.band(bit.rshift(off.val, 17), 0xF)
+	local off2621 = bit.band(bit.rshift(off.val, 21), 0x3F)
+	local off2727 = bit.band(bit.rshift(off.val, 27), 1)
+	local lo = bit.lshift(off2017, 31)
+	local hi = bit.rshift(off2017, 1)
+	hi = bit.bor(hi, bit.lshift(off1615, 3))
+	hi = bit.bor(hi, bit.lshift(off2621, 5))
+	hi = bit.bor(hi, bit.lshift(off1400, 11))
+	hi = bit.bor(hi, bit.lshift(off2727, 26))
+	hi = bit.bor(hi, bit.lshift(opcode, 27))
+	return make_instr(hi, lo, table_append(off.posts))
+end
+
 ------------------------------------------------------------------
 -- Instruction parsers
 local instr_parsers = {}
@@ -529,15 +559,52 @@ function instr_parsers.X1_Unary(opcode, s, shopcodeex, opcodeex)
 	end
 end
 
-
-------------------------------------------------------------------
-local cust_instr_parsers = {}
-function cust_instr_parsers.sw_2()
+function instr_parsers.X1_Br(opcode,s,brtype)
 	return function(params)
-		local A, B = params[1], params[2]
-		return instr_builders.X1_RRR(1, 0, 0x40, make_operand(0, {}), parseregortype(A), parseregortype(B))
+		local A, Off = params[1], params[2]
+		return instr_builders.X1_Br(opcode, s, brtype, parseregortype(A), parseimm(Off, imm_enc_modes.X1_Br))
 	end
 end
+
+function instr_parsers.X1_Shift(opcode,s,shopcodeextension)
+	return function(params)
+		local Dst, A, ShAmt = params[1], params[2], params[3]
+		return instr_builders.X1_Shift(opcode, s, shopcodeextension, parseregortype(Dst,true), parseregortype(A), parseimm(ShAmt, imm_enc_modes.X1_Shift))
+	end
+end
+
+function instr_parsers.X1_J(opcode)
+	return function(params)
+		local Off = params[1]
+		return instr_builders.X1_J(opcode, parseimm(Off, imm_enc_modes.X1_J))
+	end
+end
+
+------------------------------------------------------
+local special_instr_parsers = {}
+function special_instr_parsers.X1_RRR_no_Dst(opcode, s, opcodeextension)
+	return function(params)
+		local A, B = params[1], params[2]
+		return instr_builders.X1_RRR(opcode, s, opcodeextension, make_operand(0, {}), parseregortype(A), parseregortype(B))
+	end
+end
+
+function special_instr_parsers.X1_RRR_no_Dst_and_B(opcode, s, opcodeextension)
+	return function(params)
+		local A, B = params[1], params[2]
+		return instr_builders.X1_RRR(opcode, s, opcodeextension, make_operand(0, {}), parseregortype(A), make_operand(0, {}))
+	end
+end
+
+function special_instr_parsers.X1_J_jal()
+	return function(params)
+		local Off = params[1]
+		return instr_builders.X1_J(0, parseimm(Off, imm_enc_modes.X1_J_jal))
+	end
+end
+
+
+
 ------------------------------------------------------------------
 -- Temporary workaround.
 local function wrap_put_nop_X0(parser)
@@ -577,22 +644,98 @@ end
 ----------------------------------------------------------------
 -- ops
 
-map_op = {
+map_instr_X0 = {
 	-- Arithmetic opcodes
-	add_3 = wrap_put_nop_X1(instr_parsers.X0_RRR(0, 0, 3)),
-	addi_3 = wrap_put_nop_X1(instr_parsers.X0_Imm8(4, 0, 3)),
-	addli_3 = wrap_put_nop_X1(instr_parsers.X0_Imm16(2)),
-	adds_3 = wrap_put_nop_X1(instr_parsers.X0_RRR(0, 0, 0x60)),
-	auli_3 = wrap_put_nop_X1(instr_parsers.X0_Imm16(3)),
-	sub_3 = wrap_put_nop_X1(instr_parsers.X0_RRR(0, 0, 0x5D)),
+	add_3 = instr_parsers.X0_RRR(0, 0, 3),
+	addi_3 = instr_parsers.X0_Imm8(4, 0, 3),
+	addli_3 = instr_parsers.X0_Imm16(2),
+	adds_3 = instr_parsers.X0_RRR(0, 0, 0x60),
+	auli_3 = instr_parsers.X0_Imm16(3),
+	sub_3 = instr_parsers.X0_RRR(0, 0, 0x5D),
+
+	-- Compare opcodes
+	seq_3 = instr_parsers.X0_RRR(0, 0, 0x42),
+	seqi_3 = instr_parsers.X0_Imm8(4, 0, 0x0B),
+	slt_3 = instr_parsers.X0_RRR(0, 0, 0x53),
+	slt_u_3 = instr_parsers.X0_RRR(0, 0, 0x54),
+	slte_u_3 = instr_parsers.X0_RRR(0, 0, 0x50),
 
 	-- Logical opcodes
-	or_3 = wrap_put_nop_X1(instr_parsers.X0_RRR(0, 0, 0x33)),
-	ori_3 = wrap_put_nop_X1(instr_parsers.X0_Imm8(4, 0, 8)),
+	or_3 = instr_parsers.X0_RRR(0, 0, 0x33),
+	ori_3 = instr_parsers.X0_Imm8(4, 0, 8),
+
+	-- Multiply opcodes
+	mulhhsa_uu_3 = instr_parsers.X0_RRR(0, 0, 0x19),
+	mulhl_uu_3 = instr_parsers.X0_RRR(0, 0, 0x25),
+	mulhla_uu_3 = instr_parsers.X0_RRR(0, 0, 0x20),
+	mullla_uu_3 = instr_parsers.X0_RRR(0, 0, 0x28)
+}
+
+map_instr_X1 = {
+	-- Compare opcodes
+	-- seq_3 = instr_parsers.X1_RRR(1, 0, 0x23),
+	-- slt_3 = instr_parsers.X1_RRR(1, 0, 0x35),
+	-- slt_u_3 = instr_parsers.X1_RRR(1, 0, 0x36),
+	-- slte_u_3 = instr_parsers.X1_RRR(1, 0, 0x32),
+
+	-- Control opcodes
+	bnz_2 = instr_parsers.X1_Br(5, 0, 0x3),
+	bnzt_2 = instr_parsers.X1_Br(5, 0, 0x3),
+	bz_2 = instr_parsers.X1_Br(5, 0, 0x1),
+	bzt_2 = instr_parsers.X1_Br(5, 0, 0x1),
+	jal_1 = special_instr_parsers.X1_J_jal(),
+	jalr_1 = special_instr_parsers.X1_RRR_no_Dst_and_B(1, 0, 0x09),
+	jr_1 = special_instr_parsers.X1_RRR_no_Dst_and_B(1, 0, 0x0C),
+	jrp_1 = special_instr_parsers.X1_RRR_no_Dst_and_B(1, 0, 0x0B),
+
+	-- Logical opcodes
+	shli_3 = instr_parsers.X1_Shift(8, 0, 0x4),
 
 	-- Memory opcodes
-	lw_2 = wrap_put_nop_X0(instr_parsers.X1_Unary(8, 0, 0xB, 0xE)),
-	sw_2 = wrap_put_nop_X0(cust_instr_parsers.sw_2())
+	lw_2 = instr_parsers.X1_Unary(8, 0, 0xB, 0xE),
+	sw_2 = special_instr_parsers.X1_RRR_no_Dst(1, 0, 0x40)
+}
+
+map_op = {
+	-- Arithmetic opcodes
+	add_3 = wrap_put_nop_X1(map_instr_X0["add_3"]),
+	addi_3 = wrap_put_nop_X1(map_instr_X0["addi_3"]),
+	addli_3 = wrap_put_nop_X1(map_instr_X0["addli_3"]),
+	adds_3 = wrap_put_nop_X1(map_instr_X0["adds_3"]),
+	auli_3 = wrap_put_nop_X1(map_instr_X0["auli_3"]),
+	sub_3 = wrap_put_nop_X1(map_instr_X0["sub_3"]),
+
+	-- Compare opcodes
+	seq_3 = wrap_put_nop_X1(map_instr_X0["seq_3"]),
+	seqi_3 = wrap_put_nop_X1(map_instr_X0["seqi_3"]),
+	slt_3 = wrap_put_nop_X1(map_instr_X0["slt_3"]),
+	slt_u_3 = wrap_put_nop_X1(map_instr_X0["slt_u_3"]),
+	slte_u_3 = wrap_put_nop_X1(map_instr_X0["slte_u_3"]),
+	
+	-- Control opcodes
+	bnz_2 = wrap_put_nop_X0(map_instr_X1["bnz_2"]),
+	bnzt_2 = wrap_put_nop_X0(map_instr_X1["bnzt_2"]),
+	bz_2 = wrap_put_nop_X0(map_instr_X1["bz_2"]),
+	bzt_2 = wrap_put_nop_X0(map_instr_X1["bzt_2"]),
+	jal_1 = wrap_put_nop_X0(map_instr_X1["jal_1"]),
+	jalr_1 = wrap_put_nop_X0(map_instr_X1["jalr_1"]),
+	jr_1 = wrap_put_nop_X0(map_instr_X1["jr_1"]),
+	jrp_1 = wrap_put_nop_X0(map_instr_X1["jrp_1"]),
+
+	-- Logical opcodes
+	or_3 = wrap_put_nop_X1(map_instr_X0["or_3"]),
+	ori_3 = wrap_put_nop_X1(map_instr_X0["ori_3"]),
+	shli_3 = wrap_put_nop_X0(map_instr_X1["shli_3"]),
+
+	-- Memory opcodes
+	lw_2 = wrap_put_nop_X0(map_instr_X1["lw_2"]),
+	sw_2 = wrap_put_nop_X0(map_instr_X1["sw_2"]),
+
+	-- Multiply opcodes
+	mulhhsa_uu_3 = wrap_put_nop_X1(map_instr_X0["mulhhsa_uu_3"]),
+	mulhl_uu_3 = wrap_put_nop_X1(map_instr_X0["mulhl_uu_3"]),
+	mulhla_uu_3 = wrap_put_nop_X1(map_instr_X0["mulhla_uu_3"]),
+	mullla_uu_3 = wrap_put_nop_X1(map_instr_X0["mullla_uu_3"])
 }
 
 
@@ -613,22 +756,36 @@ end
 
 ------------------------------------------------------------------------------
 
---[[ Label pseudo-opcode (converted from trailing colon form).
+local function parse_label_def(expr)
+	local prefix = sub(expr, 1, 2)
+--[[	-- =>expr (pc label reference)
+	if prefix == "=>" then
+		return "iJ", sub(expr, 3)
+	end
+--]]
+
+	-- ->name (global label reference)
+	if prefix == "->" then
+		waction("LABEL_G", map_global[sub(expr, 3)])
+		return
+	end
+	
+	-- [<>][1-9] (local label reference)
+	local lnum = match(expr, "^([1-9])$")
+	if lnum then
+		waction("LABEL_L", lnum)
+		return
+	end
+
+	werror("bad label definition")
+end
+
+---[[ Label pseudo-opcode (converted from trailing colon form).
 map_op[".label_2"] = function(params)
-  if not params then return "[1-9] | ->global | =>pcexpr  [, addr]" end
-  local a = parseoperand(params[1])
-  local mode, imm = a.mode, a.imm
-  if type(imm) == "number" and (mode == "iJ" or (imm >= 1 and imm <= 9)) then
-    -- Local label (1: ... 9:) or global label (->global:).
-    waction("LABEL_LG", nil, 1)
-    wputxw(imm)
-  elseif mode == "iJ" then
-    -- PC label (=>pcexpr:).
-    waction("LABEL_PC", imm)
-  else
-    werror("bad label definition")
-  end
-  -- SETLABEL must immediately follow LABEL_LG/LABEL_PC.
+	if not params then return "[1-9] | ->global | =>pcexpr  [, addr]" end
+	parse_label_def(params[1])
+
+	--[[ SETLABEL must immediately follow LABEL_LG/LABEL_PC.
   local addr = params[2]
   if addr then
     local a = parseoperand(params[2])
@@ -638,28 +795,28 @@ map_op[".label_2"] = function(params)
       werror("bad label assignment")
     end
   end
+  --]]
 end
 map_op[".label_1"] = map_op[".label_2"]
 --]]
 ------------------------------------------------------------------------------
---[==[
+---[==[
 -- Alignment pseudo-opcode.
 map_op[".align_1"] = function(params)
-  if not params then return "numpow2" end
-  local align = tonumber(params[1]) or map_opsizenum[map_opsize[params[1]]]
-  if align then
-    local x = align
-    -- Must be a power of 2 in the range (2 ... 256).
-    for i=1,8 do
-      x = x / 2
-      if x == 1 then
-	waction("ALIGN", nil, 1)
-	wputxw(align-1) -- Action byte is 2**n-1.
-	return
-      end
-    end
-  end
-  werror("bad alignment")
+	if not params then return "numpow2" end
+	local align = tonumber(params[1])
+	if align then
+		local x = align
+		-- Must be a power of 2 in the range (2 ... 256).
+		for i=1,8 do
+			x = x / 2
+			if x == 1 then
+				waction("ALIGN", align-1 / 8) -- Action byte is 2**n-1.
+				return
+			end
+		end
+	end
+	werror("bad alignment")
 end
 --]==]
 -- Spacing pseudo-opcode.
