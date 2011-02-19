@@ -6,7 +6,7 @@
 #define DASM_ARCH "tilepro64"
 
 enum {
-	DASM_IMM = 2147483635, DASM_REF,
+DASM_IMM = 2147483637,
 	DASM_L, DASM_G, DASM_PC, DASM_LABEL_L, DASM_LABEL_G, DASM_LABEL_PC,
 	DASM_ALIGN, DASM_ESC, DASM_SECTION, DASM_STOP
 };
@@ -49,9 +49,11 @@ typedef struct dasm_Section {
 struct dasm_State {
   size_t psize;			/* Allocated size of this structure. */
   dasm_ActList actionlist;	/* Current actionlist pointer. */
-  int *lglabels;		/* Local/global chain/pos ptrs. */
-  size_t lgsize;
-  int *pclabels;		/* PC label chains/pos ptrs. */
+  unsigned long *glabels;		/* Local/global chain/pos ptrs. */
+  size_t gsize;
+  unsigned long *llabels;
+  size_t lsize
+  unsigned long *pclabels;		/* PC label chains/pos ptrs. */
   size_t pcsize;
   void **globals;		/* Array of globals (bias -10). */
   dasm_Section *section;	/* Pointer to active section. */
@@ -170,13 +172,12 @@ void dasm_put(Dst_DECL, int start, ...)
   va_start(ap, start);
   while (1) {
     int action = *p++;
-    if (action < DASM_IMM_B) {
+    if (action < DASM_IMM) {
 		ofs++;
     }
 	else if (action <= DASM_PC) {
 		int n = va_arg(ap,int);
 		b[pos++] = n;
-		// TODO: switch
 		ofs++;
 	}
 	else {
@@ -259,23 +260,75 @@ int dasm_link(Dst_DECL, size_t *szp)
   return DASM_S_OK;
 }
 
-#define dasmb(x)	*cp++ = (unsigned char)(x)
-#ifndef DASM_ALIGNED_WRITES
-#define dasmh(x) \
-  do { *((unsigned short *)cp) = (unsigned short)(x); cp+=2; } while (0)
-#else
-#define dasmh(x)	do { dasmb(x); dasmb((x)>>8); } while (0)
-#endif
-
-#define cur_instr_hi	*((unsigned long*)(cp - 8))
-#define cur_instr_lo	*((unsigned long*)(cp - 4))
+/*
+ * This procedure is called when a variable or halfconstant needs to be compiled in at runtime
+ */
+static void encode_refactoring(unsigned long* tgt, jit_encmodes mode, unsigned long r)
+{
+	unsigned long* tgtlo = tgt;
+	unsigned long* tgthi = tgt + sizeof(unsigned long);
+	
+	switch(mode)
+	{
+	case IEM_X0_Imm8:
+	case IEM_X0_Imm16:
+		tgtlo |= (r << 12);
+		break;
+	case IEM_X1_Br:
+		tgthi |= ((r & 0x7FFF) << 11);
+		tgthi |= ((r >> 15) << 3);
+		break;
+	case IEM_X1_Shift:
+		tgthi |= (r << 11);
+		break;
+	case IEM_X1_J_jal:
+		if(r >= tgt)
+		{
+			/*
+			 * Jump forward. use jalf.
+			 * setNextPC(getCurrentPC() + BACKWARD_OFFSET +
+			 *			 (JOff << (INSTRUCTION_SIZE_LOG_2 - BYTE_SIZE_LOG_2))); 
+			 * ==> nextPC = curPC + (JOff << 3)
+			 * <=> JOff = (nextPC - curPC) >> 3
+			 */
+			r = (nextPC - curPC) >> 3;
+			/* Add the jalf instruction. */
+			tgthi |= (0xC << 27);
+		}
+		else
+		{
+			/*
+			 * Jump backward. use jalb.
+			 * setNextPC(getCurrentPC() +
+			 *			 (JOff << (INSTRUCTION_SIZE_LOG_2 - BYTE_SIZE_LOG_2))); 
+			 * ==> nextPC = curPC + 0x80000000 + (JOff << 3)
+			 * <=> JOff = (nextPC - curPC - 0x80000000) >> 3
+			 */
+			r = (nextPC - curPC - 0x80000000) >> 3;
+			/* Add the jalb instruction. */
+			tgthi |= (0xD << 27);
+		}
+		/* Continue as we would for a normal X1_J encoding */
+	case IEM_X1_J:
+		tgthi |= ((r & 0x7FFF) << 11);
+		tgthi |= (((r >> 15) & 3) << 3);
+		tgtlo |= ((r >> 17) << 31);
+		tgthi |= ((r >> 18) & 7);
+		tgthi |= (((r >> 21) & 0x3F) << 5);
+		tgthi |= ((r >> 27) << 26);
+		break;
+	default:
+		/* TODO: error */
+		break;
+	}
+}
 
 /* Pass 3: Encode sections. */
 int dasm_encode(Dst_DECL, void *buffer)
 {
   dasm_State *D = Dst_REF;
-  unsigned char *base = (unsigned char *)buffer;
-  unsigned char *cp = base;
+  unsigned long *base = (unsigned long *)buffer;
+  unsigned long *cp = base;
   int secnum;
 
   /* Encode all code sections. No support for data sections (yet). */
@@ -289,35 +342,21 @@ int dasm_encode(Dst_DECL, void *buffer)
 		unsigned char *mark = NULL;
 		while (1) {
 			int action = *p++;
-			int n = (action >= DASM_IMM_B && action <= DASM_ALIGN) ? *b++ : 0;
+			int param = (action >= DASM_IMM && action <= DASM_ALIGN) ? *b++ : 0;
+			jit_encmodes mode = (action >= DASM_IMM && action <= DASM_LABEL_PC) ? *p++ : 0;
 
-			if(action == DASM_IMM_B || action == DASM_IMM_H) {
-				int refactoring_offset = *p++;
-				unsigned long long t = 0;
-				
-				switch (action) {
-				case DASM_IMM_B:
-					t = (*((unsigned long*)b++) & 0xFF) << refactoring_offset;
-					break;
-				case DASM_IMM_H:
-					t = (*((unsigned long*)b++) & 0xFFFF) << refactoring_offset;
-					break;
-				}
-
-				cur_instr_lo |= (unsigned long)t;
-				cur_instr_hi |= (unsigned long)(t >> 32);
-			}
-			else {
-				switch(action) {
-				case DASM_ESC:
-					action = *p++;
-				default:
-					*cp++ = action;
-					break;
-				case DASM_SECTION:
-				case DASM_STOP:
-					goto stop;
-				}
+			switch(action) {
+			case DASM_IMM:
+				encode_refactoring(cp - 8, mode, param);
+				break;
+			case DASM_ESC:
+				action = *p++;
+			default:
+				*cp++ = action;
+				break;
+			case DASM_SECTION:
+			case DASM_STOP:
+				goto stop;
 			}
 		}
 		stop: (void)0;

@@ -36,10 +36,8 @@ local wline, werror, wfatal, wwarn
 -- Action name list.
 -- CHECK: Keep this in sync with the C code!
 local action_names = {
-  -- int arg, 1 buffer pos, dereferenced:
+  -- int arg, 1 buffer pos:
   "IMM",
-  -- int arg, 1 buffer pos, not dereferenced:
-  "REF",
   -- action arg (1 byte) or int arg, 1 buffer pos (link):
   "L","G", "PC",
   -- action arg (1 byte) or int arg, 1 buffer pos (offset):
@@ -228,9 +226,28 @@ end
 
 local function wputimm(immtype, expr)
 	waction("IMM")
-	waparam(immtype)
+	wputxw(immtype)
 	waparam(expr)
 end
+
+local function wputref(immtype, expr)
+	waction("REF")
+	wputxw(immtype)
+	waparam(expr)
+end
+
+local function wputg(immtype, expr)
+	waction("G")
+	wputxw(immtype)
+	waparam(expr)
+end
+
+local function wputl(immtype, expr)
+	waction("L")
+	wputxw(immtype)
+	waparam(expr)
+end
+
 
 ------------------------------------------------------------------------------
 
@@ -374,33 +391,34 @@ local function parsepc(expr)
 local imm_enc_modes = {
 	X0_Imm8 = "IEM_X0_Imm8",
 	X0_Imm16 = "IEM_X0_Imm16",
-	X1_Br = "IEM_X1_Br"
+	X1_Br = "IEM_X1_Br",
+	X1_Shift = "IEM_X1_Shift",
+	X1_J = "IEM_J",
+	X1_J_jal = "IEM_J_jal"
 }
 
 -- Parse immediate expression.
 local function parseimm(expr, immtype)
---[[
-	-- &expr (pointer)
-	if sub(expr, 1, 1) == "&" then
-		return "iPJ", format("(ptrdiff_t)(%s)", sub(expr,2))
-	end
-	
+
+
 	local prefix = sub(expr, 1, 2)
-	-- =>expr (pc label reference)
+--[[	-- =>expr (pc label reference)
 	if prefix == "=>" then
 		return "iJ", sub(expr, 3)
 	end
+--]]
+
 	-- ->name (global label reference)
 	if prefix == "->" then
-		return "iJ", map_global[sub(expr, 3)]
+		return make_operand(map_global[sub(expr, 3)], {})
 	end
 	
 	-- [<>][1-9] (local label reference)
 	local dir, lnum = match(expr, "^([<>])([1-9])$")
 	if dir then -- Fwd: 247-255, Bkwd: 1-9.
-		return "iJ", lnum + (dir == ">" and 246 or 0)
+		return make_operand(lnum * (dir == ">" and 1 or -1), {})
 	end
-]]
+
 	-- constant immediate value
 	local n = tonumber(expr)
 	if n then
@@ -447,7 +465,7 @@ end
 function instr_builders.X0_Imm8(opcode, s, immopcodeex, Dst, A, Imm8)
 	local instr = Dst.val
 	instr = bit.bor(instr, bit.lshift(A.val, 6))
-	instr = bit.bor(instr, bit.lshift(bit.band(Imm8.val,0xFF), 12))
+	instr = bit.bor(instr, bit.lshift(Imm8.val, 12))
 	instr = bit.bor(instr, bit.lshift(immopcodeex, 20))
 	instr = bit.bor(instr, bit.lshift(s, 27))
 	instr = bit.bor(instr, bit.lshift(opcode,28))
@@ -457,7 +475,7 @@ end
 function instr_builders.X0_Imm16(opcode, Dst, A, Imm16)
 	local instr = Dst.val
 	instr = bit.bor(instr, bit.lshift(A.val, 6))
-	instr = bit.bor(instr, bit.lshift(bit.band(Imm16.val,0xFFFF), 12))
+	instr = bit.bor(instr, bit.lshift(Imm16.val, 12))
 	instr = bit.bor(instr, bit.lshift(opcode,28))
 	return make_instr(0, instr, table_append(Dst.posts, A.posts, Imm16.posts))
 end
@@ -490,7 +508,7 @@ function instr_builders.X1_Br(opcode, s, brtype, A, Off)
 	local lo = bit.lshift(brtype, 31)
 	local hi = bit.rshift(brtype, 1)
 	local off1400 = bit.band(Off.val, 0x7FFF)
-	local off1615 = bit.band(bit.rshift(Off.val, 15), 0x3)
+	local off1615 = bit.rshift(Off.val, 15)
 	hi = bit.bor(hi, bit.lshift(A.val, 5))
 	hi = bit.bor(hi, bit.lshift(off1615, 3))
 	hi = bit.bor(hi, bit.lshift(off1400, 11))
@@ -515,7 +533,7 @@ function instr_builders.X1_J(opcode, off)
 	local off1615 = bit.band(bit.rshift(off.val, 15), 0x3)
 	local off2017 = bit.band(bit.rshift(off.val, 17), 0xF)
 	local off2621 = bit.band(bit.rshift(off.val, 21), 0x3F)
-	local off2727 = bit.band(bit.rshift(off.val, 27), 1)
+	local off2727 = bit.rshift(off.val, 27)
 	local lo = bit.lshift(off2017, 31)
 	local hi = bit.rshift(off2017, 1)
 	hi = bit.bor(hi, bit.lshift(off1615, 3))
@@ -766,14 +784,16 @@ local function parse_label_def(expr)
 
 	-- ->name (global label reference)
 	if prefix == "->" then
-		waction("LABEL_G", map_global[sub(expr, 3)])
+		waction("LABEL_G")
+		wputxw(map_global[sub(expr, 3)])
 		return
 	end
 	
 	-- [<>][1-9] (local label reference)
 	local lnum = match(expr, "^([1-9])$")
 	if lnum then
-		waction("LABEL_L", lnum)
+		waction("LABEL_L")
+		wputxw(lnum + 0) -- TODO: more elegant conversion
 		return
 	end
 
@@ -811,7 +831,8 @@ map_op[".align_1"] = function(params)
 		for i=1,8 do
 			x = x / 2
 			if x == 1 then
-				waction("ALIGN", align-1 / 8) -- Action byte is 2**n-1.
+				waction("ALIGN")
+				wputxw(align - 1) -- 2^n - 1 --> bitmask to check if aligned.
 				return
 			end
 		end
