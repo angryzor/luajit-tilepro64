@@ -39,7 +39,7 @@ static int jit_jmp_target(jit_State *J)
 }
 
 /* ------------------------------------------------------------------------ */
-
+#if 0
 /* Include pre-processed architecture-specific backend. */
 #if defined(__i386) || defined(__i386__) || defined(_M_IX86)
 #ifndef LUA_NUMBER_DOUBLE
@@ -49,6 +49,9 @@ static int jit_jmp_target(jit_State *J)
 #else
 #error "No support for this architecture (yet)"
 #endif
+#endif
+#include "ljit_tilepro64.h"
+
 
 /* ------------------------------------------------------------------------ */
 
@@ -67,7 +70,7 @@ static void jit_compile_irange(jit_State *J, int firstpc, int lastpc)
     int rbx = GETARG_Bx(ins);
     const TValue *combinehint;
 
-    jit_ins_start(J);
+   /* jit_ins_start(J);*/
     J->nextpc++;
 
     combinehint = hint_get(J, COMBINE);
@@ -81,8 +84,8 @@ static void jit_compile_irange(jit_State *J, int firstpc, int lastpc)
       }
     }  /* Other COMBINE hint value types are not defined (yet). */
 
-    if (J->flags & JIT_F_DEBUG_INS)
-      jit_ins_debug(J, luaG_checkopenop(ins));
+  /*  if (J->flags & JIT_F_DEBUG_INS)
+      jit_ins_debug(J, luaG_checkopenop(ins));*/
 
     switch (op) {
     case OP_MOVE: jit_op_move(J, ra, rb); break;
@@ -199,6 +202,7 @@ nextdeopt:
   /* Setup DynASM. */
   dasm_growpc(Dst, 1+maxpc+2);  /* See jit_ins_last(). */
   dasm_setup(Dst, jit_actionlist);
+#if 0
   if (deopt) {  /* Partial deoptimization. */
     /* TODO: check deopt chain length? problem: pairs TFOR_CTL migration. */
     int pc, lastpc;
@@ -218,25 +222,26 @@ nextdeopt:
     jit_assert(J->nextpc == lastpc+1);  /* Problem with combined ins? */
     if (J->nextpc <= maxpc) jit_ins_chainto(J, J->nextpc);
     *J->mfm++ = JIT_MFM_MARK+maxpc+1;  /* Seek to .deopt/.tail. */
-    for (pc = 1; pc <= maxpc; pc++)
+	for (pc = 1; pc <= maxpc; pc++)
       if (dasm_getpclabel(Dst, pc) == -1) {  /* Undefind label referenced? */
 	jit_ins_setpc(J, pc, luaJIT_findmcode(J->pt, pc));  /* => Old mcode. */
       }
+
   } else {  /* Full compile. */
+#endif
     *J->mfm++ = 0;  /* Placeholder mfm entry for prologue. */
     jit_prologue(J);
     jit_compile_irange(J, 1, maxpc);
-  }
   *J->mfm++ = 0;  /* Placeholder mfm entry for .deopt/.tail. */
   *J->mfm = JIT_MFM_STOP;
-  jit_ins_last(J, maxpc, (char *)J->mfm - (char *)tempmfm);
+/*  jit_ins_last(J, maxpc, (char *)J->mfm - (char *)tempmfm*/
 
   status = luaJIT_link(J, &mcode, &sz);
   if (status != JIT_S_OK)
     return status;
 
   jit_mfm_merge(J, tempmfm, JIT_MCMFM(mcode, sz), maxpc);
-
+#if 0
   if (deopt) {
     jit_MCTrailer tr;
     /* Patch first instruction to jump to the deoptimized code. */
@@ -263,6 +268,7 @@ nextdeopt:
     tr.sz = J->pt->jit_szmcode;
     memcpy(JIT_MCTRAILER(mcode, sz), (void *)&tr, sizeof(jit_MCTrailer));
   }
+#endif
   /* Set new main mcode block. */
   J->pt->jit_mcode = mcode;
   J->pt->jit_szmcode = sz;

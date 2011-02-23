@@ -7,16 +7,18 @@
 # Your platform. See PLATS for possible values.
 PLAT= none
 
-CC= gcc -m32
+CC= tile-gcc -m32
 CFLAGS= -O2 -fomit-frame-pointer -Wall $(MYCFLAGS) $(COCOCFLAGS) $(JITCFLAGS)
-AR= ar rcu
-RANLIB= ranlib
+AR= tile-ar rcu
+RANLIB= tile-ranlib
 RM= rm -f
 LIBS= -lm $(MYLIBS)
 
 MYCFLAGS=
 MYLDFLAGS=
 MYLIBS=
+
+MONITOR=tile-monitor
 
 # ++ Coco =========
 # Default: autodetect gccasm/setjmp/ucontext/fibers context switch method.
@@ -27,7 +29,7 @@ COCOCFLAGS=
 #COCOCFLAGS= -DCOCO_USE_UCONTEXT
 # Uncomment this if you want to compile LuaJIT without Coco.
 # This effectively disables yielding from JIT compiled functions.
-#COCOCFLAGS= -DCOCO_DISABLE
+COCOCFLAGS= -DCOCO_DISABLE
 # -- Coco =========
 
 # == END OF USER SETTINGS. NO NEED TO CHANGE ANYTHING BELOW THIS LINE =========
@@ -35,7 +37,7 @@ COCOCFLAGS=
 PLATS= linux bsd macosx solaris mingw cygwin posix generic linux_rl bsd_rl macosx_rl
 
 # ++ Coco =========
-COCO_O= lcoco.o
+#COCO_O= lcoco.o
 # -- Coco =========
 
 # ++ LuaJIT =========
@@ -105,6 +107,11 @@ cleaner:	clean
 
 clean:
 	$(RM) $(ALL_T) $(ALL_O)
+
+
+run: $(LUA_T)
+	$(MONITOR) --functional --image 2x2 --batch-mode --mkdir /opt/test --cd /opt/test --upload $(LUA_T) $(LUA_T) -- $(LUA_T) 
+
 
 depend:
 	@$(CC) $(CFLAGS) -MM l*.c print.c

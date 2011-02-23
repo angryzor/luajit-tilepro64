@@ -52,6 +52,11 @@
 |.macro info, simm8; andi zero, zero, simm8; .endmacro
 |.macro infol, simm16; auli zero, zero, simm16; .endmacro
 |
+|// Own pseudo instructions to handle 32 bit stuff easier
+|.macro movewi, dst, simm32
+|	addli dst, zero, lo16(simm32)
+|	auli dst, zero, ha16(simm32)
+|.endmacro
 |
 |// Pseudo instructions specific to this project
 |// Stack-related
@@ -99,7 +104,7 @@
 |.macro istable, dst, idx;  istt dst, idx, LUA_TTABLE; .endmacro
 |.macro isfunction, dst, idx;  istt dst, idx, LUA_TFUNCTION; .endmacro
 |
-|
+|.macro settt, val, tp; move val.tt, tp; .endmacro
 |.macro settti, val, tp; movei val.tt, tp; .endmacro
 |
 |
@@ -109,24 +114,74 @@
 |	move D.tt, S.tt
 |.endmacro
 |
-|.macro loadnumber, reg1, reg2, src
+|
+|.macro copyconst, tv, tvk
+||switch (ttype(tvk)) {
+||case LUA_TNIL:
+|   setnilvalue tv
+||  break;
+||case LUA_TBOOLEAN:
+|   setbvalue tv, bvalue(tvk)
+||  break;
+||case LUA_TNUMBER: {
+|   setnvaluek tv, &(tvk)->value
+||  break;
+||}
+||case LUA_TSTRING:
+|   setsvalue tv, gcvalue(tvk)
+||  break;
+||default: lua_assert(0); break;
+||}
+|.endmacro
+|
+|
+|
+|
+|.macro loadnvaluek, reg1, reg2, src
 |	lw reg1, src
 |	addi reg2, src, 4
 |	lw reg2, reg2
 |.endmacro
 |
-|.macro storenumber, dst, reg1, reg2
+|.macro storenvaluek, dst, reg1, reg2
 |	sw dst, reg1
 |	addi r25, dst, 4
 |	sw r25, reg2
 |.endmacro
 |
-|.macro loadnumberi, reg1, reg2, src
+|.macro loadnvalueki, reg1, reg2, src
 |	addli r25, zero, lo16(src)
 |	auli r25, r25, ha16(src)
 |	lw reg1, r25
 |	addi reg2, r25, 4
 |	lw reg2, reg2
+|.endmacro
+|
+|
+|.macro setnvaluek, tv, vptr
+|	loadnvalueki r26, r27, vptr
+|	storenvaluek tv.value, r26, r27
+|	settti tv, LUA_TNUMBER
+|.endmacro
+|
+|.macro setbvalue, tv, val		// May use edx.
+||if (val) {  /* true */
+|   movei r25, LUA_TBOOLEAN
+|   move tv.value, r25		// Assumes: LUA_TBOOLEAN == 1
+|   settt tv, r25
+||} else {  /* false */
+|   movei tv.value, 0
+|   settti tv, LUA_TBOOLEAN
+||}
+|.endmacro
+|
+|.macro setsvalue, tv, vptr
+|	movewi tv.value, vptr
+|	settti tv, LUA_TSTRING
+|.endmacro
+|
+|.macro setnilvalue, tv
+|	settti tv, LUA_TNIL
 |.endmacro
 |
 |.macro addidx, dst, src, idx

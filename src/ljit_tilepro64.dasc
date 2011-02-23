@@ -4,8 +4,8 @@
 
 |.include ljit_tilepro64.dash
 |.actionnames jit_actionnames
-|.actionlist jit_actionlist
 |.immencmodes jit_encmodes
+|.actionlist jit_actionlist
 |.globals JSUB_
 
 /* ------------------------------------------------------------------------ */
@@ -216,7 +216,6 @@ static void jit_prologue(jit_State *J)
 	|	seq r0, CI, L->end_ci
 	|   addi CI, CI, 1
 	|	bnz r0, ->GROW_CI			// CI overflow?
-	|	movei r0, 0			// Assumes: LUA_TNIL == 0
 	|	move CI->func, BASE
 	|	addidx BASE, BASE, 1
 	|   move L->ci, CI
@@ -236,7 +235,7 @@ static void jit_prologue(jit_State *J)
 			|1:
 		}
 		|	addi r1, BASE, stacksize	// New ci->top.
-		|	move CI->tailcalls, r0		// 0
+		|	move CI->tailcalls, zero		// 0
 		|   move CI->top, r1
 		|   move L->top, r1
 		|	move L->base, BASE
@@ -279,17 +278,17 @@ static void jit_prologue(jit_State *J)
 	}
 #endif
 	
-	/* Clear undefined args and all vars. Still assumes eax = LUA_TNIL = 0. */
+	/* Clear undefined args and all vars. Still LUA_TNIL = 0. */
 	/* Note: cannot clear only args because L->top has grown. */
 	if (stacksize <= EXTRA_STACK) {  /* Loopless clear. May use EXTRA_STACK. */
 	  int i;
 	  for (i = 0; i < stacksize; i++) {
-	    |  move TOP[i].tt, r0
+	    |  move TOP[i].tt, zero
 	  }
 	} else {  /* Standard loop. */
 	  |2:  // Unrolled for 2 stack slots. No initial check. May use EXTRA_STACK.
-	  |  move TOP[0].tt, r0
-	  |  move TOP[1].tt, r0
+	  |  move TOP[0].tt, zero
+	  |  move TOP[1].tt, zero
 	  |  addidx TOP, TOP, 2
 	  |  slt_u r3, TOP, r1
 	  |  bnz r3, <2
@@ -308,6 +307,7 @@ static void jit_prologue(jit_State *J)
 /* Check if we can combine 'return const'. */
 static int jit_return_k(jit_State *J)
 {
+	return 0;
 #if 0
   if (!J->combine) return 0;  /* COMBINE hint set? */
   /* May need to close open upvalues. */
@@ -431,17 +431,16 @@ static void jit_op_call(jit_State *J, int func, int nargs, int nresults)
 #if 0
   int cltype = jit_inline_call(J, func, nargs, nresults);
   if (cltype < 0) return;  /* Inlined? */
-
-  |// Note: the order of the following instructions has been carefully tuned.
-  |  addidx BASE, func
-  |  mov CI, L->ci
-  |   isfunction 0			// BASE[0] is L->base[func].
+#endif
+  |  addidx BASE, BASE, func
+  |  move CI, L->ci
+  |//   isfunction 0			// BASE[0] is L->base[func].
   if (nargs >= 0) {  /* Previous op was not open and did not set TOP. */
-    |  lea TOP, BASE[1+nargs]
+    |  addidx TOP, BASE, 1+nargs
   }
-  |  mov LCL, BASE->value
-  |  mov edx, &J->nextins
-  |  mov CI->savedpc, edx
+  |  move LCL, BASE->value
+  |  movewi CI->savedpc, J->nextins
+#if 0
   if (cltype == LUA_TFUNCTION) {
     if (nargs == -1) {
       | jne ->DEOPTIMIZE_OPEN		// TYPE hint was wrong (open op)?
@@ -466,34 +465,33 @@ static void jit_op_call(jit_State *J, int func, int nargs, int nresults)
     |  ret
     |.endjsub
   }
-  |  call aword LCL->jit_gate		// Call JIT func or GATE_JL/GATE_JC.
-  |  subidx BASE, func
-  |  mov L->base, BASE
+#endif
+  |  jalr LCL->jit_gate		// Call JIT func or GATE_JL/GATE_JC.
+  |  subidx BASE, BASE, func
+  |  move L->base, BASE
 
   /* Clear undefined results TOP <= o < func+nresults. */
   if (nresults > 0) {
-    |  xor eax, eax
     if (nresults <= EXTRA_STACK) {  /* Loopless clear. May use EXTRA_STACK. */
       int i;
       for (i = 0; i < nresults; i++) {
-	|  mov TOP[i].tt, eax
+	|  move TOP[i].tt, zero
       }
     } else {  /* Standard loop. TODO: move to .tail? */
-      |  lea edx, BASE[func+nresults]
+      |  addidx r2, BASE, func+nresults
       |1:  // Unrolled for 2 stack slots. No initial check. May use EXTRA_STACK.
-      |  mov TOP[0].tt, eax			// LUA_TNIL
-      |  mov TOP[1].tt, eax			// LUA_TNIL
-      |  add TOP, 2*#TOP
-      |  cmp TOP, edx
-      |  jb <1
+      |  move TOP[0].tt, zero			// LUA_TNIL
+      |  move TOP[1].tt, zero			// LUA_TNIL
+      |  addidx TOP, TOP, 2
+      |  slt r0, TOP, r2
+      |  bnzt r0, <1
     }
   }
 
   if (nresults >= 0) {  /* Not an open ins. Restore L->top. */
-    |  lea TOP, BASE[J->pt->maxstacksize]  // Faster than getting L->ci->top.
-    |  mov L->top, TOP
+    |  addidx TOP, BASE, J->pt->maxstacksize  // Faster than getting L->ci->top.
+    |  move L->top, TOP
   }  /* Otherwise keep TOP for next instruction. */
-#endif
 }
 
 static void jit_op_tailcall(jit_State *J, int func, int nargs)
@@ -610,15 +608,13 @@ static void jit_op_move(jit_State *J, int dest, int src)
 
 static void jit_op_loadk(jit_State *J, int dest, int kidx)
 {
-#if 0
   const TValue *kk = &J->pt->k[kidx];
   int rk = jit_return_k(J);
   if (rk) dest = 0;
   |  copyconst BASE[dest], kk
   if (rk) {
-    |  ret
+    |  jrp lr
   }
-#endif
 }
 
 static void jit_op_loadnil(jit_State *J, int first, int last)
@@ -982,13 +978,14 @@ static void jit_op_newtable(jit_State *J, int dest, int lnarray, int lnhash)
 
 static void jit_op_getglobal(jit_State *J, int dest, int kidx)
 {
-#if 0
   const TValue *kk = &J->pt->k[kidx];
   jit_assert(ttisstring(kk));
-  |  mov TSTRING:edx, &&kk->value.gc->ts
-  |  addidx BASE, dest
-  |  call ->GETGLOBAL
-#endif
+  |  movewi TSTRING:r2, &kk->value.gc->ts
+  |  addi r2, r2, 1
+  |  //addidx BASE, BASE, dest
+  |  moveli r1, -10002
+  |  move r0, L
+  |  jal lua_getfield
 }
 
 static void jit_op_setglobal(jit_State *J, int rval, int kidx)
@@ -1337,6 +1334,7 @@ static void jit_op_setlist(jit_State *J, int ra, int num, int batch)
 
 static void jit_op_arith(jit_State *J, int dest, int rkb, int rkc, int ev)
 {
+#if 0
   const TValue *kkb = ISK(rkb) ? &J->pt->k[INDEXK(rkb)] : NULL;
   const TValue *kkc = ISK(rkc) ? &J->pt->k[INDEXK(rkc)] : NULL;
   const Value *kval;
@@ -1587,6 +1585,7 @@ fallback:
     | jmp <4
     |.code
   }
+#endif
 #endif
 }
 
@@ -2166,4 +2165,7 @@ static void jit_op_vararg(jit_State *J, int dest, int num)
 
 /* ------------------------------------------------------------------------ */
 
+void luaJIT_debugnotify(jit_State *J)
+{
+}
 
