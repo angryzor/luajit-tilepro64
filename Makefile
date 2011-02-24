@@ -54,7 +54,7 @@ JV= 1.1.6
 
 all:	$(PLAT)
 
-$(PLATS) clean:
+$(PLATS) clean cleaner:
 	cd src && $(MAKE) $@
 
 test:	dummy

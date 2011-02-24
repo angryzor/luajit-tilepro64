@@ -127,6 +127,10 @@ local function waction(action, a, num)
   if a or num then secpos = secpos + (num or 1) end
 end
 
+local function wiem(iem)
+	actlist[#actlist+1] = iem
+end
+
 -- Write action param
 local function waparam(a)
 	actargs[#actargs+1] = a
@@ -226,19 +230,13 @@ end
 
 local function wputimm(immtype, expr)
 	waction("IMM")
-	wputxw(immtype)
-	waparam(expr)
-end
-
-local function wputref(immtype, expr)
-	waction("REF")
-	wputxw(immtype)
+	wiem(immtype)
 	waparam(expr)
 end
 
 local function wputg(immtype, expr)
 	waction("G")
-	wputxw(immtype)
+	wiem(immtype)
 	waparam(expr)
 end
 
@@ -317,6 +315,7 @@ end
 
 local function parsetype(str, isdst)
 	local expr, accessor = string.match(str, "^([%w_:]+)%s*(.*)$")
+	if not expr then werror("Not a type: " .. str) end
 	local typename, reg_override = string.match(expr, "^([%w_]+):([%w_]+)$")
 	local post = nil
 
@@ -393,8 +392,8 @@ local imm_enc_modes = {
 	X0_Imm16 = "IEM_X0_Imm16",
 	X1_Br = "IEM_X1_Br",
 	X1_Shift = "IEM_X1_Shift",
-	X1_J = "IEM_J",
-	X1_J_jal = "IEM_J_jal"
+	X1_J = "IEM_X1_J",
+	X1_J_jal = "IEM_X1_J_jal"
 }
 
 -- Parse immediate expression.
@@ -629,6 +628,7 @@ local function wrap_put_nop_X0(parser)
 	return function(params)
 		begin_instruction()
 
+	--print((params[1] or "") .. "," .. (params[2] or "") .. "," .. (params[3] or ""))
 		if secpos+2 > maxsecpos then wflush() end
 
 		local i = instr_combine(make_instr(0,0x70165000,{}), parser(params))
@@ -646,6 +646,7 @@ local function wrap_put_nop_X1(parser)
 	return function(params)
 		begin_instruction()
 
+	--	print((params[1] or "") .. "," .. (params[2] or "") .. "," .. (params[3] or ""))
 		if secpos+2 > maxsecpos then wflush() end
 
 		local i = instr_combine(make_instr(0x400B8800,0,{}), parser(params))
@@ -913,6 +914,13 @@ map_op[".actionnames_1"] = function(params)
 		end
 	end
 	wline("};");
+	wline([[
+
+#define lo16(n) (((signed int)n << 16) >> 16)
+#define hi16(n) ((signed int)n >> 16)
+#define ha16(n) ((lo16(n) < 0) ? hi16(n) + 1 : hi16(n))
+
+]]);
 end
 
 map_op[".immencmodes_1"] = function(params)

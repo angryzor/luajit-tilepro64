@@ -795,20 +795,24 @@ dostmt = function(stmt)
   end
 end
 
-local inlargecomment = false
+local inlargecomment = 0
 -- Process a single line.
 local function doline(line)
   if g_opt.flushline then wflush() end
 
-  if inlargecomment then
-    if line == "#endif" then
-	  inlargecomment = false
+  if line == "#endif" then
+    if inlargecomment ~= 0 then
+	  inlargecomment = inlargecomment - 1
 	end
 	return
   end
 
-  if line == "#if 0" then
-    inlargecomment = true
+  if line:sub(1,3) == "#if" then
+    inlargecomment = inlargecomment + 1
+    return
+  end
+
+  if inlargecomment ~= 0 then
     return
   end
 

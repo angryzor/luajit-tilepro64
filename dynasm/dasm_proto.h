@@ -29,7 +29,7 @@
 typedef struct dasm_State dasm_State;
 
 /* Action list type. */
-typedef const unsigned char *dasm_ActList;
+typedef const signed long *dasm_ActList;
 
 
 /* Initialize and free DynASM state. */
