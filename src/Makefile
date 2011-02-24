@@ -7,8 +7,8 @@
 # Your platform. See PLATS for possible values.
 PLAT= none
 
-CC= tile-gcc -m32
-CFLAGS= -O2 -fomit-frame-pointer -Wall $(MYCFLAGS) $(COCOCFLAGS) $(JITCFLAGS)
+CC= tile-gcc -m32 
+CFLAGS= -g -O0 -fomit-frame-pointer -Wall $(MYCFLAGS) $(COCOCFLAGS) $(JITCFLAGS)
 AR= tile-ar rcu
 RANLIB= tile-ranlib
 RM= rm -f

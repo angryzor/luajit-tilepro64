@@ -44,10 +44,10 @@ local action_names = {
   "LABEL_L","LABEL_G", "LABEL_PC",
   -- action arg (1 byte), 1 buffer pos (offset):
   "ALIGN",
-  -- action arg (1 byte), no buffer pos.
-  "ESC",
   -- no action arg, no buffer pos.
   "SECTION",
+  -- action arg (1 byte), no buffer pos.
+  "ESC",
   -- no args, no buffer pos, terminal action:
   "STOP"
 }
@@ -175,7 +175,7 @@ end
 ------------------------------------------------------------------------------
 
 -- Global label name -> global label number. With auto assignment on 1st use.
-local next_global = 10
+local next_global = 0
 local map_global = setmetatable({}, { __index = function(t, name)
   if not match(name, "^[%a_][%w_]*$") then werror("bad global label") end
   local n = next_global
@@ -201,7 +201,7 @@ local function writeglobals(out, prefix)
   local t = {}
   for name, n in pairs(map_global) do t[n] = name end
   out:write("enum {\n")
-  for i=10,next_global-1 do
+  for i=0,next_global-1 do
     out:write("  ", prefix, t[i], ",\n")
   end
   out:write("  ", prefix, "_MAX\n};\n")
@@ -414,8 +414,8 @@ local function parseimm(expr, immtype)
 	
 	-- [<>][1-9] (local label reference)
 	local dir, lnum = match(expr, "^([<>])([1-9])$")
-	if dir then -- Fwd: 247-255, Bkwd: 1-9.
-		return make_operand(lnum * (dir == ">" and 1 or -1), {})
+	if dir then 
+		return make_operand(lnum + (dir == ">" and 10 or 0), {})
 	end
 
 	-- constant immediate value

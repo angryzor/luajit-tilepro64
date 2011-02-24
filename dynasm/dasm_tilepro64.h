@@ -8,7 +8,7 @@
 enum {
 	DASM_IMM = 2147483637,
 	DASM_L, DASM_G, DASM_PC, DASM_LABEL_L, DASM_LABEL_G, DASM_LABEL_PC,
-	DASM_ALIGN, DASM_ESC, DASM_SECTION, DASM_STOP
+	DASM_ALIGN, DASM_SECTION, DASM_ESC, DASM_STOP
 };
 
 typedef enum jit_encmodes{
@@ -161,7 +161,7 @@ void collapse_chain(dasm_State* D, int lofs, int* lcptr)
 	int n = *lcptr;
 	while(n != 0)
 	{
-		int* pb = DASM_POS2PTR(D,*lcptr);
+		int* pb = DASM_POS2PTR(D,n);
 		n = *pb;
 		*pb = lofs;
 	}
@@ -177,6 +177,8 @@ void dasm_put(Dst_DECL, int start, ...)
   dasm_Section *sec = D->section;
   int pos = sec->pos, ofs = sec->ofs;
   int *b;
+
+  printf("[DEBUG]: Encoding action: %d",p);
 
   if (pos >= sec->epos) {
     DASM_M_GROW(Dst, int, sec->buf, sec->bsize,
@@ -228,7 +230,7 @@ void dasm_put(Dst_DECL, int start, ...)
 			break;
 		}
 	}
-	else if(action <= DASM_ALIGN) {
+	else if(action <= DASM_SECTION) {
 		unsigned long n = *p++;							/* Constant alignment value */
 
 		switch(action) {
@@ -237,14 +239,15 @@ void dasm_put(Dst_DECL, int start, ...)
 			D->llabels[n] = ofs;
 			break;
 		case DASM_LABEL_G:
-			collapse_chain(D, ofs, &D->glabels[n]);
+			if(D->glabels[n] >= 0)
+				collapse_chain(D, ofs, &D->glabels[n]);
 			D->glabels[n] = -ofs;
 			break;
 		case DASM_ALIGN:
 			while(ofs & (n >> 2)) ofs++;
 			break;
 		case DASM_SECTION:
-			CK(n < D->maxsection, RANGE_SEC); 
+			CK(n < D->maxsection, RANGE_SEC);
 			D->section = &D->sections[n];
 			goto stop;
 		}
@@ -316,6 +319,7 @@ int dasm_link(Dst_DECL, size_t *szp)
 			case DASM_LABEL_G:
 			case DASM_ALIGN:
 			case DASM_ESC:
+			default:
 				p++;
 				break;
 			case DASM_SECTION:
@@ -340,7 +344,7 @@ static void encode_refactoring(unsigned long* tgt, jit_encmodes mode, unsigned l
 {
 	unsigned long* tgtlo = tgt;
 	unsigned long* tgthi = tgt + sizeof(unsigned long);
-	
+
 	switch(mode)
 	{
 	case IEM_X0_Imm8:
@@ -360,7 +364,7 @@ static void encode_refactoring(unsigned long* tgt, jit_encmodes mode, unsigned l
 			/*
 			 * Jump forward. use jalf.
 			 * setNextPC(getCurrentPC() + BACKWARD_OFFSET +
-			 *			 (JOff << (INSTRUCTION_SIZE_LOG_2 - BYTE_SIZE_LOG_2))); 
+			 *			 (JOff << (INSTRUCTION_SIZE_LOG_2 - BYTE_SIZE_LOG_2)));
 			 * ==> nextPC = curPC + (JOff << 3)
 			 * <=> JOff = (nextPC - curPC) >> 3
 			 */
@@ -373,7 +377,7 @@ static void encode_refactoring(unsigned long* tgt, jit_encmodes mode, unsigned l
 			/*
 			 * Jump backward. use jalb.
 			 * setNextPC(getCurrentPC() +
-			 *			 (JOff << (INSTRUCTION_SIZE_LOG_2 - BYTE_SIZE_LOG_2))); 
+			 *			 (JOff << (INSTRUCTION_SIZE_LOG_2 - BYTE_SIZE_LOG_2)));
 			 * ==> nextPC = curPC + 0x80000000 + (JOff << 3)
 			 * <=> JOff = (nextPC - curPC - 0x80000000) >> 3
 			 */
@@ -416,7 +420,7 @@ int dasm_encode(Dst_DECL, void *buffer)
 			int action = *p++;
 			int param = (action >= DASM_IMM && action <= DASM_PC) ? *b++ : 0;
 			jit_encmodes mode = (action >= DASM_IMM && action <= DASM_PC) ? *p++ : 0;
-			if(action >= DASM_L && action <= DASM_ALIGN) p++;
+			int cparam = (action >= DASM_L && action <= DASM_ALIGN) ? *p++ : 0;
 
 			switch(action) {
 			case DASM_IMM:
@@ -427,10 +431,7 @@ int dasm_encode(Dst_DECL, void *buffer)
 				encode_refactoring(cp - 2, mode, (param << 2));
 				break;
 			case DASM_ALIGN:
-				{
-					int n = *p++;
-					while((int)cp & n) cp++;
-				}
+				while((int)cp & cparam) cp++;
 				break;
 			case DASM_ESC:
 				action = *p++;
