@@ -4,7 +4,7 @@
 
 |.include ljit_tilepro64.dash
 |.actionnames jit_actionnames
-|.immencmodes jit_encmodes
+|.immencmodes
 |.actionlist jit_actionlist
 |.globals JSUB_
 
@@ -90,7 +90,7 @@ static int jit_compile_jsub(jit_State *J)
 	|	storeonstack r2, 32
 	|
 	|	// Call the gate, probably not compiled yet, but may be compiled.
-	|	jalr LCL->jit_gate
+	|	//jalr LCL->jit_gate
 	|
 	|	// Set callinfo, set lua state 
 	|	move CI, L->ci

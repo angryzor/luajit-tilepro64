@@ -237,13 +237,13 @@ end
 local function wputg(immtype, expr)
 	waction("G")
 	wiem(immtype)
-	waparam(expr)
+	wputxw(expr)
 end
 
 local function wputl(immtype, expr)
 	waction("L")
-	wputxw(immtype)
-	waparam(expr)
+	wiem(immtype)
+	wputxw(expr)
 end
 
 
@@ -415,7 +415,9 @@ local function parseimm(expr, immtype)
 	-- [<>][1-9] (local label reference)
 	local dir, lnum = match(expr, "^([<>])([1-9])$")
 	if dir then 
-		return make_operand(lnum + (dir == ">" and 10 or 0), {})
+		return make_operand(0, { function()
+											wputl(immtype, lnum + (dir == ">" and 10 or 0))
+										 end})
 	end
 
 	-- constant immediate value
@@ -464,7 +466,7 @@ end
 function instr_builders.X0_Imm8(opcode, s, immopcodeex, Dst, A, Imm8)
 	local instr = Dst.val
 	instr = bit.bor(instr, bit.lshift(A.val, 6))
-	instr = bit.bor(instr, bit.lshift(Imm8.val, 12))
+	instr = bit.bor(instr, bit.lshift(bit.band(Imm8.val,0xFF), 12))
 	instr = bit.bor(instr, bit.lshift(immopcodeex, 20))
 	instr = bit.bor(instr, bit.lshift(s, 27))
 	instr = bit.bor(instr, bit.lshift(opcode,28))
@@ -474,7 +476,7 @@ end
 function instr_builders.X0_Imm16(opcode, Dst, A, Imm16)
 	local instr = Dst.val
 	instr = bit.bor(instr, bit.lshift(A.val, 6))
-	instr = bit.bor(instr, bit.lshift(Imm16.val, 12))
+	instr = bit.bor(instr, bit.lshift(bit.band(Imm16.val,0xFFFF), 12))
 	instr = bit.bor(instr, bit.lshift(opcode,28))
 	return make_instr(0, instr, table_append(Dst.posts, A.posts, Imm16.posts))
 end
@@ -507,7 +509,7 @@ function instr_builders.X1_Br(opcode, s, brtype, A, Off)
 	local lo = bit.lshift(brtype, 31)
 	local hi = bit.rshift(brtype, 1)
 	local off1400 = bit.band(Off.val, 0x7FFF)
-	local off1615 = bit.rshift(Off.val, 15)
+	local off1615 = bit.band(bit.rshift(Off.val, 15), 3)
 	hi = bit.bor(hi, bit.lshift(A.val, 5))
 	hi = bit.bor(hi, bit.lshift(off1615, 3))
 	hi = bit.bor(hi, bit.lshift(off1400, 11))
@@ -520,7 +522,7 @@ function instr_builders.X1_Shift(opcode, s, shopcodeextension, Dst, A, ShAmt)
 	local lo = bit.lshift(Dst.val, 31)
 	local hi = bit.rshift(Dst.val, 1)
 	hi = bit.bor(hi, bit.lshift(A.val, 5))
-	hi = bit.bor(hi, bit.lshift(ShAmt.val, 11))
+	hi = bit.bor(hi, bit.lshift(bit.band(ShAmt.val,0x1F), 11))
 	hi = bit.bor(hi, bit.lshift(shopcodeextension, 16))
 	hi = bit.bor(hi, bit.lshift(s, 26))
 	hi = bit.bor(hi, bit.lshift(opcode, 27))
@@ -532,7 +534,7 @@ function instr_builders.X1_J(opcode, off)
 	local off1615 = bit.band(bit.rshift(off.val, 15), 0x3)
 	local off2017 = bit.band(bit.rshift(off.val, 17), 0xF)
 	local off2621 = bit.band(bit.rshift(off.val, 21), 0x3F)
-	local off2727 = bit.rshift(off.val, 27)
+	local off2727 = bit.band(bit.rshift(off.val, 27), 0x1)
 	local lo = bit.lshift(off2017, 31)
 	local hi = bit.rshift(off2017, 1)
 	hi = bit.bor(hi, bit.lshift(off1615, 3))
@@ -649,7 +651,7 @@ local function wrap_put_nop_X1(parser)
 	--	print((params[1] or "") .. "," .. (params[2] or "") .. "," .. (params[3] or ""))
 		if secpos+2 > maxsecpos then wflush() end
 
-		local i = instr_combine(make_instr(0x400B8800,0,{}), parser(params))
+		local i = instr_combine(make_instr(0x400B2800,0,{}), parser(params))
 		wputw(i.lo)
 		wputw(i.hi)
 		for i,v in ipairs(i.posts) do
@@ -827,15 +829,11 @@ map_op[".align_1"] = function(params)
 	if not params then return "numpow2" end
 	local align = tonumber(params[1])
 	if align then
-		local x = align
-		-- Must be a power of 2 in the range (2 ... 256).
-		for i=1,8 do
-			x = x / 2
-			if x == 1 then
-				waction("ALIGN")
-				wputxw(align - 1) -- 2^n - 1 --> bitmask to check if aligned.
-				return
-			end
+		local l = align / 8
+		if math.floor(l) == l then
+			waction("ALIGN")
+			wputxw(l - 1) --> bitmask to check if aligned.
+			return
 		end
 	end
 	werror("bad alignment")
@@ -923,18 +921,8 @@ map_op[".actionnames_1"] = function(params)
 ]]);
 end
 
-map_op[".immencmodes_1"] = function(params)
-	local t = false
-	wline("enum	" .. params[1] .. " {")
-	for k,v in pairs(imm_enc_modes) do
-		if not t then
-			wline("\t" .. v .. " = 0,")
-			t = true
-		else
-			wline("\t" .. v .. ",")
-		end
-	end
-	wline("};");
+map_op[".immencmodes_0"] = function(params)
+	wline("#include \"dasm_tilepro64_encmodes.h\"");
 end
 
 
