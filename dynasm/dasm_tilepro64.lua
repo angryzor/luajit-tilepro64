@@ -578,6 +578,12 @@ function instr_parsers.X1_Unary(opcode, s, shopcodeex, opcodeex)
 	end
 end
 
+function instr_parsers.X1_Unary_no_Dst_and_A(opcode, s, shopcodeex, opcodeex)
+	return function(params)
+		return instr_builders.X1_Unary(opcode, s, shopcodeex, opcodeex, make_operand(0, {}), make_operand(0, {}))
+	end
+end
+
 function instr_parsers.X1_Br(opcode,s,brtype)
 	return function(params)
 		local A, Off = params[1], params[2]
@@ -714,7 +720,10 @@ map_instr_X1 = {
 
 	-- Memory opcodes
 	lw_2 = instr_parsers.X1_Unary(8, 0, 0xB, 0xE),
-	sw_2 = special_instr_parsers.X1_RRR_no_Dst(1, 0, 0x40)
+	sw_2 = special_instr_parsers.X1_RRR_no_Dst(1, 0, 0x40),
+
+	-- NOP opcodes
+	nop_0 = instr_parsers.X1_Unary_no_Dst_and_A(8, 0, 0xB, 0x11)
 }
 
 map_op = {
@@ -756,7 +765,10 @@ map_op = {
 	mulhhsa_uu_3 = wrap_put_nop_X1(map_instr_X0["mulhhsa_uu_3"]),
 	mulhl_uu_3 = wrap_put_nop_X1(map_instr_X0["mulhl_uu_3"]),
 	mulhla_uu_3 = wrap_put_nop_X1(map_instr_X0["mulhla_uu_3"]),
-	mullla_uu_3 = wrap_put_nop_X1(map_instr_X0["mullla_uu_3"])
+	mullla_uu_3 = wrap_put_nop_X1(map_instr_X0["mullla_uu_3"]),
+	
+	-- NOP opcodes
+	nop_0 = wrap_put_nop_X0(map_instr_X1["nop_0"])
 }
 
 

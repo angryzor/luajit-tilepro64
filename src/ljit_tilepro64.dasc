@@ -90,7 +90,7 @@ static int jit_compile_jsub(jit_State *J)
 	|	storeonstack r2, 32
 	|
 	|	// Call the gate, probably not compiled yet, but may be compiled.
-	|	//jalr LCL->jit_gate
+	|	jalr LCL->jit_gate
 	|
 	|	// Set callinfo, set lua state 
 	|	move CI, L->ci
@@ -432,6 +432,7 @@ static void jit_op_call(jit_State *J, int func, int nargs, int nresults)
   int cltype = jit_inline_call(J, func, nargs, nresults);
   if (cltype < 0) return;  /* Inlined? */
 #endif
+  |	 nop
   |  addidx BASE, BASE, func
   |  move CI, L->ci
   |//   isfunction 0			// BASE[0] is L->base[func].
@@ -439,7 +440,7 @@ static void jit_op_call(jit_State *J, int func, int nargs, int nresults)
     |  addidx TOP, BASE, 1+nargs
   }
   |  move LCL, BASE->value
-  |  movewi CI->savedpc, J->nextins
+  |  movemwi CI->savedpc, J->nextins
 #if 0
   if (cltype == LUA_TFUNCTION) {
     if (nargs == -1) {

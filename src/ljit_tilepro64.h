@@ -108,7 +108,13 @@
 //|// Own pseudo instructions to handle 32 bit stuff easier
 //|.macro movewi, dst, simm32
 //|	addli dst, zero, lo16(simm32)
-//|	auli dst, zero, ha16(simm32)
+//|	auli dst, dst, ha16(simm32)
+//|.endmacro
+//|
+//|.macro movemwi, dst, simm32
+//|	addli r25, zero, lo16(simm32)
+//|	auli r25, r25, ha16(simm32)
+//|	move dst, r25
 //|.endmacro
 //|
 //|// Pseudo instructions specific to this project
@@ -212,8 +218,8 @@
 //|
 //|
 //|.macro setnvaluek, tv, vptr
-//|	loadnvalueki r26, r27, vptr
-//|	storenvaluek tv.value, r26, r27
+//|	loadnvalueki r23, r24, vptr
+//|	storenvaluek tv.value, r23, r24
 //|	settti tv, LUA_TNUMBER
 //|.endmacro
 //|
@@ -229,7 +235,7 @@
 //|.endmacro
 //|
 //|.macro setsvalue, tv, vptr
-//|	movewi tv.value, vptr
+//|	movemwi tv.value, vptr
 //|	settti tv, LUA_TSTRING
 //|.endmacro
 //|
@@ -271,7 +277,7 @@ enum	jit_actionnames {
 #include "dasm_tilepro64_encmodes.h"
 # 8 "ljit_tilepro64.dasc"
 //|.actionlist jit_actionlist
-static const signed long jit_actionlist[1191] = {
+static const signed long jit_actionlist[1189] = {
   DASM_SECTION,0,DASM_ALIGN,7,DASM_LABEL_G,0,1880510464,142720704,1077808566,
   1074472960,1076923801,1074472960,1880510464,142695200,1076940185,1074472960,
   1880510464,142693152,1076956569,1074472960,1880510464,142697248,1076972953,
@@ -285,127 +291,127 @@ static const signed long jit_actionlist[1191] = {
   805308058,1074472960,DASM_IMM,IEM_X0_Imm16,1880510464,1074492238,1076893467,
   1074472960,536873626,1074472960,DASM_IMM,IEM_X0_Imm16,805308058,1074472960,
   DASM_IMM,IEM_X0_Imm16,1880510464,142662464,1077022105,1074472960,1880510464,
-  142611232,536873626,1074472960,DASM_IMM,IEM_X0_Imm16,805308058,1074472960,
-  DASM_IMM,IEM_X0_Imm16,-266973184,1074492237,13629165,1074472960,13630235,
-  1074472960,536873754,1074472960,DASM_IMM,IEM_X0_Imm16,805308058,1074472960,
-  DASM_IMM,IEM_X0_Imm16,1880510464,142662464,536873818,1074472960,DASM_IMM,
-  IEM_X0_Imm16,805308058,1074472960,DASM_IMM,IEM_X0_Imm16,1880510464,1074492238,
-  13629211,1074472960,536873818,1074472960,DASM_IMM,IEM_X0_Imm16,805308058,
-  1074472960,DASM_IMM,IEM_X0_Imm16,1880510464,142662464,536873818,1074472960,
-  DASM_IMM,IEM_X0_Imm16,805308058,1074472960,DASM_IMM,IEM_X0_Imm16,1880510464,
-  1074492238,13629211,1074472960,536873818,1074472960,DASM_IMM,IEM_X0_Imm16,
-  805308058,1074472960,DASM_IMM,IEM_X0_Imm16,1880510464,142662464,1077022105,
-  1074472960,1880510464,1074492193,-266973184,671088704,DASM_L,IEM_X1_Br,12,
-  1082134469,1074472960,DASM_IMM,IEM_X0_Imm8,DASM_STOP,9719940,1074472960,8397124,
-  1074472960,1880510464,1074020482,10506372,1074472960,6574212,1074472960,805611,
-  1074472960,DASM_LABEL_L,1,13631451,1074472960,536873754,1074472960,DASM_IMM,
-  IEM_X0_Imm16,805308058,1074472960,DASM_IMM,IEM_X0_Imm16,1880510464,142662464,
-  1076890412,1074472960,DASM_IMM,IEM_X0_Imm8,22199040,1074472960,-266973184,
-  671088641,DASM_L,IEM_X1_Br,1,DASM_LABEL_L,2,536873626,1074472960,DASM_IMM,
-  IEM_X0_Imm16,805308058,1074472960,DASM_IMM,IEM_X0_Imm16,1880510464,1074492238,
-  1077933851,1074472960,536873626,1074472960,DASM_IMM,IEM_X0_Imm16,805308058,
-  1074472960,DASM_IMM,IEM_X0_Imm16,1880510464,142662464,1076989337,1074472960,
-  -266973184,1074492214,1076972953,1074472960,1880510464,1074492215,1076956569,
-  1074472960,1880510464,1074492214,1076940185,1074472960,1880510464,1074492213,
-  1076923801,1074472960,-266973184,1074492213,1082134464,1074472960,DASM_IMM,
-  IEM_X0_Imm8,1077022134,1074472960,-266973184,1074493147,1880510464,135661280,
-  DASM_ALIGN,7,DASM_LABEL_G,1,536873882,1074472960,DASM_IMM,IEM_X0_Imm16,805308058,
-  1074472960,DASM_IMM,IEM_X0_Imm16,-266973184,1074492237,13629126,1074472960,
-  536871322,1074472960,DASM_IMM,IEM_X0_Imm16,805308058,1074472960,DASM_IMM,
-  IEM_X0_Imm16,-266973184,1074492237,1085277888,1074472960,DASM_IMM,IEM_X0_Imm8,
-  -266973184,671088640,DASM_L,IEM_X1_Br,11,536871322,1074472960,DASM_IMM,IEM_X0_Imm16,
-  805308058,1074472960,DASM_IMM,IEM_X0_Imm16,-266973184,1074492237,13629125,
-  1074472960,13627739,1074472960,536873882,1074472960,DASM_IMM,IEM_X0_Imm16,
-  805308058,1074472960,DASM_IMM,IEM_X0_Imm16,1880510464,142662464,1880510464,
-  135790752,DASM_LABEL_L,1,13630299,1074472960,536873818,1074472960,DASM_IMM,
-  IEM_X0_Imm16,805308058,1074472960,DASM_IMM,IEM_X0_Imm16,1880510464,142662464,
-  13630235,1074472960,536873754,1074472960,DASM_IMM,IEM_X0_Imm16,805308058,
-  1074472960,DASM_IMM,IEM_X0_Imm16,1880510464,142662464,536873818,1074472960,
-  DASM_IMM,IEM_X0_Imm16,805308058,1074472960,DASM_IMM,IEM_X0_Imm16,DASM_STOP,
-  1880510464,1074492238,13629211,1074472960,536873818,1074472960,DASM_IMM,IEM_X0_Imm16,
-  805308058,1074472960,DASM_IMM,IEM_X0_Imm16,1880510464,142662464,13630080,
-  1074472960,13630145,1074472960,1083178946,1074472960,536873626,1074472960,
-  DASM_IMM,IEM_X0_Imm16,805308058,1074472960,DASM_IMM,IEM_X0_Imm16,-266973184,
-  1074492237,24492779,1074472960,1880510464,0,DASM_IMM,IEM_X1_J_jal,-266973184,
-  671088641,DASM_L,IEM_X1_Br,12,13630080,1074472960,1082138561,1074472960,1880510464,
-  0,DASM_IMM,IEM_X1_J_jal,DASM_LABEL_L,2,536873626,1074472960,DASM_IMM,IEM_X0_Imm16,
-  805308058,1074472960,DASM_IMM,IEM_X0_Imm16,-266973184,1074492237,899819,1074472960,
-  536873626,1074472960,DASM_IMM,IEM_X0_Imm16,805308058,1074472960,DASM_IMM,
-  IEM_X0_Imm16,-266973184,1074492237,13629164,1074472960,1880510464,135661280,
-  DASM_ALIGN,7,DASM_LABEL_G,2,DASM_ALIGN,7,DASM_STOP,1076890370,1074472960,
-  DASM_IMM,IEM_X0_Imm8,536873626,1074472960,DASM_IMM,IEM_X0_Imm16,805308058,
-  1074472960,DASM_IMM,IEM_X0_Imm16,-266973184,1074492237,22130816,1074472960,
-  -266973184,671092736,536873626,1074472960,DASM_IMM,IEM_X0_Imm16,805308058,
-  1074472960,DASM_IMM,IEM_X0_Imm16,-266973184,1074492237,17414976,1074472960,
-  1076894573,1074472960,-266973184,671094785,13630171,1074472960,536873690,
+  142611232,536873882,1074472960,DASM_IMM,IEM_X0_Imm16,805308058,1074472960,
+  DASM_IMM,IEM_X0_Imm16,-266973184,1074492237,1880510464,135398240,536873626,
   1074472960,DASM_IMM,IEM_X0_Imm16,805308058,1074472960,DASM_IMM,IEM_X0_Imm16,
-  1880510464,142662464,1076890347,1074472960,DASM_IMM,IEM_X0_Imm8,13630299,
-  1074472960,536873818,1074472960,DASM_IMM,IEM_X0_Imm16,805308058,1074472960,
-  DASM_IMM,IEM_X0_Imm16,1880510464,142662464,DASM_STOP,1076890305,1074472960,
-  DASM_IMM,IEM_X0_Imm8,DASM_STOP,13630188,1074472960,DASM_STOP,20978435,1074472960,
-  -266973184,671088737,DASM_L,IEM_X1_Br,11,13627500,1074472960,DASM_LABEL_L,
-  1,DASM_STOP,1076890305,1074472960,DASM_IMM,IEM_X0_Imm8,13631451,1074472960,
-  536873818,1074472960,DASM_IMM,IEM_X0_Imm16,805308058,1074472960,DASM_IMM,
-  IEM_X0_Imm16,1880510464,142662464,13627483,1074472960,536873818,1074472960,
+  -266973184,1074492237,13629165,1074472960,13630235,1074472960,536873754,1074472960,
   DASM_IMM,IEM_X0_Imm16,805308058,1074472960,DASM_IMM,IEM_X0_Imm16,1880510464,
-  142662464,13627483,1074472960,536873626,1074472960,DASM_IMM,IEM_X0_Imm16,
+  142662464,536873818,1074472960,DASM_IMM,IEM_X0_Imm16,805308058,1074472960,
+  DASM_IMM,IEM_X0_Imm16,1880510464,1074492238,13629211,1074472960,536873818,
+  1074472960,DASM_IMM,IEM_X0_Imm16,805308058,1074472960,DASM_IMM,IEM_X0_Imm16,
+  1880510464,142662464,536873818,1074472960,DASM_IMM,IEM_X0_Imm16,805308058,
+  1074472960,DASM_IMM,IEM_X0_Imm16,1880510464,1074492238,13629211,1074472960,
+  536873818,1074472960,DASM_IMM,IEM_X0_Imm16,DASM_STOP,805308058,1074472960,
+  DASM_IMM,IEM_X0_Imm16,1880510464,142662464,1077022105,1074472960,1880510464,
+  1074492193,-266973184,671088704,DASM_L,IEM_X1_Br,12,1082134469,1074472960,
+  DASM_IMM,IEM_X0_Imm8,9719940,1074472960,8397124,1074472960,1880510464,1074020482,
+  10506372,1074472960,6574212,1074472960,805611,1074472960,DASM_LABEL_L,1,13631451,
+  1074472960,536873754,1074472960,DASM_IMM,IEM_X0_Imm16,805308058,1074472960,
+  DASM_IMM,IEM_X0_Imm16,1880510464,142662464,1076890412,1074472960,DASM_IMM,
+  IEM_X0_Imm8,22199040,1074472960,-266973184,671088641,DASM_L,IEM_X1_Br,1,DASM_LABEL_L,
+  2,536873626,1074472960,DASM_IMM,IEM_X0_Imm16,805308058,1074472960,DASM_IMM,
+  IEM_X0_Imm16,1880510464,1074492238,1077933851,1074472960,536873626,1074472960,
+  DASM_IMM,IEM_X0_Imm16,805308058,1074472960,DASM_IMM,IEM_X0_Imm16,1880510464,
+  142662464,1076989337,1074472960,-266973184,1074492214,1076972953,1074472960,
+  1880510464,1074492215,1076956569,1074472960,1880510464,1074492214,1076940185,
+  1074472960,1880510464,1074492213,1076923801,1074472960,-266973184,1074492213,
+  1082134464,1074472960,DASM_IMM,IEM_X0_Imm8,1077022134,1074472960,-266973184,
+  1074493147,1880510464,135661280,DASM_ALIGN,7,DASM_LABEL_G,1,536873882,1074472960,
+  DASM_IMM,IEM_X0_Imm16,805308058,1074472960,DASM_IMM,IEM_X0_Imm16,-266973184,
+  1074492237,13629126,1074472960,536871322,1074472960,DASM_IMM,IEM_X0_Imm16,
+  805308058,1074472960,DASM_IMM,IEM_X0_Imm16,-266973184,1074492237,1085277888,
+  1074472960,DASM_IMM,IEM_X0_Imm8,-266973184,671088640,DASM_L,IEM_X1_Br,11,
+  536871322,1074472960,DASM_IMM,IEM_X0_Imm16,805308058,1074472960,DASM_IMM,
+  IEM_X0_Imm16,-266973184,1074492237,13629125,1074472960,13627739,1074472960,
+  536873882,1074472960,DASM_IMM,IEM_X0_Imm16,805308058,1074472960,DASM_IMM,
+  IEM_X0_Imm16,1880510464,142662464,1880510464,135790752,DASM_LABEL_L,1,13630299,
+  1074472960,536873818,1074472960,DASM_IMM,IEM_X0_Imm16,805308058,1074472960,
+  DASM_IMM,IEM_X0_Imm16,1880510464,142662464,13630235,1074472960,536873754,
+  1074472960,DASM_IMM,IEM_X0_Imm16,805308058,1074472960,DASM_IMM,IEM_X0_Imm16,
+  DASM_STOP,1880510464,142662464,536873818,1074472960,DASM_IMM,IEM_X0_Imm16,
+  805308058,1074472960,DASM_IMM,IEM_X0_Imm16,1880510464,1074492238,13629211,
+  1074472960,536873818,1074472960,DASM_IMM,IEM_X0_Imm16,805308058,1074472960,
+  DASM_IMM,IEM_X0_Imm16,1880510464,142662464,13630080,1074472960,13630145,1074472960,
+  1083178946,1074472960,536873626,1074472960,DASM_IMM,IEM_X0_Imm16,805308058,
+  1074472960,DASM_IMM,IEM_X0_Imm16,-266973184,1074492237,24492779,1074472960,
+  1880510464,0,DASM_IMM,IEM_X1_J_jal,-266973184,671088641,DASM_L,IEM_X1_Br,
+  12,13630080,1074472960,1082138561,1074472960,1880510464,0,DASM_IMM,IEM_X1_J_jal,
+  DASM_LABEL_L,2,536873626,1074472960,DASM_IMM,IEM_X0_Imm16,805308058,1074472960,
+  DASM_IMM,IEM_X0_Imm16,-266973184,1074492237,899819,1074472960,536873626,1074472960,
+  DASM_IMM,IEM_X0_Imm16,805308058,1074472960,DASM_IMM,IEM_X0_Imm16,-266973184,
+  1074492237,13629164,1074472960,1880510464,135661280,DASM_ALIGN,7,DASM_LABEL_G,
+  2,DASM_ALIGN,7,DASM_STOP,1076890370,1074472960,DASM_IMM,IEM_X0_Imm8,536873626,
+  1074472960,DASM_IMM,IEM_X0_Imm16,805308058,1074472960,DASM_IMM,IEM_X0_Imm16,
+  -266973184,1074492237,22130816,1074472960,-266973184,671092736,536873626,
+  1074472960,DASM_IMM,IEM_X0_Imm16,805308058,1074472960,DASM_IMM,IEM_X0_Imm16,
+  -266973184,1074492237,17414976,1074472960,1076894573,1074472960,-266973184,
+  671094785,13630171,1074472960,536873690,1074472960,DASM_IMM,IEM_X0_Imm16,
+  805308058,1074472960,DASM_IMM,IEM_X0_Imm16,1880510464,142662464,1076890347,
+  1074472960,DASM_IMM,IEM_X0_Imm8,13630299,1074472960,536873818,1074472960,
+  DASM_IMM,IEM_X0_Imm16,805308058,1074472960,DASM_IMM,IEM_X0_Imm16,1880510464,
+  142662464,DASM_STOP,1076890305,1074472960,DASM_IMM,IEM_X0_Imm8,DASM_STOP,
+  13630188,1074472960,DASM_STOP,20978435,1074472960,-266973184,671088737,DASM_L,
+  IEM_X1_Br,11,13627500,1074472960,DASM_LABEL_L,1,DASM_STOP,1076890305,1074472960,
+  DASM_IMM,IEM_X0_Imm8,13631451,1074472960,536873818,1074472960,DASM_IMM,IEM_X0_Imm16,
+  805308058,1074472960,DASM_IMM,IEM_X0_Imm16,1880510464,142662464,13627483,
+  1074472960,536873818,1074472960,DASM_IMM,IEM_X0_Imm16,805308058,1074472960,
+  DASM_IMM,IEM_X0_Imm16,1880510464,142662464,13627483,1074472960,536873626,
+  1074472960,DASM_IMM,IEM_X0_Imm16,805308058,1074472960,DASM_IMM,IEM_X0_Imm16,
+  1880510464,142662464,13630171,1074472960,536873690,1074472960,DASM_IMM,IEM_X0_Imm16,
   805308058,1074472960,DASM_IMM,IEM_X0_Imm16,1880510464,142662464,13630171,
   1074472960,536873690,1074472960,DASM_IMM,IEM_X0_Imm16,805308058,1074472960,
-  DASM_IMM,IEM_X0_Imm16,1880510464,142662464,13630171,1074472960,536873690,
+  DASM_IMM,IEM_X0_Imm16,1880510464,142662464,DASM_STOP,13631451,1074472960,
+  536873754,1074472960,DASM_IMM,IEM_X0_Imm16,805308058,1074472960,DASM_IMM,
+  IEM_X0_Imm16,1880510464,142662464,DASM_STOP,DASM_LABEL_L,2,13631451,1074472960,
+  536873754,1074472960,DASM_IMM,IEM_X0_Imm16,805308058,1074472960,DASM_IMM,
+  IEM_X0_Imm16,1880510464,142662464,13631451,1074472960,536873754,1074472960,
+  DASM_IMM,IEM_X0_Imm16,805308058,1074472960,DASM_IMM,IEM_X0_Imm16,1880510464,
+  142662464,1076890412,1074472960,DASM_IMM,IEM_X0_Imm8,22027011,1074472960,
+  -266973184,671088737,DASM_L,IEM_X1_Br,2,DASM_STOP,13630080,1074472960,13630145,
+  1074472960,1880510464,0,DASM_IMM,IEM_X1_J_jal,DASM_STOP,536873626,1074472960,
+  DASM_IMM,IEM_X0_Imm16,805308058,1074472960,DASM_IMM,IEM_X0_Imm16,-266973184,
+  1074492237,13629165,1074472960,1076890347,1074472960,DASM_IMM,IEM_X0_Imm8,
+  536873818,1074472960,DASM_IMM,IEM_X0_Imm16,805308058,1074472960,DASM_IMM,
+  IEM_X0_Imm16,-266973184,1074492237,13629122,1074472960,22203072,1074472960,
+  -266973184,671088640,DASM_L,IEM_X1_Br,12,DASM_LABEL_L,1,-266973184,1074492768,
+  1076906731,1074472960,1880510464,142608448,1076904066,1074472960,22203072,
+  1074472960,-266973184,671088641,DASM_L,IEM_X1_Br,1,DASM_LABEL_L,2,536873818,
   1074472960,DASM_IMM,IEM_X0_Imm16,805308058,1074472960,DASM_IMM,IEM_X0_Imm16,
-  1880510464,142662464,DASM_STOP,13631451,1074472960,536873754,1074472960,DASM_IMM,
-  IEM_X0_Imm16,805308058,1074472960,DASM_IMM,IEM_X0_Imm16,1880510464,142662464,
-  DASM_STOP,DASM_LABEL_L,2,13631451,1074472960,536873754,1074472960,DASM_IMM,
-  IEM_X0_Imm16,805308058,1074472960,DASM_IMM,IEM_X0_Imm16,1880510464,142662464,
-  13631451,1074472960,536873754,1074472960,DASM_IMM,IEM_X0_Imm16,805308058,
-  1074472960,DASM_IMM,IEM_X0_Imm16,1880510464,142662464,1076890412,1074472960,
-  DASM_IMM,IEM_X0_Imm8,22027011,1074472960,-266973184,671088737,DASM_L,IEM_X1_Br,
-  2,DASM_STOP,13630080,1074472960,13630145,1074472960,1880510464,0,DASM_IMM,
-  IEM_X1_J_jal,DASM_STOP,536873626,1074472960,DASM_IMM,IEM_X0_Imm16,805308058,
-  1074472960,DASM_IMM,IEM_X0_Imm16,-266973184,1074492237,13629165,1074472960,
-  1076890347,1074472960,DASM_IMM,IEM_X0_Imm8,536873818,1074472960,DASM_IMM,
-  IEM_X0_Imm16,805308058,1074472960,DASM_IMM,IEM_X0_Imm16,-266973184,1074492237,
-  13629122,1074472960,22203072,1074472960,-266973184,671088640,DASM_L,IEM_X1_Br,
-  12,DASM_LABEL_L,1,-266973184,1074492768,1076906731,1074472960,1880510464,
-  142608448,1076904066,1074472960,22203072,1074472960,-266973184,671088641,
-  DASM_L,IEM_X1_Br,1,DASM_LABEL_L,2,536873818,1074472960,DASM_IMM,IEM_X0_Imm16,
-  805308058,1074472960,DASM_IMM,IEM_X0_Imm16,-266973184,1074492237,13629163,
-  1074472960,1076890477,1074472960,DASM_IMM,IEM_X0_Imm8,13627564,1074472960,
-  13630299,1074472960,536873818,1074472960,DASM_IMM,IEM_X0_Imm16,805308058,
-  1074472960,DASM_IMM,IEM_X0_Imm16,1880510464,142662464,1880510464,135661280,
-  DASM_STOP,536873626,1074472960,DASM_IMM,IEM_X0_Imm16,805308058,1074472960,
-  DASM_IMM,IEM_X0_Imm16,1880510464,1074492238,1076889371,1074472960,536873626,
-  1074472960,DASM_IMM,IEM_X0_Imm16,805308058,1074472960,DASM_IMM,IEM_X0_Imm16,
-  1880510464,142662464,DASM_IMM,IEM_X0_Imm8,1076890347,1074472960,DASM_IMM,
-  IEM_X0_Imm8,DASM_STOP,536873690,1074472960,DASM_IMM,IEM_X0_Imm16,805308058,
-  1074472960,DASM_IMM,IEM_X0_Imm16,1880510464,1074492238,13629211,1074472960,
-  536873690,1074472960,DASM_IMM,IEM_X0_Imm16,805308058,1074472960,DASM_IMM,
-  IEM_X0_Imm16,1880510464,142662464,536873690,1074472960,DASM_IMM,IEM_X0_Imm16,
+  -266973184,1074492237,13629163,1074472960,1076890477,1074472960,DASM_IMM,
+  IEM_X0_Imm8,13627564,1074472960,13630299,1074472960,536873818,1074472960,
+  DASM_IMM,IEM_X0_Imm16,805308058,1074472960,DASM_IMM,IEM_X0_Imm16,1880510464,
+  142662464,1880510464,135661280,DASM_STOP,536873626,1074472960,DASM_IMM,IEM_X0_Imm16,
+  805308058,1074472960,DASM_IMM,IEM_X0_Imm16,1880510464,1074492238,1076889371,
+  1074472960,536873626,1074472960,DASM_IMM,IEM_X0_Imm16,805308058,1074472960,
+  DASM_IMM,IEM_X0_Imm16,1880510464,142662464,DASM_IMM,IEM_X0_Imm8,1076890347,
+  1074472960,DASM_IMM,IEM_X0_Imm8,DASM_STOP,536873690,1074472960,DASM_IMM,IEM_X0_Imm16,
   805308058,1074472960,DASM_IMM,IEM_X0_Imm16,1880510464,1074492238,13629211,
   1074472960,536873690,1074472960,DASM_IMM,IEM_X0_Imm16,805308058,1074472960,
   DASM_IMM,IEM_X0_Imm16,1880510464,142662464,536873690,1074472960,DASM_IMM,
   IEM_X0_Imm16,805308058,1074472960,DASM_IMM,IEM_X0_Imm16,1880510464,1074492238,
   13629211,1074472960,536873690,1074472960,DASM_IMM,IEM_X0_Imm16,805308058,
-  1074472960,DASM_IMM,IEM_X0_Imm16,1880510464,142662464,DASM_STOP,1076890348,
-  1074472960,DASM_IMM,IEM_X0_Imm8,1880510464,135661280,DASM_STOP,1076890347,
-  1074472960,DASM_IMM,IEM_X0_Imm8,536873626,1074472960,DASM_IMM,IEM_X0_Imm16,
-  805308058,1074472960,DASM_IMM,IEM_X0_Imm16,-266973184,1074492237,13629165,
-  1074472960,DASM_STOP,1076890348,1074472960,DASM_IMM,IEM_X0_Imm8,DASM_STOP,
-  536873690,1074472960,DASM_IMM,IEM_X0_Imm16,805308058,1074472960,DASM_IMM,
-  IEM_X0_Imm16,-266973184,1074492237,13629166,1074472960,536874971,1074472960,
-  536873818,1074472960,DASM_IMM,IEM_X0_Imm16,805308058,1074472960,DASM_IMM,
-  IEM_X0_Imm16,1880510464,142662464,DASM_IMM,IEM_X0_Imm16,805310427,1074472960,
-  536873818,1074472960,DASM_IMM,IEM_X0_Imm16,805308058,1074472960,DASM_IMM,
-  IEM_X0_Imm16,1880510464,142662464,DASM_IMM,IEM_X0_Imm16,536873882,1074472960,
-  DASM_IMM,IEM_X0_Imm16,805308058,1074472960,DASM_IMM,IEM_X0_Imm16,-266973184,
-  1074492237,1880510464,135398240,1076890347,1074472960,DASM_IMM,IEM_X0_Imm8,
-  13630171,1074472960,536873690,1074472960,DASM_IMM,IEM_X0_Imm16,805308058,
-  1074472960,DASM_IMM,IEM_X0_Imm16,1880510464,142662464,DASM_STOP,13631451,
-  1074472960,536873754,1074472960,DASM_IMM,IEM_X0_Imm16,805308058,1074472960,
-  DASM_IMM,IEM_X0_Imm16,1880510464,142662464,DASM_STOP,1076890306,1074472960,
-  DASM_IMM,IEM_X0_Imm8,DASM_LABEL_L,1,13631451,1074472960,536873754,1074472960,
+  1074472960,DASM_IMM,IEM_X0_Imm16,1880510464,142662464,536873690,1074472960,
   DASM_IMM,IEM_X0_Imm16,805308058,1074472960,DASM_IMM,IEM_X0_Imm16,1880510464,
-  142662464,13631451,1074472960,536873754,1074472960,DASM_IMM,IEM_X0_Imm16,
+  1074492238,13629211,1074472960,536873690,1074472960,DASM_IMM,IEM_X0_Imm16,
+  805308058,1074472960,DASM_IMM,IEM_X0_Imm16,1880510464,142662464,DASM_STOP,
+  1076890348,1074472960,DASM_IMM,IEM_X0_Imm8,1880510464,135661280,DASM_STOP,
+  1880510464,1074497536,1076890347,1074472960,DASM_IMM,IEM_X0_Imm8,536873626,
+  1074472960,DASM_IMM,IEM_X0_Imm16,805308058,1074472960,DASM_IMM,IEM_X0_Imm16,
+  -266973184,1074492237,13629165,1074472960,DASM_STOP,1076890348,1074472960,
+  DASM_IMM,IEM_X0_Imm8,DASM_STOP,536873690,1074472960,DASM_IMM,IEM_X0_Imm16,
+  805308058,1074472960,DASM_IMM,IEM_X0_Imm16,-266973184,1074492237,13629166,
+  1074472960,536874969,1074472960,DASM_IMM,IEM_X0_Imm16,805307993,1074472960,
+  DASM_IMM,IEM_X0_Imm16,13629019,1074472960,536873818,1074472960,DASM_IMM,IEM_X0_Imm16,
+  805308058,1074472960,DASM_IMM,IEM_X0_Imm16,1880510464,142662464,536873882,
+  1074472960,DASM_IMM,IEM_X0_Imm16,805308058,1074472960,DASM_IMM,IEM_X0_Imm16,
+  -266973184,1074492237,1880510464,135398240,1076890347,1074472960,DASM_IMM,
+  IEM_X0_Imm8,13630171,1074472960,536873690,1074472960,DASM_IMM,IEM_X0_Imm16,
+  805308058,1074472960,DASM_IMM,IEM_X0_Imm16,1880510464,142662464,DASM_STOP,
+  13631451,1074472960,536873754,1074472960,DASM_IMM,IEM_X0_Imm16,805308058,
+  1074472960,DASM_IMM,IEM_X0_Imm16,1880510464,142662464,DASM_STOP,1076890306,
+  1074472960,DASM_IMM,IEM_X0_Imm8,DASM_LABEL_L,1,13631451,1074472960,536873754,
+  1074472960,DASM_IMM,IEM_X0_Imm16,805308058,1074472960,DASM_IMM,IEM_X0_Imm16,
+  1880510464,142662464,13631451,1074472960,536873754,1074472960,DASM_IMM,IEM_X0_Imm16,
   805308058,1074472960,DASM_IMM,IEM_X0_Imm16,1880510464,142662464,1076890412,
   1074472960,DASM_IMM,IEM_X0_Imm8,21768960,1074472960,-266973184,671088641,
   DASM_L,IEM_X1_Br,1,DASM_STOP,1076890348,1074472960,DASM_IMM,IEM_X0_Imm8,13630235,
@@ -421,22 +427,21 @@ static const signed long jit_actionlist[1191] = {
   142662464,1082138587,1074472960,536873690,1074472960,DASM_IMM,IEM_X0_Imm16,
   805308058,1074472960,DASM_IMM,IEM_X0_Imm16,1880510464,142662464,DASM_STOP,
   536874969,1074472960,DASM_IMM,IEM_X0_Imm16,805307993,1074472960,DASM_IMM,
-  IEM_X0_Imm16,1880510464,1074492205,1076905563,1074472960,-266973184,1074492269,
+  IEM_X0_Imm16,-266973184,1074492203,1076905560,1074472960,1880510464,1074492172,
   536873690,1074472960,DASM_IMM,IEM_X0_Imm16,805308058,1074472960,DASM_IMM,
-  IEM_X0_Imm16,-266973184,1074492237,1880510464,142660448,536873690,1074472960,
+  IEM_X0_Imm16,-266973184,1074492237,1880510464,142654304,536873690,1074472960,
   DASM_IMM,IEM_X0_Imm16,805308058,1074472960,DASM_IMM,IEM_X0_Imm16,-266973184,
-  1074492237,1076905689,1074472960,1880510464,142662432,1082146779,1074472960,
+  1074492237,1076905689,1074472960,1880510464,142656288,1082146779,1074472960,
   536873690,1074472960,DASM_IMM,IEM_X0_Imm16,805308058,1074472960,DASM_IMM,
-  IEM_X0_Imm16,1880510464,142662464,DASM_STOP,536874971,1074472960,536873690,
-  1074472960,DASM_IMM,IEM_X0_Imm16,805308058,1074472960,DASM_IMM,IEM_X0_Imm16,
-  1880510464,142662464,DASM_IMM,IEM_X0_Imm16,805310427,1074472960,536873690,
-  1074472960,DASM_IMM,IEM_X0_Imm16,805308058,1074472960,DASM_IMM,IEM_X0_Imm16,
-  1880510464,142662464,DASM_IMM,IEM_X0_Imm16,1082150875,1074472960,536873690,
-  1074472960,DASM_IMM,IEM_X0_Imm16,805308058,1074472960,DASM_IMM,IEM_X0_Imm16,
-  1880510464,142662464,DASM_STOP,1880510464,135661280,DASM_STOP,536874946,1074472960,
-  DASM_IMM,IEM_X0_Imm16,805310402,1074472960,DASM_IMM,IEM_X0_Imm16,1076891778,
-  1074472960,764342209,1074472960,13630080,1074472960,1880510464,0,DASM_IMM,
-  IEM_X1_J_jal,DASM_STOP
+  IEM_X0_Imm16,1880510464,142662464,DASM_STOP,536874969,1074472960,DASM_IMM,
+  IEM_X0_Imm16,805307993,1074472960,DASM_IMM,IEM_X0_Imm16,13629019,1074472960,
+  536873690,1074472960,DASM_IMM,IEM_X0_Imm16,805308058,1074472960,DASM_IMM,
+  IEM_X0_Imm16,1880510464,142662464,1082150875,1074472960,536873690,1074472960,
+  DASM_IMM,IEM_X0_Imm16,805308058,1074472960,DASM_IMM,IEM_X0_Imm16,1880510464,
+  142662464,DASM_STOP,1880510464,135661280,DASM_STOP,536874946,1074472960,DASM_IMM,
+  IEM_X0_Imm16,805306498,1074472960,DASM_IMM,IEM_X0_Imm16,1076891778,1074472960,
+  764342209,1074472960,13630080,1074472960,1880510464,0,DASM_IMM,IEM_X1_J_jal,
+  DASM_STOP
 };
 
 # 9 "ljit_tilepro64.dasc"
@@ -534,13 +539,15 @@ static int jit_compile_jsub(jit_State *J)
 	//|	storeonstack r2, 32
 	//|
 	//|	// Call the gate, probably not compiled yet, but may be compiled.
-	//|	//jalr LCL->jit_gate
+	//|	jalr LCL->jit_gate
 	//|
 	//|	// Set callinfo, set lua state 
 	//|	move CI, L->ci
 	//|	move L->top, TOP
 	//|	move L->savedpc, CI->savedpc
 	//|	move L->base, CI->base
+	dasm_put(Dst, 2, lo16(Dt1(->top)), ha16(Dt1(->top)), lo16(Dt2(->value)), ha16(Dt2(->value)), lo16(Dt1(->ci)), ha16(Dt1(->ci)), lo16(Dt1(->nCcalls)), ha16(Dt1(->nCcalls)), lo16(Dt1(->nCcalls)), ha16(Dt1(->nCcalls)), lo16(Dt5(->jit_gate)), ha16(Dt5(->jit_gate)), lo16(Dt1(->ci)), ha16(Dt1(->ci)), lo16(Dt1(->top)), ha16(Dt1(->top)), lo16(Dt4(->savedpc)), ha16(Dt4(->savedpc)), lo16(Dt1(->savedpc)), ha16(Dt1(->savedpc)), lo16(Dt4(->base)), ha16(Dt4(->base)), lo16(Dt1(->base)));
+# 100 "ljit_tilepro64.dasc"
 	//|
 	//|	// Check if arg 3 was LUA_MULTRET
 	//|	loadfromstack r2, 32 
@@ -549,8 +556,6 @@ static int jit_compile_jsub(jit_State *J)
 	//|	// Multiply number of values on stack by value size
 	//|	movei r5, #TOP
 	//|	mulw_uu r4, r2, r5
-	dasm_put(Dst, 2, lo16(Dt1(->top)), ha16(Dt1(->top)), lo16(Dt2(->value)), ha16(Dt2(->value)), lo16(Dt1(->ci)), ha16(Dt1(->ci)), lo16(Dt1(->nCcalls)), ha16(Dt1(->nCcalls)), lo16(Dt1(->nCcalls)), ha16(Dt1(->nCcalls)), lo16(Dt1(->ci)), ha16(Dt1(->ci)), lo16(Dt1(->top)), ha16(Dt1(->top)), lo16(Dt4(->savedpc)), ha16(Dt4(->savedpc)), lo16(Dt1(->savedpc)), ha16(Dt1(->savedpc)), lo16(Dt4(->base)), ha16(Dt4(->base)), lo16(Dt1(->base)), ha16(Dt1(->base)), sizeof(TValue));
-# 108 "ljit_tilepro64.dasc"
 	//|
 	//|	// Get index right above the last nresults. All 
 	//|	add BASE, BASE, r4
@@ -593,9 +598,9 @@ static int jit_compile_jsub(jit_State *J)
 	//|1:
 	//|	move L->ci, CI
 	//|	move L->top, TOP
+	dasm_put(Dst, 171, ha16(Dt1(->base)), sizeof(TValue), lo16(Dt3(->tt)), ha16(Dt3(->tt)), (1)*sizeof(TValue), lo16(Dt1(->nCcalls)), ha16(Dt1(->nCcalls)), lo16(Dt1(->nCcalls)), ha16(Dt1(->nCcalls)), PCRC, lo16(Dt5(->p)), ha16(Dt5(->p)), lo16(DtE(->jit_status)), ha16(DtE(->jit_status)), JIT_S_OK, lo16(DtE(->jit_mcode)), ha16(DtE(->jit_mcode)), lo16(Dt5(->jit_gate)), ha16(Dt5(->jit_gate)), lo16(Dt1(->ci)), ha16(Dt1(->ci)), lo16(Dt1(->top)), ha16(Dt1(->top)));
+# 150 "ljit_tilepro64.dasc"
 	//|	move L->savedpc, CI->savedpc
-	dasm_put(Dst, 178, lo16(Dt3(->tt)), ha16(Dt3(->tt)), (1)*sizeof(TValue), lo16(Dt1(->nCcalls)), ha16(Dt1(->nCcalls)), lo16(Dt1(->nCcalls)), ha16(Dt1(->nCcalls)), PCRC, lo16(Dt5(->p)), ha16(Dt5(->p)), lo16(DtE(->jit_status)), ha16(DtE(->jit_status)), JIT_S_OK, lo16(DtE(->jit_mcode)), ha16(DtE(->jit_mcode)), lo16(Dt5(->jit_gate)), ha16(Dt5(->jit_gate)), lo16(Dt1(->ci)), ha16(Dt1(->ci)), lo16(Dt1(->top)), ha16(Dt1(->top)), lo16(Dt4(->savedpc)), ha16(Dt4(->savedpc)));
-# 151 "ljit_tilepro64.dasc"
 	//|	move r0, L
 	//|	move r1, BASE
 	//|	movei r2, -1
@@ -617,7 +622,7 @@ static int jit_compile_jsub(jit_State *J)
 	//|	
 	//|.align 64
 	//|//-----------------------------------------------------------------------
-	dasm_put(Dst, 365, lo16(Dt1(->savedpc)), ha16(Dt1(->savedpc)), lo16(Dt1(->stack)), ha16(Dt1(->stack)), &luaD_precall, &luaV_execute, lo16(Dt1(->stack)), ha16(Dt1(->stack)), lo16(Dt1(->top)), ha16(Dt1(->top)));
+	dasm_put(Dst, 367, lo16(Dt4(->savedpc)), ha16(Dt4(->savedpc)), lo16(Dt1(->savedpc)), ha16(Dt1(->savedpc)), lo16(Dt1(->stack)), ha16(Dt1(->stack)), &luaD_precall, &luaV_execute, lo16(Dt1(->stack)), ha16(Dt1(->stack)), lo16(Dt1(->top)), ha16(Dt1(->top)));
 # 172 "ljit_tilepro64.dasc"
 
 	dasm_checkstep(Dst, DASM_SECTION_CODE);
@@ -652,12 +657,12 @@ static void jit_prologue(jit_State *J)
 	//|	move CI->func, BASE
 	//|	addidx BASE, BASE, 1
 	//|   move L->ci, CI
-	dasm_put(Dst, 449, stacksize, lo16(Dt1(->stack_last)), ha16(Dt1(->stack_last)), lo16(Dt1(->end_ci)), ha16(Dt1(->end_ci)), lo16(Dt4(->func)), ha16(Dt4(->func)), (1)*sizeof(TValue), lo16(Dt1(->ci)), ha16(Dt1(->ci)));
+	dasm_put(Dst, 461, stacksize, lo16(Dt1(->stack_last)), ha16(Dt1(->stack_last)), lo16(Dt1(->end_ci)), ha16(Dt1(->end_ci)), lo16(Dt4(->func)), ha16(Dt4(->func)), (1)*sizeof(TValue), lo16(Dt1(->ci)), ha16(Dt1(->ci)));
 # 222 "ljit_tilepro64.dasc"
 	
 	if (numparams > 0) {
 	  //|  addi r1, BASE, numparams
-	  dasm_put(Dst, 512, numparams);
+	  dasm_put(Dst, 524, numparams);
 # 225 "ljit_tilepro64.dasc"
 	}
 	
@@ -665,14 +670,14 @@ static void jit_prologue(jit_State *J)
 		/* Must cap L->top at L->base+numparams because 1st LOADNIL is omitted. */
 		if (numparams == 0) {
 		  	//|  move TOP, BASE
-		  	dasm_put(Dst, 517);
+		  	dasm_put(Dst, 529);
 # 231 "ljit_tilepro64.dasc"
 		} else {
 		    //|	slte_u r3, TOP, r1
 			//|	bnz r3, >1
 			//|	move TOP, r1
 			//|1:
-			dasm_put(Dst, 520);
+			dasm_put(Dst, 532);
 # 236 "ljit_tilepro64.dasc"
 		}
 		//|	addi r1, BASE, stacksize	// New ci->top.
@@ -681,7 +686,7 @@ static void jit_prologue(jit_State *J)
 		//|   move L->top, r1
 		//|	move L->base, BASE
 		//|	move CI->base, BASE
-		dasm_put(Dst, 532, stacksize, lo16(Dt4(->tailcalls)), ha16(Dt4(->tailcalls)), lo16(Dt4(->top)), ha16(Dt4(->top)), lo16(Dt1(->top)), ha16(Dt1(->top)), lo16(Dt1(->base)), ha16(Dt1(->base)), lo16(Dt4(->base)), ha16(Dt4(->base)));
+		dasm_put(Dst, 544, stacksize, lo16(Dt4(->tailcalls)), ha16(Dt4(->tailcalls)), lo16(Dt4(->top)), ha16(Dt4(->top)), lo16(Dt1(->top)), ha16(Dt1(->top)), lo16(Dt1(->base)), ha16(Dt1(->base)), lo16(Dt4(->base)), ha16(Dt4(->base)));
 # 243 "ljit_tilepro64.dasc"
 	}
 # 280 "ljit_tilepro64.dasc"
@@ -692,7 +697,7 @@ static void jit_prologue(jit_State *J)
 	  int i;
 	  for (i = 0; i < stacksize; i++) {
 	    //|  move TOP[i].tt, zero
-	    dasm_put(Dst, 597, lo16(Dt3([i].tt)), ha16(Dt3([i].tt)));
+	    dasm_put(Dst, 609, lo16(Dt3([i].tt)), ha16(Dt3([i].tt)));
 # 287 "ljit_tilepro64.dasc"
 	  }
 	} else {  /* Standard loop. */
@@ -703,7 +708,7 @@ static void jit_prologue(jit_State *J)
 	  //|  slt_u r3, TOP, r1
 	  //|  bnz r3, <2
 	  //|// Note: TOP is undefined now. TOP is only valid across calls/open ins.
-	  dasm_put(Dst, 610, lo16(Dt3([0].tt)), ha16(Dt3([0].tt)), lo16(Dt3([1].tt)), ha16(Dt3([1].tt)), (2)*sizeof(TValue));
+	  dasm_put(Dst, 622, lo16(Dt3([0].tt)), ha16(Dt3([0].tt)), lo16(Dt3([1].tt)), ha16(Dt3([1].tt)), (2)*sizeof(TValue));
 # 296 "ljit_tilepro64.dasc"
 	}
 
@@ -726,7 +731,7 @@ static void jit_op_return(jit_State *J, int rbase, int nresults)
 		//|	move r0, L
 		//|	move r1, BASE
 	    //|	jal &luaF_close
-	    dasm_put(Dst, 648, &luaF_close);
+	    dasm_put(Dst, 660, &luaF_close);
 # 372 "ljit_tilepro64.dasc"
 	}
 	
@@ -751,7 +756,7 @@ static void jit_op_return(jit_State *J, int rbase, int nresults)
 		//|	move TOP, r2			// Relocated TOP.
 		//|	move L->ci, CI
 		//|	jrp lr
-		dasm_put(Dst, 657, lo16(Dt1(->ci)), ha16(Dt1(->ci)), (rbase)*sizeof(TValue), lo16(Dt4(->func)), ha16(Dt4(->func)), lo16(Dt4(->func)), ha16(Dt4(->func)), -sizeof(CallInfo), lo16(Dt1(->ci)), ha16(Dt1(->ci)));
+		dasm_put(Dst, 669, lo16(Dt1(->ci)), ha16(Dt1(->ci)), (rbase)*sizeof(TValue), lo16(Dt4(->func)), ha16(Dt4(->func)), lo16(Dt4(->func)), ha16(Dt4(->func)), -sizeof(CallInfo), lo16(Dt1(->ci)), ha16(Dt1(->ci)));
 # 395 "ljit_tilepro64.dasc"
 		return;
 	}
@@ -762,16 +767,16 @@ static void jit_op_return(jit_State *J, int rbase, int nresults)
 	  //|// Relocate [BASE+rbase,BASE+rbase+nresults) -> [BASE-1, *).
 	  //|// TODO: loop for large nresults?
 	  //|  addi BASE, BASE, -#BASE
-	  dasm_put(Dst, 744, lo16(Dt1(->ci)), ha16(Dt1(->ci)), lo16(Dt1(->ci)), ha16(Dt1(->ci)), -sizeof(CallInfo), -sizeof(TValue));
+	  dasm_put(Dst, 756, lo16(Dt1(->ci)), ha16(Dt1(->ci)), lo16(Dt1(->ci)), ha16(Dt1(->ci)), -sizeof(CallInfo), -sizeof(TValue));
 # 404 "ljit_tilepro64.dasc"
 	  for (i = 0; i < nresults; i++) {
 	    //|  copyslot BASE[i], BASE[rbase+i+1]
-	    dasm_put(Dst, 773, lo16(Dt2([rbase+i+1].value)), ha16(Dt2([rbase+i+1].value)), lo16(Dt2([i].value)), ha16(Dt2([i].value)), lo16(Dt2([rbase+i+1].value.na[1])), ha16(Dt2([rbase+i+1].value.na[1])), lo16(Dt2([i].value.na[1])), ha16(Dt2([i].value.na[1])), lo16(Dt2([rbase+i+1].tt)), ha16(Dt2([rbase+i+1].tt)), lo16(Dt2([i].tt)), ha16(Dt2([i].tt)));
+	    dasm_put(Dst, 785, lo16(Dt2([rbase+i+1].value)), ha16(Dt2([rbase+i+1].value)), lo16(Dt2([i].value)), ha16(Dt2([i].value)), lo16(Dt2([rbase+i+1].value.na[1])), ha16(Dt2([rbase+i+1].value.na[1])), lo16(Dt2([i].value.na[1])), ha16(Dt2([i].value.na[1])), lo16(Dt2([rbase+i+1].tt)), ha16(Dt2([rbase+i+1].tt)), lo16(Dt2([i].tt)), ha16(Dt2([i].tt)));
 # 406 "ljit_tilepro64.dasc"
 	  }
 	  //|  addidx TOP, BASE, nresults
 	  //|  jrp lr
-	  dasm_put(Dst, 840, (nresults)*sizeof(TValue));
+	  dasm_put(Dst, 852, (nresults)*sizeof(TValue));
 # 409 "ljit_tilepro64.dasc"
 	}
 # 427 "ljit_tilepro64.dasc"
@@ -780,24 +785,25 @@ static void jit_op_return(jit_State *J, int rbase, int nresults)
 static void jit_op_call(jit_State *J, int func, int nargs, int nresults)
 {
 # 435 "ljit_tilepro64.dasc"
+  //|	 nop
   //|  addidx BASE, BASE, func
   //|  move CI, L->ci
   //|//   isfunction 0			// BASE[0] is L->base[func].
-  dasm_put(Dst, 847, (func)*sizeof(TValue), lo16(Dt1(->ci)), ha16(Dt1(->ci)));
-# 438 "ljit_tilepro64.dasc"
+  dasm_put(Dst, 859, (func)*sizeof(TValue), lo16(Dt1(->ci)), ha16(Dt1(->ci)));
+# 439 "ljit_tilepro64.dasc"
   if (nargs >= 0) {  /* Previous op was not open and did not set TOP. */
     //|  addidx TOP, BASE, 1+nargs
-    dasm_put(Dst, 864, (1+nargs)*sizeof(TValue));
-# 440 "ljit_tilepro64.dasc"
+    dasm_put(Dst, 878, (1+nargs)*sizeof(TValue));
+# 441 "ljit_tilepro64.dasc"
   }
   //|  move LCL, BASE->value
-  //|  movewi CI->savedpc, J->nextins
-# 469 "ljit_tilepro64.dasc"
+  //|  movemwi CI->savedpc, J->nextins
+# 470 "ljit_tilepro64.dasc"
   //|  jalr LCL->jit_gate		// Call JIT func or GATE_JL/GATE_JC.
   //|  subidx BASE, BASE, func
   //|  move L->base, BASE
-  dasm_put(Dst, 869, lo16(Dt2(->value)), ha16(Dt2(->value)), lo16(Dt4(->savedpc)), ha16(Dt4(->savedpc)), lo16(J->nextins), lo16(Dt4(->savedpc)), ha16(Dt4(->savedpc)), ha16(J->nextins), lo16(Dt5(->jit_gate)), ha16(Dt5(->jit_gate)), -(func)*sizeof(TValue), lo16(Dt1(->base)), ha16(Dt1(->base)));
-# 472 "ljit_tilepro64.dasc"
+  dasm_put(Dst, 883, lo16(Dt2(->value)), ha16(Dt2(->value)), lo16(J->nextins), ha16(J->nextins), lo16(Dt4(->savedpc)), ha16(Dt4(->savedpc)), lo16(Dt5(->jit_gate)), ha16(Dt5(->jit_gate)), -(func)*sizeof(TValue), lo16(Dt1(->base)), ha16(Dt1(->base)));
+# 473 "ljit_tilepro64.dasc"
 
   /* Clear undefined results TOP <= o < func+nresults. */
   if (nresults > 0) {
@@ -805,8 +811,8 @@ static void jit_op_call(jit_State *J, int func, int nargs, int nresults)
       int i;
       for (i = 0; i < nresults; i++) {
 	//|  move TOP[i].tt, zero
-	dasm_put(Dst, 938, lo16(Dt3([i].tt)), ha16(Dt3([i].tt)));
-# 479 "ljit_tilepro64.dasc"
+	dasm_put(Dst, 944, lo16(Dt3([i].tt)), ha16(Dt3([i].tt)));
+# 480 "ljit_tilepro64.dasc"
       }
     } else {  /* Standard loop. TODO: move to .tail? */
       //|  addidx r2, BASE, func+nresults
@@ -816,29 +822,29 @@ static void jit_op_call(jit_State *J, int func, int nargs, int nresults)
       //|  addidx TOP, TOP, 2
       //|  slt r0, TOP, r2
       //|  bnzt r0, <1
-      dasm_put(Dst, 951, (func+nresults)*sizeof(TValue), lo16(Dt3([0].tt)), ha16(Dt3([0].tt)), lo16(Dt3([1].tt)), ha16(Dt3([1].tt)), (2)*sizeof(TValue));
-# 488 "ljit_tilepro64.dasc"
+      dasm_put(Dst, 957, (func+nresults)*sizeof(TValue), lo16(Dt3([0].tt)), ha16(Dt3([0].tt)), lo16(Dt3([1].tt)), ha16(Dt3([1].tt)), (2)*sizeof(TValue));
+# 489 "ljit_tilepro64.dasc"
     }
   }
 
   if (nresults >= 0) {  /* Not an open ins. Restore L->top. */
     //|  addidx TOP, BASE, J->pt->maxstacksize  // Faster than getting L->ci->top.
     //|  move L->top, TOP
-    dasm_put(Dst, 993, (J->pt->maxstacksize)*sizeof(TValue), lo16(Dt1(->top)), ha16(Dt1(->top)));
-# 494 "ljit_tilepro64.dasc"
+    dasm_put(Dst, 999, (J->pt->maxstacksize)*sizeof(TValue), lo16(Dt1(->top)), ha16(Dt1(->top)));
+# 495 "ljit_tilepro64.dasc"
   }  /* Otherwise keep TOP for next instruction. */
 }
 
 static void jit_op_tailcall(jit_State *J, int func, int nargs)
 {
-# 598 "ljit_tilepro64.dasc"
+# 599 "ljit_tilepro64.dasc"
 }
 
 /* ------------------------------------------------------------------------ */
 
 static void jit_op_move(jit_State *J, int dest, int src)
 {
-# 607 "ljit_tilepro64.dasc"
+# 608 "ljit_tilepro64.dasc"
 }
 
 static void jit_op_loadk(jit_State *J, int dest, int kidx)
@@ -849,52 +855,52 @@ static void jit_op_loadk(jit_State *J, int dest, int kidx)
   //|  copyconst BASE[dest], kk
   switch (ttype(kk)) {
   case 0:
-  dasm_put(Dst, 1010, lo16(Dt2([dest].tt)), ha16(Dt2([dest].tt)));
+  dasm_put(Dst, 1016, lo16(Dt2([dest].tt)), ha16(Dt2([dest].tt)));
     break;
   case 1:
   if (bvalue(kk)) {  /* true */
-  dasm_put(Dst, 1023, lo16(Dt2([dest].value)), ha16(Dt2([dest].value)), lo16(Dt2([dest].tt)), ha16(Dt2([dest].tt)));
+  dasm_put(Dst, 1029, lo16(Dt2([dest].value)), ha16(Dt2([dest].value)), lo16(Dt2([dest].tt)), ha16(Dt2([dest].tt)));
   } else {  /* false */
-  dasm_put(Dst, 1050, lo16(Dt2([dest].value)), ha16(Dt2([dest].value)), lo16(Dt2([dest].tt)), ha16(Dt2([dest].tt)));
+  dasm_put(Dst, 1056, lo16(Dt2([dest].value)), ha16(Dt2([dest].value)), lo16(Dt2([dest].tt)), ha16(Dt2([dest].tt)));
   }
     break;
   case 3: {
-  dasm_put(Dst, 1075, lo16(&(kk)->value), ha16(&(kk)->value), lo16(Dt2([dest].value)), ha16(Dt2([dest].value)), lo16(Dt2([dest].value)), ha16(Dt2([dest].value)), lo16(Dt2([dest].tt)), ha16(Dt2([dest].tt)));
+  dasm_put(Dst, 1081, lo16(&(kk)->value), ha16(&(kk)->value), lo16(Dt2([dest].value)), ha16(Dt2([dest].value)), lo16(Dt2([dest].value)), ha16(Dt2([dest].value)), lo16(Dt2([dest].tt)), ha16(Dt2([dest].tt)));
     break;
   }
   case 4:
-  dasm_put(Dst, 1128, lo16(Dt2([dest].value)), ha16(Dt2([dest].value)), lo16(gcvalue(kk)), lo16(Dt2([dest].value)), ha16(Dt2([dest].value)), ha16(gcvalue(kk)), lo16(Dt2([dest].tt)), ha16(Dt2([dest].tt)));
+  dasm_put(Dst, 1134, lo16(gcvalue(kk)), ha16(gcvalue(kk)), lo16(Dt2([dest].value)), ha16(Dt2([dest].value)), lo16(Dt2([dest].tt)), ha16(Dt2([dest].tt)));
     break;
   default: lua_assert(0); break;
   }
-# 615 "ljit_tilepro64.dasc"
+# 616 "ljit_tilepro64.dasc"
   if (rk) {
     //|  jrp lr
-    dasm_put(Dst, 1169);
-# 617 "ljit_tilepro64.dasc"
+    dasm_put(Dst, 1167);
+# 618 "ljit_tilepro64.dasc"
   }
 }
 
 static void jit_op_loadnil(jit_State *J, int first, int last)
 {
-# 643 "ljit_tilepro64.dasc"
+# 644 "ljit_tilepro64.dasc"
 }
 
 static void jit_op_loadbool(jit_State *J, int dest, int b, int dojump)
 {
-# 660 "ljit_tilepro64.dasc"
+# 661 "ljit_tilepro64.dasc"
 }
 
 /* ------------------------------------------------------------------------ */
 
 static void jit_op_getupval(jit_State *J, int dest, int uvidx)
 {
-# 672 "ljit_tilepro64.dasc"
+# 673 "ljit_tilepro64.dasc"
 }
 
 static void jit_op_setupval(jit_State *J, int src, int uvidx)
 {
-# 707 "ljit_tilepro64.dasc"
+# 708 "ljit_tilepro64.dasc"
 }
 
 /* ------------------------------------------------------------------------ */
@@ -904,20 +910,20 @@ static void jit_op_setupval(jit_State *J, int src, int uvidx)
 /* Fallback for GETTABLE_*. Temporary key is in L->env. */
 static void jit_gettable_fb(lua_State *L, Table *t, StkId dest)
 {
-# 827 "ljit_tilepro64.dasc"
+# 828 "ljit_tilepro64.dasc"
 }
 
 /* Fallback for SETTABLE_*STR. Temporary (string) key is in L->env. */
 static void jit_settable_fb(lua_State *L, Table *t, StkId val)
 {
-# 966 "ljit_tilepro64.dasc"
+# 967 "ljit_tilepro64.dasc"
 }
 
 /* ------------------------------------------------------------------------ */
 
 static void jit_op_newtable(jit_State *J, int dest, int lnarray, int lnhash)
 {
-# 977 "ljit_tilepro64.dasc"
+# 978 "ljit_tilepro64.dasc"
 }
 
 static void jit_op_getglobal(jit_State *J, int dest, int kidx)
@@ -930,13 +936,13 @@ static void jit_op_getglobal(jit_State *J, int dest, int kidx)
   //|  moveli r1, -10002
   //|  move r0, L
   //|  jal lua_getfield
-  dasm_put(Dst, 1172, lo16(&kk->value.gc->ts), ha16(&kk->value.gc->ts), lua_getfield);
-# 989 "ljit_tilepro64.dasc"
+  dasm_put(Dst, 1170, lo16(&kk->value.gc->ts), ha16(&kk->value.gc->ts), lua_getfield);
+# 990 "ljit_tilepro64.dasc"
 }
 
 static void jit_op_setglobal(jit_State *J, int rval, int kidx)
 {
-# 1000 "ljit_tilepro64.dasc"
+# 1001 "ljit_tilepro64.dasc"
 }
 
 enum { TKEY_KSTR = -2, TKEY_STR = -1, TKEY_ANY = 0 };
@@ -944,37 +950,37 @@ enum { TKEY_KSTR = -2, TKEY_STR = -1, TKEY_ANY = 0 };
 /* Optimize key lookup depending on consts or hints type. */
 static int jit_keylookup(jit_State *J, int tab, int rkey)
 {
-# 1066 "ljit_tilepro64.dasc"
+# 1067 "ljit_tilepro64.dasc"
   return TKEY_ANY;  /* Use fallback. */
 }
 
 static void jit_op_gettable(jit_State *J, int dest, int tab, int rkey)
 {
-# 1152 "ljit_tilepro64.dasc"
+# 1153 "ljit_tilepro64.dasc"
 }
 
 static void jit_op_settable(jit_State *J, int tab, int rkey, int rval)
 {
-# 1251 "ljit_tilepro64.dasc"
+# 1252 "ljit_tilepro64.dasc"
 }
 
 static void jit_op_self(jit_State *J, int dest, int tab, int rkey)
 {
-# 1259 "ljit_tilepro64.dasc"
+# 1260 "ljit_tilepro64.dasc"
 }
 
 /* ------------------------------------------------------------------------ */
 
 static void jit_op_setlist(jit_State *J, int ra, int num, int batch)
 {
-# 1331 "ljit_tilepro64.dasc"
+# 1332 "ljit_tilepro64.dasc"
 }
 
 /* ------------------------------------------------------------------------ */
 
 static void jit_op_arith(jit_State *J, int dest, int rkb, int rkc, int ev)
 {
-# 1590 "ljit_tilepro64.dasc"
+# 1591 "ljit_tilepro64.dasc"
 }
 
 /* ------------------------------------------------------------------------ */
@@ -1010,38 +1016,38 @@ static void jit_fallback_len(lua_State *L, StkId ra, const TValue *rb)
 
 static void jit_op_len(jit_State *J, int dest, int rb)
 {
-# 1656 "ljit_tilepro64.dasc"
+# 1657 "ljit_tilepro64.dasc"
 }
 
 static void jit_op_not(jit_State *J, int dest, int rb)
 {
-# 1676 "ljit_tilepro64.dasc"
+# 1677 "ljit_tilepro64.dasc"
 }
 
 /* ------------------------------------------------------------------------ */
 
 static void jit_op_concat(jit_State *J, int dest, int first, int last)
 {
-# 1758 "ljit_tilepro64.dasc"
+# 1759 "ljit_tilepro64.dasc"
 }
 
 /* ------------------------------------------------------------------------ */
 
 static void jit_op_eq(jit_State *J, int cond, int rkb, int rkc)
 {
-# 1851 "ljit_tilepro64.dasc"
+# 1852 "ljit_tilepro64.dasc"
 }
 
 /* ------------------------------------------------------------------------ */
 
 static void jit_op_test(jit_State *J, int cond, int dest, int src)
 {
-# 1891 "ljit_tilepro64.dasc"
+# 1892 "ljit_tilepro64.dasc"
 }
 
 static void jit_op_jmp(jit_State *J, int target)
 {
-# 1898 "ljit_tilepro64.dasc"
+# 1899 "ljit_tilepro64.dasc"
 }
 
 /* ------------------------------------------------------------------------ */
@@ -1071,38 +1077,38 @@ static void jit_for_coerce(lua_State *L, TValue *o)
 
 static void jit_op_forprep(jit_State *J, int ra, int target)
 {
-# 1971 "ljit_tilepro64.dasc"
+# 1972 "ljit_tilepro64.dasc"
 }
 
 static void jit_op_forloop(jit_State *J, int ra, int target)
 {
-# 2007 "ljit_tilepro64.dasc"
+# 2008 "ljit_tilepro64.dasc"
 }
 
 /* ------------------------------------------------------------------------ */
 
 static void jit_op_tforloop(jit_State *J, int ra, int nresults)
 {
-# 2026 "ljit_tilepro64.dasc"
+# 2027 "ljit_tilepro64.dasc"
 }
 
 /* ------------------------------------------------------------------------ */
 
 static void jit_op_close(jit_State *J, int ra)
 {
-# 2041 "ljit_tilepro64.dasc"
+# 2042 "ljit_tilepro64.dasc"
 }
 
 static void jit_op_closure(jit_State *J, int dest, int ptidx)
 {
-# 2091 "ljit_tilepro64.dasc"
+# 2092 "ljit_tilepro64.dasc"
 }
 
 /* ------------------------------------------------------------------------ */
 
 static void jit_op_vararg(jit_State *J, int dest, int num)
 {
-# 2164 "ljit_tilepro64.dasc"
+# 2165 "ljit_tilepro64.dasc"
 }
 
 /* ------------------------------------------------------------------------ */

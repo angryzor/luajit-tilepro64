@@ -55,7 +55,13 @@
 |// Own pseudo instructions to handle 32 bit stuff easier
 |.macro movewi, dst, simm32
 |	addli dst, zero, lo16(simm32)
-|	auli dst, zero, ha16(simm32)
+|	auli dst, dst, ha16(simm32)
+|.endmacro
+|
+|.macro movemwi, dst, simm32
+|	addli r25, zero, lo16(simm32)
+|	auli r25, r25, ha16(simm32)
+|	move dst, r25
 |.endmacro
 |
 |// Pseudo instructions specific to this project
@@ -159,8 +165,8 @@
 |
 |
 |.macro setnvaluek, tv, vptr
-|	loadnvalueki r26, r27, vptr
-|	storenvaluek tv.value, r26, r27
+|	loadnvalueki r23, r24, vptr
+|	storenvaluek tv.value, r23, r24
 |	settti tv, LUA_TNUMBER
 |.endmacro
 |
@@ -176,7 +182,7 @@
 |.endmacro
 |
 |.macro setsvalue, tv, vptr
-|	movewi tv.value, vptr
+|	movemwi tv.value, vptr
 |	settti tv, LUA_TSTRING
 |.endmacro
 |
