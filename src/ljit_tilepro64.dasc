@@ -294,6 +294,15 @@ static void jit_prologue(jit_State *J)
 	|//	move CI->func, BASE
 	|//	addidx BASE, BASE, 1
 	
+	if(!pt->is_vararg)
+	{
+		|	addidx TVALUE:r8, BASE, numparams
+		|1:
+		|	setnilvalue TVALUE:r8[0]		// the new TOP is always set to NIL at this point. i don't care. it don't hurt.
+		|	addi r8, r8, #TVALUE
+		|	slt_u r0, TVALUE:r8, TOP
+		|	bnzt r0, <1
+	}
 #if 0
 	if (numparams > 0) {
 	  |	addi r1, BASE, numparams
