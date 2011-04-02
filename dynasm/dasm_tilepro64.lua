@@ -301,7 +301,7 @@ local function parsereg(str)
 		if regnum > 52 then
 			error("register does not exist: " .. str)
 		end
-		
+	
 		return make_operand(regnum, {})
 	end
 
@@ -318,6 +318,7 @@ local function parsetype(str, isdst)
 	if not expr then werror("Not a type: " .. str) end
 	local typename, reg_override = string.match(expr, "^([%w_]+):([%w_]+)$")
 	local post = nil
+	local reg
 
 	if not typename then
 		typename = expr
@@ -335,7 +336,7 @@ local function parsetype(str, isdst)
 	else
 		werror("type needs register override")
 	end
-	
+
 	-- is of type    move BASE, r3 ?
 	if accessor == "" then
 		return parsereg(reg)
@@ -409,7 +410,9 @@ local function parseimm(expr, immtype)
 
 	-- ->name (global label reference)
 	if prefix == "->" then
-		return make_operand(map_global[sub(expr, 3)], {})
+		return make_operand(0, { function()
+											wputg(immtype, map_global[sub(expr, 3)])
+									end })
 	end
 	
 	-- [<>][1-9] (local label reference)
@@ -636,7 +639,7 @@ local function wrap_put_nop_X0(parser)
 	return function(params)
 		begin_instruction()
 
-	--print((params[1] or "") .. "," .. (params[2] or "") .. "," .. (params[3] or ""))
+	--	print("INSTR: "..(params[1] or "") .. "," .. (params[2] or "") .. "," .. (params[3] or ""))
 		if secpos+2 > maxsecpos then wflush() end
 
 		local i = instr_combine(make_instr(0,0x70165000,{}), parser(params))
@@ -654,7 +657,7 @@ local function wrap_put_nop_X1(parser)
 	return function(params)
 		begin_instruction()
 
-	--	print((params[1] or "") .. "," .. (params[2] or "") .. "," .. (params[3] or ""))
+	--	print("INSTR: "..(params[1] or "") .. "," .. (params[2] or "") .. "," .. (params[3] or ""))
 		if secpos+2 > maxsecpos then wflush() end
 
 		local i = instr_combine(make_instr(0x400B2800,0,{}), parser(params))
@@ -937,6 +940,22 @@ map_op[".immencmodes_0"] = function(params)
 	wline("#include \"dasm_tilepro64_encmodes.h\"");
 end
 
+
+------------------------------------------------------------------------------
+
+map_op[".space_1"] = function(params)
+	local siz = params[1]
+	-- can only place multiples of 4 bytes (32 bit)
+	local i
+	for i=1,siz do
+		wputw(0)
+	end
+end
+
+map_op[".word_1"] = function(params)
+	local val = params[1]
+	wputw(tonumber(val))
+end
 
 ------------------------------------------------------------------------------
 

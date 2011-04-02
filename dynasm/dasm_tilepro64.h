@@ -114,8 +114,8 @@ void dasm_free( Dst_DECL) {
 /* Setup global label array. Must be called before dasm_setup(). */
 void dasm_setupglobal( Dst_DECL, void **gl, unsigned int maxgl) {
 	dasm_State *D = Dst_REF;
-	D->globals = gl; /* Negative bias to compensate for locals. */
-DASM_M_GROW(Dst, int, D->glabels, D->gsize, maxgl*sizeof(int));
+	D->globals = gl;
+	DASM_M_GROW(Dst, int, D->glabels, D->gsize, maxgl*sizeof(int));
 }
 
 /* Grow PC label array. Can be called after dasm_setup(), too. */
@@ -177,8 +177,6 @@ void dasm_put( Dst_DECL, int start, ...) {
 	dasm_Section *sec = D->section;
 	int pos = sec->pos, ofs = sec->ofs;
 	int *b;
-
-	printf("[DEBUG]: Encoding action: %d", p);
 
 	if (pos >= sec->epos) {
 		DASM_M_GROW(Dst, int, sec->buf, sec->bsize,

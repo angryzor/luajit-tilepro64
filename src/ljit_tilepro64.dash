@@ -64,6 +64,7 @@
 |	move dst, r25
 |.endmacro
 |
+|//==================================================================
 |// Pseudo instructions specific to this project
 |// Stack-related
 |.macro prologue, size
@@ -85,6 +86,79 @@
 |	addi r25, sp, idx
 |	sw r25, reg
 |.endmacro
+|
+|//==========================================================================
+|
+|.macro preserveglobalregs
+|	storeonstack BASE, 8
+|	storeonstack L, 12
+|	storeonstack TOP, 16
+|	storeonstack LCL, 20
+|	storeonstack CI, 24
+|.endmacro
+|
+|.macro restoreglobalregs
+|	loadfromstack CI, 24
+|	loadfromstack LCL, 20
+|	loadfromstack TOP, 16
+|	loadfromstack L, 12
+|	loadfromstack BASE, 8
+|.endmacro
+|
+|//============================================================================
+|
+|.macro globals_LJ_L, l
+|	move L, l
+|.endmacro
+|
+|.macro globals_LJ_BASE, base
+|	move BASE, base
+|.endmacro
+|
+|.macro globals_LJ_TOP
+|	move TOP, L->top
+|.endmacro
+|
+|.macro globals_LJ_LCL
+|	move LCL, BASE->value
+|.endmacro
+|
+|.macro globals_LJ_CI
+|	move CI, L->ci
+|.endmacro
+|
+|.macro globals_LJ, base
+|	globals_LJ_BASE base
+|	globals_LJ_TOP
+|	globals_LJ_LCL
+|	globals_LJ_CI
+|.endmacro
+|
+|.macro globals_JL_BASE
+|	move L->base, BASE
+|.endmacro
+|
+|.macro globals_JL_CI
+|	move L->ci, CI
+|.endmacro
+|
+|.macro globals_JL_savedpc
+|	move L->savedpc, CI->savedpc
+|.endmacro
+|
+|.macro globals_JL_TOP
+|	move L->top, TOP
+|.endmacro
+|
+|.macro globals_JL
+|	globals_JL_BASE
+|	globals_JL_CI
+|	globals_JL_TOP
+|	globals_JL_savedpc
+|.endmacro
+|//=========================================================================
+|
+|.define LUAFUNC_STACK_SIZE, 8
 |
 |// Easier word multiply
 |.macro mulw_uu, d, a, b

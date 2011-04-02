@@ -110,7 +110,7 @@ clean:
 
 
 run: $(LUA_T)
-	$(MONITOR) --functional --image 2x2 --batch-mode --mkdir /opt/test --cd /opt/test --upload $(LUA_T) $(LUA_T) -- $(LUA_T) 
+	$(MONITOR) --functional --image 1x1 --batch-mode --mkdir /opt/test --cd /opt/test --upload $(LUA_T) $(LUA_T) -- $(LUA_T) 
 
 
 depend:

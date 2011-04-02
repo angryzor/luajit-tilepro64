@@ -34,6 +34,7 @@
 static int luaB_print (lua_State *L) {
   int n = lua_gettop(L);  /* number of arguments */
   int i;
+  FILE* out = fopen("out","a");
   lua_getglobal(L, "tostring");
   for (i=1; i<=n; i++) {
     const char *s;
@@ -44,11 +45,12 @@ static int luaB_print (lua_State *L) {
     if (s == NULL)
       return luaL_error(L, LUA_QL("tostring") " must return a string to "
                            LUA_QL("print"));
-    if (i>1) fputs("\t", stdout);
-    fputs(s, stdout);
+    if (i>1) fputs("\t", out);//stdout);
+    fputs(s, out);//stdout);
     lua_pop(L, 1);  /* pop result */
   }
-  fputs("\n", stdout);
+  fputs("\n", out);//stdout);
+  fclose(out);
   return 0;
 }
 
@@ -671,7 +673,7 @@ LUALIB_API int luaopen_base (lua_State *L) {
   base_open(L);
   luaL_register(L, LUA_COLIBNAME, co_funcs);
 #ifndef COCO_DISABLE
-  lua_pushboolean(L, 1); 
+  lua_pushboolean(L, 1);
   lua_setfield(L, -2, "coco");
 #endif
   return 2;

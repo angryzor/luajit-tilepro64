@@ -234,11 +234,12 @@ nextdeopt:
     jit_compile_irange(J, 1, maxpc);
   *J->mfm++ = 0;  /* Placeholder mfm entry for .deopt/.tail. */
   *J->mfm = JIT_MFM_STOP;
-/*  jit_ins_last(J, maxpc, (char *)J->mfm - (char *)tempmfm*/
+  jit_ins_last(J, maxpc, (char *)J->mfm - (char *)tempmfm);
 
   status = luaJIT_link(J, &mcode, &sz);
   if (status != JIT_S_OK)
     return status;
+
 
   jit_mfm_merge(J, tempmfm, JIT_MCMFM(mcode, sz), maxpc);
 #if 0
@@ -258,17 +259,18 @@ nextdeopt:
 	   sizeof(jit_MCTrailer));
     goto nextdeopt;
   }
+#endif
 
   if (J->pt->jit_szmcode != 0) {  /* Full recompile? */
     jit_MCTrailer tr;
-    /* Patch old mcode entry so other closures get the new callgate. */
-    jit_patch_jmp(J, J->pt->jit_mcode, J->jsub[JSUB_GATE_JL]);
+    /* Patch old mcode entry so other closures get the new callgate.
+    jit_patch_jmp(J, J->pt->jit_mcode, J->jsub[JSUB_GATE_JL]); */
     /* Chain old main mfm after new main mfm. */
     tr.mcode = (char *)J->pt->jit_mcode;
     tr.sz = J->pt->jit_szmcode;
     memcpy(JIT_MCTRAILER(mcode, sz), (void *)&tr, sizeof(jit_MCTrailer));
   }
-#endif
+
   /* Set new main mcode block. */
   J->pt->jit_mcode = mcode;
   J->pt->jit_szmcode = sz;
