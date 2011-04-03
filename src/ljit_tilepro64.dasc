@@ -48,9 +48,9 @@ static int jit_std_prologue(jit_State *J, int stacksize)
 {
 	|	prologue LUAFUNC_STACK_SIZE
 	|
-	|	addidx TOP, BASE, stacksize+1
+	|	addidx r9, BASE, stacksize+1
 	|	movei r1, stacksize+1
-	|	slt_u r0, TOP, L->stack_last
+	|	slt_u r0, r9, L->stack_last
 	|	bnz r0, >1
 	|	jal ->GROW_STACK
 	|1:
@@ -61,16 +61,16 @@ static int jit_std_prologue(jit_State *J, int stacksize)
 	|	jal ->GROW_CI			// CI overflow?
 	|2:
 	|	addidx CI, CI, 1
-	|	move CI->top, TOP
+	|	move CI->top, r9
 }
 
 static int jit_wipe_r8_to_TOP(jit_State *J)
 {
-		|7:
-		|	setnilvalue TVALUE:r8[0]		// the new TOP is always set to NIL at this point. i don't care. it don't hurt.
-		|	addi r8, r8, #TVALUE
-		|	slt_u r0, TVALUE:r8, TOP
-		|	bnzt r0, <7
+	|7:
+	|	setnilvalue TVALUE:r8[0]		// the new TOP is always set to NIL at this point. i don't care. it don't hurt.
+	|	addi r8, r8, #TVALUE
+	|	slt_u r0, TVALUE:r8, TOP
+	|	bnzt r0, <7
 }
 
 /* Compile JIT subroutines (once). */
@@ -302,6 +302,7 @@ static void jit_prologue(jit_State *J)
 	
 	if(!pt->is_vararg)
 	{
+		|	move TOP, r9
 		|	addidx TVALUE:r8, BASE, numparams
 		jit_wipe_r8_to_TOP(J);
 	}
@@ -466,7 +467,7 @@ static void jit_op_return(jit_State *J, int rbase, int nresults)
 	/* Previous op was open: 'return f()' or 'return ...' */
 	if (nresults < 0) {
 #if 0
-		|// Relocate [BASE+rbase, TOP) -> [ci->func, *).
+		|// Relocate [BASE+rbase, 0xb7dc0508TOP) -> [ci->func, *).
 		|	move CI, L->ci
 		|	addidx BASE, BASE, rbase
 		|	move r2, CI->func
