@@ -48,8 +48,8 @@ static int jit_std_prologue(jit_State *J, int stacksize)
 {
 	|	prologue LUAFUNC_STACK_SIZE
 	|
-	|	addidx TOP, BASE, stacksize
-	|	movei r1, stacksize
+	|	addidx TOP, BASE, stacksize+1
+	|	movei r1, stacksize+1
 	|	slt_u r0, TOP, L->stack_last
 	|	bnz r0, >1
 	|	jal ->GROW_STACK
@@ -62,6 +62,15 @@ static int jit_std_prologue(jit_State *J, int stacksize)
 	|2:
 	|	addidx CI, CI, 1
 	|	move CI->top, TOP
+}
+
+static int jit_wipe_r8_to_TOP(jit_State *J)
+{
+		|7:
+		|	setnilvalue TVALUE:r8[0]		// the new TOP is always set to NIL at this point. i don't care. it don't hurt.
+		|	addi r8, r8, #TVALUE
+		|	slt_u r0, TVALUE:r8, TOP
+		|	bnzt r0, <7
 }
 
 /* Compile JIT subroutines (once). */
@@ -202,20 +211,17 @@ static int jit_compile_jsub(jit_State *J)
 	|	mulw_uu r3, r0, r6
 	|
 	|	sub r4, TOP, r3
-	|	move r5, BASE
+	|	move r8, BASE
 	|	slt_u r1, r4, TOP
 	|	bz r1, >2
 	|1:
-	|	copyslot TVALUE:r5[0], TVALUE:r4[0]
+	|	copyslot TVALUE:r8[0], TVALUE:r4[0]
 	|	addi r4, r4, #TVALUE
-	|	addi r5, r5, #TVALUE
+	|	addi r8, r8, #TVALUE
 	|	slt_u r1, r4, TOP
 	|	bnzt r1, <1
 	|2:
-	|	setnilvalue TVALUE:r5[0]		// the new TOP is always set to NIL at this point. i don't care. it don't hurt.
-	|	addi r5, r5, #TVALUE
-	|	slt_u r1, TVALUE:r5, TOP
-	|	bnzt r1, <2
+	jit_wipe_r8_to_TOP(J);
 	|	add TOP, BASE, r3
 	|	
 	|	epilogue LUAFUNC_STACK_SIZE
@@ -292,16 +298,12 @@ static void jit_prologue(jit_State *J)
 	jit_std_prologue(J, stacksize);
 
 	|//	move CI->func, BASE
-	|//	addidx BASE, BASE, 1
+	|	addidx BASE, BASE, 1
 	
 	if(!pt->is_vararg)
 	{
 		|	addidx TVALUE:r8, BASE, numparams
-		|1:
-		|	setnilvalue TVALUE:r8[0]		// the new TOP is always set to NIL at this point. i don't care. it don't hurt.
-		|	addi r8, r8, #TVALUE
-		|	slt_u r0, TVALUE:r8, TOP
-		|	bnzt r0, <1
+		jit_wipe_r8_to_TOP(J);
 	}
 #if 0
 	if (numparams > 0) {
@@ -459,6 +461,7 @@ static void jit_op_return(jit_State *J, int rbase, int nresults)
 	/* Go to the previous CallInfo, load the current into r7 */
 	|//	move CINFO:r7, CI
 	|	subidx CI, CI, 1
+	|	subidx BASE, BASE, 1
 
 	/* Previous op was open: 'return f()' or 'return ...' */
 	if (nresults < 0) {
@@ -488,14 +491,10 @@ static void jit_op_return(jit_State *J, int rbase, int nresults)
 		int i;
 		for(i = 0; i < nresults; i++)
 		{
-			|	copyslot BASE[i], BASE[rbase+i]
+			|	copyslot BASE[i], BASE[rbase+i+1]
 		}
 		|	addidx TVALUE:r8, BASE, nresults
-		|1:
-		|	setnilvalue TVALUE:r8[0]		// the new TOP is always set to NIL at this point. i don't care. it don't hurt.
-		|	addi r8, r8, #TVALUE
-		|	slt_u r0, TVALUE:r8, TOP
-		|	bnzt r0, <1
+		jit_wipe_r8_to_TOP(J);
 		|	addidx TOP, BASE, nresults
 	}
 
@@ -513,7 +512,7 @@ static void jit_op_call(jit_State *J, int func, int nargs, int nresults)
 	|//  move CI, L->ci
 	|//   isfunction 0			// BASE[0] is L->base[func].
 	if (nargs >= 0) {  /* Previous op was not open and did not set TOP. */
-		|	addidx TOP, BASE, nargs
+		|	addidx TOP, BASE, nargs+1
 	}
 	|	move LCL, BASE->value
 	|	movemwi CI->savedpc, J->nextins
@@ -566,13 +565,9 @@ static void jit_op_call(jit_State *J, int func, int nargs, int nresults)
 	}
 #endif
 	if (nresults >= 0) {
-		|	move TOP, CI->top
 		|	addidx TVALUE:r8, BASE, nresults
-		|1:
-		|	setnilvalue TVALUE:r8[0]		// the new TOP is always set to NIL at this point. i don't care. it don't hurt.
-		|	addi r8, r8, #TVALUE
-		|	slt_u r0, TVALUE:r8, TOP
-		|	bnzt r0, <1
+		jit_wipe_r8_to_TOP(J);
+		|	move TOP, CI->top
 	} 
 }
 
