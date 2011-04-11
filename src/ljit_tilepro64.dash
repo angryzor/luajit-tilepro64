@@ -219,23 +219,25 @@
 |
 |
 |.macro loadnvaluek, reg1, reg2, src
-|	lw reg1, src
-|	addi reg2, src, 4
-|	lw reg2, reg2
+|	move reg1, src
+|	move reg2, src.na[1]
+|//	lw reg1, src
+|//	addi reg2, src, 4
+|//	lw reg2, reg2
 |.endmacro
 |
 |.macro storenvaluek, dst, reg1, reg2
-|	sw dst, reg1
-|	addi r25, dst, 4
-|	sw r25, reg2
+|	move dst, reg1
+|	move dst.na[1], reg2
+|//	sw dst, reg1
+|//	addi r25, dst, 4
+|//	sw r25, reg2
 |.endmacro
 |
 |.macro loadnvalueki, reg1, reg2, src
 |	addli r25, zero, lo16(src)
 |	auli r25, r25, ha16(src)
-|	lw reg1, r25
-|	addi reg2, r25, 4
-|	lw reg2, reg2
+|	loadnvaluek reg1, reg2, VALUE:r25[0]
 |.endmacro
 |
 |

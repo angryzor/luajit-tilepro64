@@ -1424,9 +1424,10 @@ static void jit_op_arith(jit_State *J, int dest, int rkb, int rkc, int ev)
 	const TValue *kkc = ISK(rkc) ? &J->pt->k[INDEXK(rkc)] : NULL;
 	const Value *kval;
 	int idx, rev;
+#if 0
 	int target = (ev == TM_LT || ev == TM_LE) ? jit_jmp_target(J) : 0;
 	int hastail = 0;
-
+#endif
 	/* The bytecode compiler already folds constants except for: k/0, k%0, */
 	/* NaN results, k1<k2, k1<=k2. No point in optimizing these cases. */
 	if (ISK(rkb&rkc)) goto fallback;
@@ -1434,6 +1435,7 @@ static void jit_op_arith(jit_State *J, int dest, int rkb, int rkc, int ev)
 	/* Avoid optimization when non-numeric constants are present. */
 	if (kkb ? !ttisnumber(kkb) : (kkc && !ttisnumber(kkc))) goto fallback;
 
+#if 0
 	/* The TYPE hint selects numeric inlining and/or fallback encoding. */
 	switch (ttype(hint_get(J, TYPE))) {
 	case LUA_TNIL: hastail = 1; break;  /* No hint: numeric + fallback. */
@@ -1446,7 +1448,7 @@ static void jit_op_arith(jit_State *J, int dest, int rkb, int rkc, int ev)
 	if (kkc) { kval = &kkc->value; idx = rkb; rev = 1; }
 	else { kval = kkb ? &kkb->value : NULL; idx = rkc; rev = 0; }
 
-#if 0
+
 	/* Special handling for some operators. */
 	switch (ev) {
 	case TM_MOD:
@@ -1636,8 +1638,9 @@ skipstore:
 	|4:
 	|.tail
 	|L_DEOPTLABEL:  // Recycle as fallback label.
-
+#endif
 fallback:
+#if 0
 	/* Generic fallback for arithmetic ops. */
 	if (kkb) {
 		|	mov ecx, &kkb
