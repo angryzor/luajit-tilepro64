@@ -1451,96 +1451,6 @@ static void jit_op_arith(jit_State *J, int dest, int rkb, int rkc, int ev)
 	case LUA_TNUMBER: break;	      /* Numbers: numeric + deoptimization. */
 	default: goto fallback;	      /* Mixed/other types: fallback only. */
 	}
-
-	/* The checks above ensure: at most one of the operands is a constant. */
-	/* Reverse operation and swap operands so the 2nd operand is a variable. */
-	if (kkc) { kval = &kkc->value; idx = rkb; rev = 1; }
-	else { kval = kkb ? &kkb->value : NULL; idx = rkc; rev = 0; }
-
-
-	/* Special handling for some operators. */
-	switch (ev) {
-	case TM_MOD:
-		/* Check for modulo with positive numbers, so we can use fprem. */
-		if (kval) {
-			if (kval->na[1] < 0) { hastail = 0; goto fallback; }  /* x%-k, -k%x */
-			|	isnumber idx
-			|	move r0, BASE[idx].value.na[1]
-			|	jne L_DEOPTIMIZEF
-			|	 test eax, eax; js L_DEOPTIMIZEF
-			|// This will trigger deoptimization in some benchmarks (pidigits).
-			|// But it's still a win.
-			if (kkb) {
-	|	fld qword BASE[rkc].value
-	|	fld qword [kval]
-			} else {
-	|	fld qword [kval]
-	|	fld qword BASE[rkb].value
-			}
-		} else {
-			|	isnumber2 rkb, rkc
-			|	 mov eax, BASE[rkb].value.na[1]
-			|	jne L_DEOPTIMIZEF
-			|	 or eax, BASE[rkc].value.na[1]; js L_DEOPTIMIZEF
-			|	fld qword BASE[rkc].value
-			|	fld qword BASE[rkb].value
-		}
-		|1: ; fprem; fnstsw ax; sahf; jp <1
-		|	fstp st1
-		goto fpstore;
-	case TM_POW:
-		if (hastail || !kval) break;  /* Avoid this if not optimizing. */
-		if (rev) {  /* x^k for k > 0, k integer. */
-			lua_Number n = kval->n;
-			int k;
-			lua_number2int(k, n);
-			/* All positive integers would work. But need to limit code explosion. */
-			if (k > 0 && k <= 65536 && (lua_Number)k == n) {
-	|	isnumber idx; jne L_DEOPTIMIZEF
-	|	fld qword BASE[idx]
-	for (; (k & 1) == 0; k >>= 1) {  /* Handle leading zeroes (2^k). */
-	  |	fmul st0
-	}
-	if ((k >>= 1) != 0) {  /* Handle trailing bits. */
-	  |	fld st0
-	  |	fmul st0
-	  for (; k != 1; k >>= 1) {
-	    if (k & 1) {
-	      |	fmul st1, st0
-	    }
-	    |	fmul st0
-	  }
-	  |	fmulp st1
-	}
-	goto fpstore;
-			}
-		} else if (kval->n > (lua_Number)0) {  /* k^x for k > 0. */
-			int log2kval[3];  /* Enough storage for a tword (80 bits). */
-			log2kval[2] = 0;  /* Avoid leaking garbage. */
-			/* Double precision log2(k) doesn't cut it (3^x != 3 for x = 1). */
-			((void (*)(int *, double))J->jsub[JSUB_LOG2_TWORD])(log2kval, kval->n);
-			|	mov ARG1, log2kval[0]			// Abuse stack for tword const.
-			|	mov ARG2, log2kval[1]
-			|	mov ARG3, log2kval[2]			// TODO: store2load fwd stall.
-			|	isnumber idx; jne L_DEOPTIMIZEF
-			|	fld tword [esp]
-			|	fmul qword BASE[idx].value		// log2(k)*x
-			|	fld st0; frndint; fsub st1, st0; fxch	// Split into fract/int part.
-			|	f2xm1; fld1; faddp st1; fscale		// (2^fract-1 +1) << int.
-			|	fstp st1
-
-			|.jsub LOG2_TWORD		// Calculate log2(k) with max. precision.
-			|// Called with (int *ptr, double k).
-			|	fld1; fld FPARG2			// Offset ok due to retaddr.
-			|	fyl2x
-			|	mov eax, ARG2				// Really ARG1.
-			|	fstp tword [eax]
-			|	ret
-			|.endjsub
-			goto fpstore;
-		}
-		break;
-	}
 #endif
 
 
@@ -1617,30 +1527,21 @@ fpstore:
 	if (dest != rkb && dest != rkc) {
 		|	settti BASE[dest], LUA_TNUMBER
 	}
-#if 0
-skipstore:
-	if (!hastail) {
-		jit_deopt_target(J, 0);
-		return;
-	}
-
-	|4:
-	|.tail
-	|L_DEOPTLABEL:  // Recycle as fallback label.
-#endif
+	return;
 fallback:
-#if 0
+
 	/* Generic fallback for arithmetic ops. */
 	if (kkb) {
-		|	mov ecx, &kkb
+		|	movewi r2, kkb
 	} else {
-		|	lea ecx, BASE[rkb]
+		|	addidx r2, BASE, rkb
 	}
 	if (kkc) {
-		|	mov edx, &kkc
+		|	movewi r3, kkc
 	} else {
-		|	lea edx, BASE[rkc]
+		|	addidx r3, BASE, rkc
 	}
+#if 0
 	if (target) {  /* TM_LT or TM_LE. */
 		|	mov L->savedpc, &(J->nextins+1)
 		|	call &ev==TM_LT?luaV_lessthan:luaV_lessequal, L, ecx, edx
@@ -1652,17 +1553,12 @@ fallback:
 			|	jz =>target
 		}
 	} else {
-		|	addidx BASE, dest
-		|	mov L->savedpc, &J->nextins
-		|	call &luaV_arith, L, BASE, ecx, edx, ev
-		|	mov BASE, L->base
-	}
-
-	if (hastail) {
-		| jmp <4
-		|.code
-	}
 #endif
+	|	movemwi L->savedpc, J->nextins
+	|	move r0, L
+	|	addidx r1, BASE, dest
+	|	movei r4, ev
+	|	jal &luaV_arith
 }
 
 /* ------------------------------------------------------------------------ */

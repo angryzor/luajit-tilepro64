@@ -316,7 +316,7 @@ enum	jit_actionnames {
 #include "dasm_tilepro64_encmodes.h"
 # 8 "ljit_tilepro64.dasc"
 //|.actionlist jit_actionlist
-static const signed long jit_actionlist[1584] = {
+static const signed long jit_actionlist[1647] = {
   1880510464,142720704,1077906870,1074472960,1076890313,1074472960,DASM_IMM,
   IEM_X0_Imm8,1082134465,1074472960,DASM_IMM,IEM_X0_Imm8,536873626,1074472960,
   DASM_IMM,IEM_X0_Imm16,805308058,1074472960,DASM_IMM,IEM_X0_Imm16,-266973184,
@@ -532,7 +532,16 @@ static const signed long jit_actionlist[1584] = {
   536873690,1074472960,DASM_IMM,IEM_X0_Imm16,805308058,1074472960,DASM_IMM,
   IEM_X0_Imm16,1880510464,142662464,DASM_STOP,1082146779,1074472960,536873690,
   1074472960,DASM_IMM,IEM_X0_Imm16,805308058,1074472960,DASM_IMM,IEM_X0_Imm16,
-  1880510464,142662464,DASM_STOP
+  1880510464,142662464,DASM_STOP,536874946,1074472960,DASM_IMM,IEM_X0_Imm16,
+  805306498,1074472960,DASM_IMM,IEM_X0_Imm16,DASM_STOP,1076890306,1074472960,
+  DASM_IMM,IEM_X0_Imm8,DASM_STOP,536874947,1074472960,DASM_IMM,IEM_X0_Imm16,
+  805306563,1074472960,DASM_IMM,IEM_X0_Imm16,DASM_STOP,1076890307,1074472960,
+  DASM_IMM,IEM_X0_Imm8,DASM_STOP,536874969,1074472960,DASM_IMM,IEM_X0_Imm16,
+  805307993,1074472960,DASM_IMM,IEM_X0_Imm16,13629019,1074472960,536873626,
+  1074472960,DASM_IMM,IEM_X0_Imm16,805308058,1074472960,DASM_IMM,IEM_X0_Imm16,
+  1880510464,142662464,13630080,1074472960,1076890305,1074472960,DASM_IMM,IEM_X0_Imm8,
+  1082134468,1074472960,DASM_IMM,IEM_X0_Imm8,1880510464,0,DASM_IMM,IEM_X1_J_jal,
+  DASM_STOP
 };
 
 # 9 "ljit_tilepro64.dasc"
@@ -1104,7 +1113,7 @@ static void jit_op_arith(jit_State *J, int dest, int rkb, int rkc, int ev)
 	/* Avoid optimization when non-numeric constants are present. */
 	if (kkb ? !ttisnumber(kkb) : (kkc && !ttisnumber(kkc))) goto fallback;
 
-# 1545 "ljit_tilepro64.dasc"
+# 1455 "ljit_tilepro64.dasc"
 
 
 	/* Load operands */
@@ -1113,13 +1122,13 @@ static void jit_op_arith(jit_State *J, int dest, int rkb, int rkc, int ev)
 		//|	movewi r6, kkb
 		//|	loadnumber r0, r1, TVALUE:r6[0]
 		dasm_put(Dst, 1395, lo16(kkb), ha16(kkb), lo16(Dt8([0].value)), ha16(Dt8([0].value)), lo16(Dt8([0].value.na[1])), ha16(Dt8([0].value.na[1])));
-# 1552 "ljit_tilepro64.dasc"
+# 1462 "ljit_tilepro64.dasc"
 	}
 	else
 	{
 		//|	loadnumber r0, r1, BASE[rkb]
 		dasm_put(Dst, 1428, lo16(Dt2([rkb].value)), ha16(Dt2([rkb].value)), lo16(Dt2([rkb].value.na[1])), ha16(Dt2([rkb].value.na[1])));
-# 1556 "ljit_tilepro64.dasc"
+# 1466 "ljit_tilepro64.dasc"
 	}
 
 	if(kkc)
@@ -1127,13 +1136,13 @@ static void jit_op_arith(jit_State *J, int dest, int rkb, int rkc, int ev)
 		//|	movewi r6, kkc
 		//|	loadnumber r2, r3, TVALUE:r6[0]
 		dasm_put(Dst, 1453, lo16(kkc), ha16(kkc), lo16(Dt8([0].value)), ha16(Dt8([0].value)), lo16(Dt8([0].value.na[1])), ha16(Dt8([0].value.na[1])));
-# 1562 "ljit_tilepro64.dasc"
+# 1472 "ljit_tilepro64.dasc"
 	}
 	else
 	{
 		//|	loadnumber r2, r3, BASE[rkc]
 		dasm_put(Dst, 1486, lo16(Dt2([rkc].value)), ha16(Dt2([rkc].value)), lo16(Dt2([rkc].value.na[1])), ha16(Dt2([rkc].value.na[1])));
-# 1566 "ljit_tilepro64.dasc"
+# 1476 "ljit_tilepro64.dasc"
 	}
 
 	/* Encode arithmetic operation. */
@@ -1141,54 +1150,81 @@ static void jit_op_arith(jit_State *J, int dest, int rkb, int rkc, int ev)
 	case TM_ADD:
 		//|	jal &__float64_add
 		dasm_put(Dst, 1511, &__float64_add);
-# 1572 "ljit_tilepro64.dasc"
+# 1482 "ljit_tilepro64.dasc"
 		break;
 	case TM_SUB:
 		//|	jal &__float64_sub
 		dasm_put(Dst, 1516, &__float64_sub);
-# 1575 "ljit_tilepro64.dasc"
+# 1485 "ljit_tilepro64.dasc"
 		break;
 	case TM_MUL:
 		//|	jal &__float64_mul
 		dasm_put(Dst, 1521, &__float64_mul);
-# 1578 "ljit_tilepro64.dasc"
+# 1488 "ljit_tilepro64.dasc"
 		break;
 	case TM_DIV:
 		//|	jal &__float64_div
 		dasm_put(Dst, 1526, &__float64_div);
-# 1581 "ljit_tilepro64.dasc"
+# 1491 "ljit_tilepro64.dasc"
 		break;
 	case TM_MOD:
 		//|	jal &__float64_rem
 		dasm_put(Dst, 1531, &__float64_rem);
-# 1584 "ljit_tilepro64.dasc"
+# 1494 "ljit_tilepro64.dasc"
 		break;
 	case TM_POW:
 		//|	jal &pow
 		dasm_put(Dst, 1536, &pow);
-# 1587 "ljit_tilepro64.dasc"
+# 1497 "ljit_tilepro64.dasc"
 		break;
 	case TM_UNM:
 		//|	jal &__float64_neg
 		dasm_put(Dst, 1541, &__float64_neg);
-# 1590 "ljit_tilepro64.dasc"
+# 1500 "ljit_tilepro64.dasc"
 		break;
 	default:  /* TM_LT or TM_LE. */
-# 1613 "ljit_tilepro64.dasc"
+# 1523 "ljit_tilepro64.dasc"
 	}
 fpstore:
 	/* Store result and set result type (if necessary). */
 	//|	storenumber BASE[dest], r0, r1
 	dasm_put(Dst, 1546, lo16(Dt2([dest].value)), ha16(Dt2([dest].value)), lo16(Dt2([dest].value.na[1])), ha16(Dt2([dest].value.na[1])));
-# 1617 "ljit_tilepro64.dasc"
+# 1527 "ljit_tilepro64.dasc"
 	if (dest != rkb && dest != rkc) {
 		//|	settti BASE[dest], LUA_TNUMBER
 		dasm_put(Dst, 1571, lo16(Dt2([dest].tt)), ha16(Dt2([dest].tt)));
-# 1619 "ljit_tilepro64.dasc"
+# 1529 "ljit_tilepro64.dasc"
 	}
-# 1631 "ljit_tilepro64.dasc"
+	return;
 fallback:
-# 1666 "ljit_tilepro64.dasc"
+
+	/* Generic fallback for arithmetic ops. */
+	if (kkb) {
+		//|	movewi r2, kkb
+		dasm_put(Dst, 1584, lo16(kkb), ha16(kkb));
+# 1536 "ljit_tilepro64.dasc"
+	} else {
+		//|	addidx r2, BASE, rkb
+		dasm_put(Dst, 1593, (rkb)*sizeof(TValue));
+# 1538 "ljit_tilepro64.dasc"
+	}
+	if (kkc) {
+		//|	movewi r3, kkc
+		dasm_put(Dst, 1598, lo16(kkc), ha16(kkc));
+# 1541 "ljit_tilepro64.dasc"
+	} else {
+		//|	addidx r3, BASE, rkc
+		dasm_put(Dst, 1607, (rkc)*sizeof(TValue));
+# 1543 "ljit_tilepro64.dasc"
+	}
+# 1557 "ljit_tilepro64.dasc"
+	//|	movemwi L->savedpc, J->nextins
+	//|	move r0, L
+	//|	addidx r1, BASE, dest
+	//|	movei r4, ev
+	//|	jal &luaV_arith
+	dasm_put(Dst, 1612, lo16(J->nextins), ha16(J->nextins), lo16(Dt1(->savedpc)), ha16(Dt1(->savedpc)), (dest)*sizeof(TValue), ev, &luaV_arith);
+# 1562 "ljit_tilepro64.dasc"
 }
 
 /* ------------------------------------------------------------------------ */
@@ -1224,38 +1260,38 @@ static void jit_fallback_len(lua_State *L, StkId ra, const TValue *rb)
 
 static void jit_op_len(jit_State *J, int dest, int rb)
 {
-# 1732 "ljit_tilepro64.dasc"
+# 1628 "ljit_tilepro64.dasc"
 }
 
 static void jit_op_not(jit_State *J, int dest, int rb)
 {
-# 1752 "ljit_tilepro64.dasc"
+# 1648 "ljit_tilepro64.dasc"
 }
 
 /* ------------------------------------------------------------------------ */
 
 static void jit_op_concat(jit_State *J, int dest, int first, int last)
 {
-# 1834 "ljit_tilepro64.dasc"
+# 1730 "ljit_tilepro64.dasc"
 }
 
 /* ------------------------------------------------------------------------ */
 
 static void jit_op_eq(jit_State *J, int cond, int rkb, int rkc)
 {
-# 1927 "ljit_tilepro64.dasc"
+# 1823 "ljit_tilepro64.dasc"
 }
 
 /* ------------------------------------------------------------------------ */
 
 static void jit_op_test(jit_State *J, int cond, int dest, int src)
 {
-# 1967 "ljit_tilepro64.dasc"
+# 1863 "ljit_tilepro64.dasc"
 }
 
 static void jit_op_jmp(jit_State *J, int target)
 {
-# 1974 "ljit_tilepro64.dasc"
+# 1870 "ljit_tilepro64.dasc"
 }
 
 /* ------------------------------------------------------------------------ */
@@ -1285,38 +1321,38 @@ static void jit_for_coerce(lua_State *L, TValue *o)
 
 static void jit_op_forprep(jit_State *J, int ra, int target)
 {
-# 2047 "ljit_tilepro64.dasc"
+# 1943 "ljit_tilepro64.dasc"
 }
 
 static void jit_op_forloop(jit_State *J, int ra, int target)
 {
-# 2083 "ljit_tilepro64.dasc"
+# 1979 "ljit_tilepro64.dasc"
 }
 
 /* ------------------------------------------------------------------------ */
 
 static void jit_op_tforloop(jit_State *J, int ra, int nresults)
 {
-# 2102 "ljit_tilepro64.dasc"
+# 1998 "ljit_tilepro64.dasc"
 }
 
 /* ------------------------------------------------------------------------ */
 
 static void jit_op_close(jit_State *J, int ra)
 {
-# 2117 "ljit_tilepro64.dasc"
+# 2013 "ljit_tilepro64.dasc"
 }
 
 static void jit_op_closure(jit_State *J, int dest, int ptidx)
 {
-# 2167 "ljit_tilepro64.dasc"
+# 2063 "ljit_tilepro64.dasc"
 }
 
 /* ------------------------------------------------------------------------ */
 
 static void jit_op_vararg(jit_State *J, int dest, int num)
 {
-# 2240 "ljit_tilepro64.dasc"
+# 2136 "ljit_tilepro64.dasc"
 }
 
 /* ------------------------------------------------------------------------ */
