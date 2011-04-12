@@ -195,7 +195,17 @@
 |	move D.tt, S.tt
 |.endmacro
 |
+|.macro loadnumber, reg1, reg2, src
+|	move reg1, src.value
+|	move reg2, src.value.na[1]
+|.endmacro
 |
+|.macro storenumber, dst, reg1, reg2
+|	move dst.value, reg1
+|	move dst.value.na[1], reg2
+|.endmacro
+|
+#if 0
 |.macro copyconst, tv, tvk
 ||switch (ttype(tvk)) {
 ||case LUA_TNIL:
@@ -218,22 +228,7 @@
 |
 |
 |
-|.macro loadnvaluek, reg1, reg2, src
-|	move reg1, src
-|	move reg2, src.na[1]
-|//	lw reg1, src
-|//	addi reg2, src, 4
-|//	lw reg2, reg2
-|.endmacro
-|
-|.macro storenvaluek, dst, reg1, reg2
-|	move dst, reg1
-|	move dst.na[1], reg2
-|//	sw dst, reg1
-|//	addi r25, dst, 4
-|//	sw r25, reg2
-|.endmacro
-|
+
 |.macro loadnvalueki, reg1, reg2, src
 |	addli r25, zero, lo16(src)
 |	auli r25, r25, ha16(src)
@@ -246,6 +241,7 @@
 |	storenvaluek tv.value, r23, r24
 |	settti tv, LUA_TNUMBER
 |.endmacro
+#endif
 |
 |.macro setbvalue, tv, val		// May use edx.
 ||if (val) {  /* true */

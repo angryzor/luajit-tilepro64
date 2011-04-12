@@ -18,6 +18,16 @@ static void jit_hookins(lua_State *L, const Instruction *newpc);
 static void jit_gettable_fb(lua_State *L, Table *t, StkId dest);
 static void jit_settable_fb(lua_State *L, Table *t, StkId val);
 
+/* these are defined in libtile-cc */
+extern double __float64_add(double,double);
+extern double __float64_sub(double,double);
+extern double __float64_mul(double,double);
+extern double __float64_div(double,double);
+extern double __float64_rem(double,double);
+extern double __float64_neg(double,double);
+#include <math.h>
+
+
 /* ------------------------------------------------------------------------ */
 
 /* Detect CPU features and set JIT flags. */
@@ -281,6 +291,7 @@ static void jit_vararg_table(lua_State *L)
 static void jit_ins_last(jit_State *J, int lastpc, int sizemfm)
 {
 	|	.align 64			// Keep next section word aligned.
+	|	.space 6
 	|	.word 0x0000ffff			// Terminate mfm with JIT_MFM_STOP.
 	|	.space 5 // Next mcode block pointer and size.
 	|	// The previous two awords are only word, but not aword aligned.
@@ -679,9 +690,7 @@ finish:
 
 static void jit_op_move(jit_State *J, int dest, int src)
 {
-#if 0
 	|	copyslot BASE[dest], BASE[src]
-#endif
 }
 
 static void jit_op_loadk(jit_State *J, int dest, int kidx)
@@ -689,7 +698,8 @@ static void jit_op_loadk(jit_State *J, int dest, int kidx)
 	const TValue *kk = &J->pt->k[kidx];
 	int rk = jit_return_k(J);
 	if (rk) dest = 0;
-	|	copyconst BASE[dest], kk
+	|	movewi r1, kk
+	|	copyslot BASE[dest], TVALUE:r1[0]
 	if (rk) {
 		|	jrp lr
 	}
@@ -1419,7 +1429,6 @@ static void jit_op_setlist(jit_State *J, int ra, int num, int batch)
 
 static void jit_op_arith(jit_State *J, int dest, int rkb, int rkc, int ev)
 {
-#if 0
 	const TValue *kkb = ISK(rkb) ? &J->pt->k[INDEXK(rkb)] : NULL;
 	const TValue *kkc = ISK(rkc) ? &J->pt->k[INDEXK(rkc)] : NULL;
 	const Value *kval;
@@ -1534,71 +1543,51 @@ static void jit_op_arith(jit_State *J, int dest, int rkb, int rkc, int ev)
 	}
 #endif
 
-	/* Check number type and load 1st operand. */
-	if (kval) {
-		| // isnumber idx; jne L_DEOPTIMIZEF
-		|	loadnumberi r0, r1, kval
-	} else {
-#if 0
-	if (rkb == rkc) {
-			|	isnumber rkb
-		} else {
-			|	isnumber2 rkb, rkc
-		}
-		|	jne L_DEOPTIMIZEF
-#endif
-		|	loadnumber r0, r1, BASE[rkb].value
+
+	/* Load operands */
+	if(kkb)
+	{
+		|	movewi r6, kkb
+		|	loadnumber r0, r1, TVALUE:r6[0]
+	}
+	else
+	{
+		|	loadnumber r0, r1, BASE[rkb]
 	}
 
-	/* Load 2nd operand. */
-	| loadnumber r2, r3, BASE[idx].value
+	if(kkc)
+	{
+		|	movewi r6, kkc
+		|	loadnumber r2, r3, TVALUE:r6[0]
+	}
+	else
+	{
+		|	loadnumber r2, r3, BASE[rkc]
+	}
 
 	/* Encode arithmetic operation. */
-	switch ((ev<<1)+rev) {
-	case TM_ADD<<1:
-	case (TM_ADD<<1)+1:
+	switch (ev) {
+	case TM_ADD:
 		|	jal &__float64_add
-	break;
-#if 0
-	case TM_SUB<<1:
-		|	fsub qword BASE[idx].value
 		break;
-	case (TM_SUB<<1)+1:
-		|	fsubr qword BASE[idx].value
+	case TM_SUB:
+		|	jal &__float64_sub
 		break;
-	case TM_MUL<<1: case (TM_MUL<<1)+1:
-		if (rkb == rkc) {
-			|	fmul st0
-		} else {
-			|	fmul qword BASE[idx].value
-		}
+	case TM_MUL:
+		|	jal &__float64_mul
 		break;
-	case TM_DIV<<1:
-		|	fdiv qword BASE[idx].value
+	case TM_DIV:
+		|	jal &__float64_div
 		break;
-	case (TM_DIV<<1)+1:
-		|	fdivr qword BASE[idx].value
+	case TM_MOD:
+		|	jal &__float64_rem
 		break;
-	case TM_POW<<1:
-		|	sub esp, S2LFRAME_OFFSET
-		|	fstp FPARG1
-		|	fld qword BASE[idx].value
-		|	fstp FPARG2
-		|	call &pow
-		|	add esp, S2LFRAME_OFFSET
+	case TM_POW:
+		|	jal &pow
 		break;
-	case (TM_POW<<1)+1:
-		|	sub esp, S2LFRAME_OFFSET
-		|	fstp FPARG2
-		|	fld qword BASE[idx].value
-		|	fstp FPARG1
-		|	call &pow
-		|	add esp, S2LFRAME_OFFSET
+	case TM_UNM:
+		|	jal &__float64_neg
 		break;
-	case TM_UNM<<1: case (TM_UNM<<1)+1:
-		|	fchs				// No 2nd operand.
-		break;
-#endif
 	default:  /* TM_LT or TM_LE. */
 #if 0
 		|	fld qword BASE[idx].value
@@ -1624,7 +1613,7 @@ static void jit_op_arith(jit_State *J, int dest, int rkb, int rkc, int ev)
 	}
 fpstore:
 	/* Store result and set result type (if necessary). */
-	|	storenumber BASE[dest].value, r0, r1
+	|	storenumber BASE[dest], r0, r1
 	if (dest != rkb && dest != rkc) {
 		|	settti BASE[dest], LUA_TNUMBER
 	}
@@ -1673,7 +1662,6 @@ fallback:
 		| jmp <4
 		|.code
 	}
-#endif
 #endif
 }
 
