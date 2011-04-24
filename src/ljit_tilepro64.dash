@@ -259,6 +259,26 @@
 |	settti tv, LUA_TSTRING
 |.endmacro
 |
+|.macro sethvalue, tv, vptr
+|	movemwi tv.value, vptr
+|	settti tv, LUA_TABLE
+|.endmacro
+|
+|.macro sethvaluer, tv, reg
+|	move tv.value, reg
+|	settti tv, LUA_TTABLE
+|.endmacro
+|
+|.macro setclvalue, tv, vptr
+|	movemwi tv.value, vptr
+|	settti tv, LUA_TFUNCTION
+|.endmacro
+|
+|.macro setclvaluer, tv, reg
+|	move tv.value, reg
+|	settti tv, LUA_TFUNCTION
+|.endmacro
+|
 |.macro setnilvalue, tv
 |	settti tv, LUA_TNIL
 |.endmacro

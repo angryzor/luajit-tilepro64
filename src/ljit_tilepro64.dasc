@@ -167,6 +167,7 @@ static int jit_compile_jsub(jit_State *J)
 	|
 	|.align 64
 	|->GATE_JL:
+	|	prologue 8
 	|	move PROTO:r6, LCL->p
 	|	seqi r0, PROTO:r6->jit_status, JIT_S_OK
 	|	bz r0, >1		// Already compiled?
@@ -195,6 +196,7 @@ static int jit_compile_jsub(jit_State *J)
 	|2:
 	|	add BASE, BASE, L->stack
 	|	move TOP, L->top
+	|	epilogue 8
 	|	jrp lr
 	|
 	|.align 64
@@ -751,47 +753,28 @@ static void jit_op_loadbool(jit_State *J, int dest, int b, int dojump)
 
 static void jit_op_getupval(jit_State *J, int dest, int uvidx)
 {
-#if 0
-	|	getLCL
-	|	mov UPVAL:ecx, LCL->upvals[uvidx]
-	|	mov TOP, UPVAL:ecx->v
-	|	copyslot BASE[dest], TOP[0]
-#endif
+	|	move UPVAL:r7, LCL->upvals[uvidx]
+	|	move TVALUE:r5, UPVAL:r7->v
+	|	copyslot BASE[dest], TVALUE:r5[0]
 }
 
 static void jit_op_setupval(jit_State *J, int src, int uvidx)
 {
-#if 0
-	|	getLCL
-	|	mov UPVAL:ecx, LCL->upvals[uvidx]
-	|	mov TOP, UPVAL:ecx->v
-	|	// This is really copyslot TOP[0], BASE[src] with compare mixed in.
-	|	 mov eax, BASE[src].tt
-	|	 mov GCOBJECT:edx, BASE[src].value
-	|	 mov TOP->tt, eax
-	|	cmp eax, LUA_TSTRING				// iscollectable(val)?
-	|	 mov eax, BASE[src].value.na[1]
-	|	 mov TOP->value, GCOBJECT:edx
-	|	 mov TOP->value.na[1], eax
-	|	jae >5
+	|	move UPVAL:r1, LCL->upvals[uvidx]
+	|	move TVALUE:r5, UPVAL:r1->v
+	|	copyslot TVALUE:r5[0], BASE[src]
+	|	movei r0, LUA_TSTRING
+	|	slte_u r8, r0, TVALUE:r5->tt
+	|	bz r8, >5
 	|4:
-	|.tail
+	|	move GCOBJECT:r2, BASE[src].value
+	|	andi r3, GCOBJECT:r2->gch.marked, WHITEBITS	// && iswhite(val)
+	|	bz r3, >5
+	|	andi r4, UPVAL:r1->marked, bitmask(BLACKBIT)	// && isblack(uv)
+	|	bz r4, >5
+	|	move r0, L
+	|	jal &luaC_barrierf
 	|5:
-	|	test byte GCOBJECT:edx->gch.marked, WHITEBITS	// && iswhite(val)
-	|	jz <4
-	|	test byte UPVAL:ecx->marked, bitmask(BLACKBIT)	// && isblack(uv)
-	|	jz <4
-	|	call ->BARRIERF					// Yes, need barrier.
-	|	jmp <4
-	|.code
-
-	|.jsub BARRIERF			// luaC_barrierf() with regparms.
-	|	mov ARG4, GCOBJECT:edx
-	|	mov ARG3, UPVAL:ecx
-	|	mov ARG2, L
-	|	jmp &luaC_barrierf			// Chain to C code.
-	|.endjsub
-#endif
 }
 
 /* ------------------------------------------------------------------------ */
@@ -1057,11 +1040,14 @@ static void jit_settable_fb(lua_State *L, Table *t, StkId val)
 
 static void jit_op_newtable(jit_State *J, int dest, int lnarray, int lnhash)
 {
-#if 0
-	|	call &luaH_new, L, luaO_fb2int(lnarray), luaO_fb2int(lnhash)
-	|	sethvalue BASE[dest], eax
-	jit_checkGC(J);
-#endif
+	|	move r0, L
+	|	movewi r1, luaO_fb2int(lnarray)
+	|	movewi r2, luaO_fb2int(lnhash)
+	|	globals_JL
+	|	jal &luaH_new
+	|	globals_LJ L->base
+	|	sethvaluer BASE[dest], r0
+/* TODO	jit_checkGC(J);*/
 }
 
 static void jit_op_getglobal(jit_State *J, int dest, int kidx)
@@ -1163,6 +1149,20 @@ static int jit_keylookup(jit_State *J, int tab, int rkey)
 
 static void jit_op_gettable(jit_State *J, int dest, int tab, int rkey)
 {
+	|	move r0, L
+	|	addidx r1, BASE, tab
+	if(ISK(rkey))
+	{
+		|	movewi r2, &J->pt->k[INDEXK(rkey)]
+	}
+	else
+	{
+		|	addidx r2, BASE, rkey
+	}
+	|	addidx r3, BASE, dest
+	|	jal &luaV_gettable
+
+
 #if 0
 	int k = jit_keylookup(J, tab, rkey);
 	switch (k) {
@@ -1248,6 +1248,25 @@ static void jit_op_gettable(jit_State *J, int dest, int tab, int rkey)
 
 static void jit_op_settable(jit_State *J, int tab, int rkey, int rval)
 {
+	|	move r0, L
+	|	addidx r1, BASE, tab
+	if(ISK(rkey))
+	{
+		|	movewi r2, &J->pt->k[INDEXK(rkey)]
+	}
+	else
+	{
+		|	addidx r2, BASE, rkey
+	}
+	if(ISK(rval))
+	{
+		|	movewi r3, &J->pt->k[INDEXK(rval)]
+	}
+	else
+	{
+		|	addidx r3, BASE, rval
+	}
+	|	jal &luaV_settable
 #if 0
 	const TValue *val = ISK(rval) ? &J->pt->k[INDEXK(rval)] : NULL;
 	int k = jit_keylookup(J, tab, rkey);
@@ -2001,28 +2020,23 @@ static void jit_op_tforloop(jit_State *J, int ra, int nresults)
 
 static void jit_op_close(jit_State *J, int ra)
 {
-#if 0
-	if (ra) {
-		|	lea eax, BASE[ra]
-		|	mov ARG2, eax
-	} else {
-		|	mov ARG2, BASE
-	}
-	|	call &luaF_close, L  // , StkId level (ARG2)
-#endif
+	|	move r0, L
+	|	addidx r1, BASE, ra
+    |	jal &luaF_close
 }
+
 
 static void jit_op_closure(jit_State *J, int dest, int ptidx)
 {
-#if 0
 	Proto *npt = J->pt->p[ptidx];
 	int nup = npt->nups;
-	|	getLCL edi				// LCL:edi is callee-saved.
-	|	mov edx, LCL:edi->env
-	|	call &luaF_newLclosure, L, nup, edx
-	|	mov LCL->p, &npt			// Store new proto in returned closure.
-	|	mov aword BASE[dest].value, LCL	// setclvalue()
-	|	settt BASE[dest], LUA_TFUNCTION
+	|	move r0, L
+	|	movei r1, nup
+	|	move r2, LCL->env
+	|	jal &luaF_newLclosure
+	|	movemwi LCL:r0->p, npt			// Store new proto in returned closure.
+	|	setclvaluer BASE[dest], r0
+#if 0
 	/* Process pseudo-instructions for upvalues. */
 	if (nup > 0) {
 		const Instruction *uvcode = J->nextins;
@@ -2034,32 +2048,32 @@ static void jit_op_closure(jit_State *J, int dest, int ptidx)
 		if (uvuv) {
 			/* LCL:eax->upvals (new closure) <-- LCL:edi->upvals (own closure). */
 			for (i = 0; i < nup; i++)
-	if (GET_OPCODE(uvcode[i]) == OP_GETUPVAL) {
-	  |	mov UPVAL:edx, LCL:edi->upvals[GETARG_B(uvcode[i])]
-	  |	mov LCL->upvals[i], UPVAL:edx
-	}
+				if (GET_OPCODE(uvcode[i]) == OP_GETUPVAL) {
+					|	mov UPVAL:edx, LCL:edi->upvals[GETARG_B(uvcode[i])]
+					|	mov LCL->upvals[i], UPVAL:edx
+				}
 		}
 		/* Next find or create upvalues for our own stack slots. */
 		if (nup > uvuv) {
 			|	mov LCL:edi, LCL  // Move new closure to callee-save register. */
 			/* LCL:edi->upvals (new closure) <-- upvalue for stack slot. */
 			for (i = 0; i < nup; i++)
-	if (GET_OPCODE(uvcode[i]) == OP_MOVE) {
-	  int rb = GETARG_B(uvcode[i]);
-	  if (rb) {
-	    |	lea eax, BASE[rb]
-	    |	mov ARG2, eax
-	  } else {
-	    |	mov ARG2, BASE
-	  }
-	  |	call &luaF_findupval, L  // , StkId level (ARG2)
-	  |	mov LCL:edi->upvals[i], UPVAL:eax
-	}
+				if (GET_OPCODE(uvcode[i]) == OP_MOVE) {
+					int rb = GETARG_B(uvcode[i]);
+					if (rb) {
+						|	lea eax, BASE[rb]
+						|	mov ARG2, eax
+					} else {
+						|	mov ARG2, BASE
+					}
+					|	call &luaF_findupval, L  // , StkId level (ARG2)
+					|	mov LCL:edi->upvals[i], UPVAL:eax
+				}
 		}
 		J->combine += nup;  /* Skip pseudo-instructions. */
 	}
-	jit_checkGC(J);
 #endif
+	/* TODO jit_checkGC(J); */
 }
 
 /* ------------------------------------------------------------------------ */

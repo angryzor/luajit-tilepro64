@@ -691,6 +691,8 @@ map_instr_X0 = {
 	slte_u_3 = instr_parsers.X0_RRR(0, 0, 0x50),
 
 	-- Logical opcodes
+	and_3 = instr_parsers.X0_RRR(0, 0, 6),
+	andi_3 = instr_parsers.X0_Imm8(5, 0, 1),
 	or_3 = instr_parsers.X0_RRR(0, 0, 0x33),
 	ori_3 = instr_parsers.X0_Imm8(4, 0, 8),
 
@@ -756,6 +758,8 @@ map_op = {
 	jrp_1 = wrap_put_nop_X0(map_instr_X1["jrp_1"]),
 
 	-- Logical opcodes
+	and_3 = wrap_put_nop_X1(map_instr_X0["and_3"]),
+	andi_3 = wrap_put_nop_X1(map_instr_X0["andi_3"]),
 	or_3 = wrap_put_nop_X1(map_instr_X0["or_3"]),
 	ori_3 = wrap_put_nop_X1(map_instr_X0["ori_3"]),
 	shli_3 = wrap_put_nop_X0(map_instr_X1["shli_3"]),
