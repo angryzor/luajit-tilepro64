@@ -142,12 +142,9 @@ static int jit_compile_jsub(jit_State *J)
 	|	// Get index right above the last nresults. All 
 	|	add r8, BASE, r4
 	|
+	jit_wipe_r8_to_TOP(J);
+	|
 	|	move TOP, CI->top
-	|1:
-	|	setnilvalue TVALUE:r8[0]		// the new TOP is always set to NIL at this point. i don't care. it don't hurt.
-	|	addi r8, r8, #TVALUE
-	|	slt_u r0, TVALUE:r8, TOP
-	|	bnzt r0, <1
 	|
 	|2:
 	|	addi L->nCcalls, L->nCcalls, -1
@@ -179,13 +176,11 @@ static int jit_compile_jsub(jit_State *J)
 	|
 	|	// No... Compile
 	|1:
-	|	move L->ci, CI
-	|	move L->top, TOP
-	|	move L->savedpc, CI->savedpc
+	|	globals_JL
 	|	move r0, L
 	|	move r1, BASE
 	|	movei r2, -1
-	|	sub BASE, BASE, L->stack
+	|//	sub BASE, BASE, L->stack
 	|	jal &luaD_precall
 	|	bnzt r0, >2
 	|
@@ -194,8 +189,8 @@ static int jit_compile_jsub(jit_State *J)
 	|	jal &luaV_execute
 	|
 	|2:
-	|	add BASE, BASE, L->stack
-	|	move TOP, L->top
+	|//	add BASE, BASE, L->stack
+	|	globals_LJ
 	|	epilogue 8
 	|	jrp lr
 	|
@@ -479,6 +474,18 @@ static void jit_op_return(jit_State *J, int rbase, int nresults)
 
 	/* Previous op was open: 'return f()' or 'return ...' */
 	if (nresults < 0) {
+		/* TODO: Assuming CI->func is always BASE-1. Not sure if this is true. */
+		|	subidx TOP, TOP, 1
+		|	move SCRATCHTV, BASE
+		|	slt_u r0, SCRATCHTV, TOP
+		|	bz r0, >2
+		|1:
+		|	copyslot SCRATCHTV[0], SCRATCHTV[1]
+		|	addidx SCRATCHTV, SCRATCHTV, 1
+		|	slt_u r0, SCRATCHTV, TOP
+		|	bnzt r0, <1
+		|2:
+		|	setnilvalue TOP[0]
 #if 0
 		|// Relocate [BASE+rbase, 0xb7dc0508TOP) -> [ci->func, *).
 		|	move CI, L->ci
@@ -1652,12 +1659,12 @@ static void jit_op_not(jit_State *J, int dest, int rb)
 	/* l_isfalse() without a branch -- truly devious. */
 	/* ((value & tt) | (tt>>1)) is only zero for nil/false. */
 	/* Assumes: LUA_TNIL == 0, LUA_TBOOLEAN == 1, bvalue() == 0/1 */
-	|	mov eax, BASE[rb].tt
-	|	mov ecx, BASE[rb].value
+	|	move r0, BASE[rb].tt
+	|	move r4, BASE[rb].value
 	|	mov edx, 1
-	|	and ecx, eax
-	|	shr eax, 1
-	|	or ecx, eax
+	|	and r4, r4, r0
+	|	shr r0, r0, 1
+	|	or r4, r4, r0
 	|	xor eax, eax
 	|	cmp ecx, edx
 	|	adc eax, eax

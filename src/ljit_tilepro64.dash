@@ -8,6 +8,7 @@
 |.type CI,		CallInfo,	r45
 |.type LCL,		LClosure,	r46
 |.type CTOP,	TValue,		r47
+|.type SCRATCHTV,	TValue,		r5
 |
 |// Types
 |.type GL,			global_State
