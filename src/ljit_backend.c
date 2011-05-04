@@ -70,7 +70,7 @@ static void jit_compile_irange(jit_State *J, int firstpc, int lastpc)
     int rbx = GETARG_Bx(ins);
     const TValue *combinehint;
 
-   /* jit_ins_start(J);*/
+    jit_ins_start(J);
     J->nextpc++;
 
     combinehint = hint_get(J, COMBINE);

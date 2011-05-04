@@ -25,6 +25,8 @@ extern double __float64_mul(double,double);
 extern double __float64_div(double,double);
 extern double __float64_rem(double,double);
 extern double __float64_neg(double,double);
+extern int __float64_lt(double,double);
+extern int __float64_le(double,double);
 #include <math.h>
 
 
@@ -190,7 +192,7 @@ static int jit_compile_jsub(jit_State *J)
 	|
 	|2:
 	|//	add BASE, BASE, L->stack
-	|	globals_LJ
+	|	globals_LJ L->base
 	|	epilogue 8
 	|	jrp lr
 	|
@@ -284,11 +286,17 @@ static void jit_vararg_table(lua_State *L)
 }
 #endif
 
+/* Called before every instruction. */
+static void jit_ins_start(jit_State *J)
+{
+	|=>J->nextpc:
+}
+
 /* Called after the last instruction has been encoded. */
 static void jit_ins_last(jit_State *J, int lastpc, int sizemfm)
 {
 	|	.align 64			// Keep next section word aligned.
-	|	.space 6
+	|	.space 0x16
 	|	.word 0x0000ffff			// Terminate mfm with JIT_MFM_STOP.
 	|	.space 5 // Next mcode block pointer and size.
 	|	// The previous two awords are only word, but not aword aligned.
@@ -464,7 +472,7 @@ static void jit_op_return(jit_State *J, int rbase, int nresults)
 	if (!fhint_isset(J, NOCLOSE)) {
 		|	move r0, L
 		|	move r1, BASE
-	    |	jal &luaF_close
+		|	jal &luaF_close
 	}
 
 	/* Go to the previous CallInfo, load the current into r7 */
@@ -716,44 +724,18 @@ static void jit_op_loadk(jit_State *J, int dest, int kidx)
 
 static void jit_op_loadnil(jit_State *J, int first, int last)
 {
-#if 0
-	int idx, num = last - first + 1;
-	int rk = jit_return_k(J);
-	|	xor eax, eax  // Assumes: LUA_TNIL == 0
-	if (rk) {
-		|	settt BASE[0], eax
-		|	ret
-	} else if (num <= 8) {
-		for (idx = first; idx <= last; idx++) {
-			|	settt BASE[idx], eax  // 3/6 bytes
-		}
-	} else {
-		|	lea ecx, BASE[first].tt  // 15-21 bytes
-		|	lea edx, BASE[last].tt
-		|1:
-		|	mov [ecx], eax
-		|	cmp ecx, edx
-		|	lea ecx, [ecx+#BASE]  // Preserves CC.
-		|	jbe <1
+	for(int i = first; i <= last; i++)
+	{
+		|	setnilvalue BASE[i]
 	}
-#endif
 }
 
 static void jit_op_loadbool(jit_State *J, int dest, int b, int dojump)
 {
-#if 0
-	int rk = jit_return_k(J);
-	if (rk) dest = 0;
 	|	setbvalue BASE[dest], b
-	if (rk) {
-		|	ret
-	} else if (dojump) {
-		const TValue *h = hint_getpc(J, COMBINE, J->nextpc);
-		if (!(ttisboolean(h) && bvalue(h) == 0)) {  /* Avoid jmp around dead ins. */
-			|	jmp =>J->nextpc+1
-		}
+	if (dojump) {
+		|	j =>J->nextpc+1
 	}
-#endif
 }
 
 /* ------------------------------------------------------------------------ */
@@ -1459,8 +1441,8 @@ static void jit_op_arith(jit_State *J, int dest, int rkb, int rkc, int ev)
 	const TValue *kkc = ISK(rkc) ? &J->pt->k[INDEXK(rkc)] : NULL;
 	const Value *kval;
 	int idx, rev;
-#if 0
 	int target = (ev == TM_LT || ev == TM_LE) ? jit_jmp_target(J) : 0;
+#if 0
 	int hastail = 0;
 #endif
 	/* The bytecode compiler already folds constants except for: k/0, k%0, */
@@ -1478,7 +1460,6 @@ static void jit_op_arith(jit_State *J, int dest, int rkb, int rkc, int ev)
 	default: goto fallback;	      /* Mixed/other types: fallback only. */
 	}
 #endif
-
 
 	/* Load operands */
 	if(kkb)
@@ -1524,34 +1505,33 @@ static void jit_op_arith(jit_State *J, int dest, int rkb, int rkc, int ev)
 	case TM_UNM:
 		|	jal &__float64_neg
 		break;
-	default:  /* TM_LT or TM_LE. */
-#if 0
-		|	fld qword BASE[idx].value
-		|	fcomparepp
-		|	jp =>dest?(J->nextpc+1):target	// Unordered means false.
-		jit_assert(dest == 0 || dest == 1);  /* Really cond. */
-		switch (((rev^dest)<<1)+(dest^(ev == TM_LT))) {
-		case 0:
-			|	jb =>target
-			break;
-		case 1:
-			|	jbe =>target
-			break;
-		case 2:
-			|	ja =>target
-			break;
-		case 3:
-			|	jae =>target
-			break;
-		}
-		goto skipstore;
-#endif
+	case TM_LT:
+		|	jal &__float64_lt
+		break;
+	case TM_LE:
+		|	jal &__float64_le
+		break;
+	default:
 	}
 fpstore:
-	/* Store result and set result type (if necessary). */
-	|	storenumber BASE[dest], r0, r1
-	if (dest != rkb && dest != rkc) {
-		|	settti BASE[dest], LUA_TNUMBER
+	if(ev == TM_LT || ev == TM_LE)
+	{
+		if(dest)
+		{
+			|	bnz r0, =>target
+		}
+		else
+		{
+			|	bz r0, =>target
+		}
+	}
+	else
+	{
+		/* Store result and set result type (if necessary). */
+		|	storenumber BASE[dest], r0, r1
+		if (dest != rkb && dest != rkc) {
+			|	settti BASE[dest], LUA_TNUMBER
+		}
 	}
 	return;
 fallback:
@@ -1655,22 +1635,17 @@ static void jit_op_len(jit_State *J, int dest, int rb)
 
 static void jit_op_not(jit_State *J, int dest, int rb)
 {
-#if 0
 	/* l_isfalse() without a branch -- truly devious. */
 	/* ((value & tt) | (tt>>1)) is only zero for nil/false. */
 	/* Assumes: LUA_TNIL == 0, LUA_TBOOLEAN == 1, bvalue() == 0/1 */
 	|	move r0, BASE[rb].tt
 	|	move r4, BASE[rb].value
-	|	mov edx, 1
 	|	and r4, r4, r0
-	|	shr r0, r0, 1
+	|	shri r0, r0, 1
 	|	or r4, r4, r0
-	|	xor eax, eax
-	|	cmp ecx, edx
-	|	adc eax, eax
-	|	mov BASE[dest].tt, edx
-	|	mov BASE[dest].value, eax
-#endif
+	|	seq r0, r4, zero
+	|	movei BASE[dest].tt, LUA_TBOOLEAN
+	|	move BASE[dest].value, r0
 }
 
 /* ------------------------------------------------------------------------ */
@@ -1852,47 +1827,44 @@ static void jit_op_eq(jit_State *J, int cond, int rkb, int rkc)
 
 static void jit_op_test(jit_State *J, int cond, int dest, int src)
 {
-#if 0
 	int target = jit_jmp_target(J);
 
 	/* l_isfalse() without a branch. But this time preserve tt/value. */
 	/* (((value & tt) * 2 + tt) >> 1) is only zero for nil/false. */
 	/* Assumes: 3*tt < 2^32, LUA_TNIL == 0, LUA_TBOOLEAN == 1, bvalue() == 0/1 */
-	|	mov eax, BASE[src].tt
-	|	mov ecx, BASE[src].value
-	|	mov edx, eax
-	|	and edx, ecx
-	|	lea edx, [eax+edx*2]
-	|	shr edx, 1
+	|	move r0, BASE[src].tt
+	|	move r4, BASE[src].value
+	|	move r1, r0
+	|	and r1, r1, r4
+	|	shli r1, r1, 1
+	|	add r1, r1, r0
+	|	shri r1, r1, 1
 
 	/* Check if we can omit the stack copy. */
 	if (dest == src) {  /* Yes, invert branch condition. */
 		if (cond) {
-			|	jnz =>target
+			|	bz r1, =>target
 		} else {
-			|	jz =>target
+			|	bnz r1, =>target
 		}
 	} else {  /* No, jump around copy code. */
 		if (cond) {
-			|	jz >1
+			|	bnz r1, >1
 		} else {
-			|	jnz >1
+			|	bz r1, >1
 		}
-		|	mov edx, BASE[src].value.na[1]
-		|	mov BASE[dest].tt, eax
-		|	mov BASE[dest].value, ecx
-		|	mov BASE[dest].value.na[1], edx
-		|	jmp =>target
+		|	move r3, BASE[src].value.na[1]
+		|	move BASE[dest].tt, r0
+		|	move BASE[dest].value, r4
+		|	move BASE[dest].value.na[1], r3
+		|	j =>target
 		|1:
 	}
-#endif
 }
 
 static void jit_op_jmp(jit_State *J, int target)
 {
-#if 0
-	|	jmp =>target
-#endif
+	|	j =>target
 }
 
 /* ------------------------------------------------------------------------ */

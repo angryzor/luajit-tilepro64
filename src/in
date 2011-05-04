@@ -1,15 +1,16 @@
-local function generator()
---[[	local i = 0
-	return function()
-			i = i + 1
-			return i
-		end]]
-	local h = 3
-	print("At least this function gets called",h)
-	return 5
-end
+local a = true
+local b = true
+--local c = false
+--local d = false
+--local e = true
+--local f = false
 
-
-local a = generator()
-print(generator)
+--print(c and d and f)
 print(a)
+--print(a and c and e)
+print(b)
+--print(c or b or f)
+--print(c or d or f)
+print(true or false)
+print(false and true)
+
