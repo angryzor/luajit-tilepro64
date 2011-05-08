@@ -1,3 +1,6 @@
+name basic-closures
+
+%%
 local function generator()
 	local i = 0
 	return function()
@@ -10,4 +13,6 @@ end
 local a = generator()
 print(a())
 print(a())
-
+%%
+1
+2

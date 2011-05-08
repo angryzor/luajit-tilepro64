@@ -1,0 +1,15 @@
+name basic-arith
+
+%%
+local a = 25 * 4
+local b = a ^ 3 + 8 ^ 2
+
+print("b = ",b)
+print("The result of that calculation would be")
+print(b - 10000)
+print("sir.")
+%%
+b = 	1000064
+The result of that calculation would be
+990064
+sir.

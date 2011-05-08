@@ -1,0 +1,75 @@
+#!/bin/bash
+
+# CONFIG
+tests_folder="testcases"
+monitor="tile-monitor"
+monitor_params="--functional --image 1x1"
+
+# ERROR CODES
+err_unknown_command=1
+err_test_failure=2
+
+
+
+
+
+name="MISSINGNO."
+function perform_single_test {
+	name="MISSINGNO." 
+	{
+		while read line && [[ "$line" != "%%" ]]
+		do
+			local cmd=`echo "$line" | cut -d ' ' -f 1`
+			local rest=`echo "$line" | cut -d ' ' -f 2-`
+			case $cmd in
+			name )
+				name="$rest"
+				;;
+			esac || { echo "Unknown command $cmd." > /dev/stderr; return 1; }
+		done
+		while read line && [[ "$line" != "%%" ]]
+		do
+			echo "$line"
+		done > .test_in
+		$monitor $monitor_params --here --run --- ./luajit .test_in --- --quit || return 1
+		diff - out > /dev/stderr && return 0 || return 1
+	} < $1
+}
+
+succ_tn=0
+fail_tn=0
+fail_ts=""
+
+for file in $tests_folder/*.lua.tc
+do
+	rm -f out
+	perform_single_test "$file" && {
+		(( succ_tn++ ))
+		true
+	} || {
+		(( fail_tn++ ))
+		echo "Test \"$name\" failed!"
+		fail_ts="$fail_ts	$name
+"
+	}
+done
+
+echo " "
+echo "========================================"
+echo " Final report"
+echo "========================================"
+echo "Tests succeeded: $succ_tn"
+echo "Tests failed: $fail_tn"
+
+if (( $fail_tn > 0 ))
+then
+	echo "!!! TESTING FAILED !!!"
+	echo "The following tests failed:"
+	echo "$fail_ts"
+	exit 1
+else
+	echo "All tests succeeded."
+	exit 0
+fi
+
+

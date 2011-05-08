@@ -1,0 +1,20 @@
+name basic-not
+
+%%
+local a = 5
+local b = nil
+local c = false
+local d = true
+local e = {}
+
+print(not a)
+print(not b)
+print(not c)
+print(not d)
+print(not e)
+%%
+false
+true
+true
+false
+false

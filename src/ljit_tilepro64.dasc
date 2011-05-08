@@ -28,9 +28,74 @@ extern double __float64_neg(double,double);
 extern int __float64_lt(double,double);
 extern int __float64_le(double,double);
 #include <math.h>
+#include <stdio.h>
 
+static void dumpstack(TValue* base, TValue* top, CallInfo* ci, lua_State* L, const char* opname)
+{
+	TValue* s;
 
-/* ------------------------------------------------------------------------ */
+	FILE* f = fopen("log.log","a");
+	fprintf(f,"------------------------------------------------------------------------\n");
+	fprintf(f," PRE-OPCODE: %s\n", opname);
+	fprintf(f,"''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''\n");
+	fprintf(f," L->base = %08x\n L->top = %08x\n L->ci = %08x\n L->stack = %08x\n L->stack_last = %08x\n\n", base - L->stack, top - L->stack, ci, L->stack, L->stack_last - L->stack);
+	fprintf(f," CI->func = %08x\n CI->base = %08x\n CI->top = %08x\n\n", ci->func - L->stack, ci->base - L->stack, ci->top - L->stack);
+	fprintf(f," STACK:\n");
+	for(s = L->stack; s <= L->stack_last; s++)
+	{
+		fprintf(f,"\t%08x | TYPE: ", s - L->stack);
+		switch(s->tt)
+		{
+		case LUA_TNIL:
+			fprintf(f,"nil\n");
+			break;
+		case LUA_TBOOLEAN:
+			fprintf(f,"boolean: %d\n", bvalue(s));
+			break;
+		case LUA_TLIGHTUSERDATA:
+			fprintf(f,"lightuserdata\n");
+			break;
+		case LUA_TNUMBER:
+			fprintf(f,"number: %f\n", nvalue(s));
+			break;
+		case LUA_TSTRING:
+			fprintf(f, "string: %s\n", getstr(rawtsvalue(s)));
+			break;
+		case LUA_TTABLE:
+			fprintf(f, "table\n");
+			break;
+		case LUA_TFUNCTION:
+			if(iscfunction(s))
+				fprintf(f, "cfunction: %08x\n", clvalue(s)->c.f);
+			else
+				fprintf(f, "lfunction\n");
+			break;
+		case LUA_TUSERDATA:
+			fprintf(f, "userdata\n");
+			break;
+		case LUA_TTHREAD:
+			fprintf(f, "thread\n");
+			break;
+		default:
+			fprintf(f, "unknown: %d\n", s->tt);
+			break;
+		}
+	}
+	fprintf(f,"------------------------------------------------------------------------\n");
+	fclose(f);
+}
+
+static void jit_emit_stackdump(jit_State *J, const char* curop_name)
+{
+	|	move r0, BASE
+	|	move r1, TOP
+	|	move r2, CI
+	|	move r3, L
+	|	movewi r4, curop_name
+	|	jal &dumpstack
+}
+
+char upthere[] = "---^";
 
 /* Detect CPU features and set JIT flags. */
 static int jit_cpudetect(jit_State *J)
@@ -65,12 +130,14 @@ static int jit_std_prologue(jit_State *J, int stacksize)
 	|	slt_u r0, r9, L->stack_last
 	|	bnz r0, >1
 	|	jal ->GROW_STACK
+	|	addidx r9, BASE, stacksize+1 // this may get overwritten by the above function call.
 	|1:
 	|	// This is a slight overallocation (BASE[1+stacksize] would be enough).
 	|	// We duplicate luaD_precall() behaviour so we can use luaD_growstack().
 	|	seq r0, CI, L->end_ci
 	|	bz r0, >2
 	|	jal ->GROW_CI			// CI overflow?
+	|	addidx r9, BASE, stacksize+1
 	|2:
 	|	addidx CI, CI, 1
 	|	move CI->top, r9
@@ -141,7 +208,7 @@ static int jit_compile_jsub(jit_State *J)
 	|	movei r5, #TOP
 	|	mulw_uu r4, r2, r5
 	|
-	|	// Get index right above the last nresults. All 
+	|	// Get index right above the last nresults. All
 	|	add r8, BASE, r4
 	|
 	jit_wipe_r8_to_TOP(J);
@@ -158,7 +225,7 @@ static int jit_compile_jsub(jit_State *J)
 	|	// Restore "global type" registers
 	|	restoreglobalregs
 	|	movei r0, PCRC
-	|	
+	|
 	|	epilogue 32
 	|	jrp lr
 	|
@@ -219,23 +286,23 @@ static int jit_compile_jsub(jit_State *J)
 	|	movei r6, #TOP
 	|	mulw_uu r3, r0, r6
 	|
-	|	sub r4, TOP, r3
-	|	move r8, BASE
-	|	slt_u r1, r4, TOP
+	|	sub r8, TOP, r3
+	|	move r4, BASE
+	|	slt_u r1, r8, TOP
 	|	bz r1, >2
 	|1:
-	|	copyslot TVALUE:r8[0], TVALUE:r4[0]
+	|	copyslot TVALUE:r4[0], TVALUE:r8[0]
 	|	addi r4, r4, #TVALUE
 	|	addi r8, r8, #TVALUE
-	|	slt_u r1, r4, TOP
+	|	slt_u r1, r8, TOP
 	|	bnzt r1, <1
 	|2:
-	jit_wipe_r8_to_TOP(J);
 	|	add TOP, BASE, r3
-	|	
+	|
+	jit_emit_stackdump(J,upthere);
 	|	epilogue LUAFUNC_STACK_SIZE
 	|	jrp lr
-	|	
+	|
 	|.align 64
 	|->GROW_STACK:
 	|	prologue 8
@@ -259,7 +326,7 @@ static int jit_compile_jsub(jit_State *J)
 	status = luaJIT_link(J, &J->jsubmcode, &J->szjsubmcode);
 	if (status != JIT_S_OK)
 		return status;
-	
+
 	/* Copy the callgates from the globals to the global state. */
 	G(J->L)->jit_gateLJ = (luaJIT_GateLJ)J->jsub[JSUB_GATE_LJ];
 	G(J->L)->jit_gateJL = (lua_CFunction)J->jsub[JSUB_GATE_JL];
@@ -285,11 +352,11 @@ static void jit_vararg_table(lua_State *L)
 	sethvalue(L, base + numparams, tab);
 }
 #endif
-
 /* Called before every instruction. */
 static void jit_ins_start(jit_State *J)
 {
 	|=>J->nextpc:
+	jit_emit_stackdump(J, luaP_opnames[GET_OPCODE(*(J->nextins-1))]);
 }
 
 /* Called after the last instruction has been encoded. */
@@ -310,15 +377,15 @@ static void jit_prologue(jit_State *J)
 	Proto *pt = J->pt;
 	int numparams = pt->numparams;
 	int stacksize = pt->maxstacksize;
-	
+
 	jit_std_prologue(J, stacksize);
 
 	|//	move CI->func, BASE
 	|	addidx BASE, BASE, 1
-	
+	|	move TOP, r9
+
 	if(!pt->is_vararg)
 	{
-		|	move TOP, r9
 		|	addidx TVALUE:r8, BASE, numparams
 		jit_wipe_r8_to_TOP(J);
 	}
@@ -326,7 +393,7 @@ static void jit_prologue(jit_State *J)
 	if (numparams > 0) {
 	  |	addi r1, BASE, numparams
 	}
-	
+
 	if (!pt->is_vararg) {  /* Fixarg function. */
 		/* Must cap L->top at L->base+numparams because 1st LOADNIL is omitted. */
 		if (numparams == 0) {
@@ -380,7 +447,7 @@ static void jit_prologue(jit_State *J)
 	  stacksize -= numparams;		/* Fixargs are already cleared. */
 	}
 #endif
-	
+
 #if 0
 	/* Clear undefined args and all vars. Still LUA_TNIL = 0. */
 	/* Note: cannot clear only args because L->top has grown. */
@@ -572,8 +639,6 @@ static void jit_op_call(jit_State *J, int func, int nargs, int nresults)
 	}
 #endif
 	|	jalr LCL->jit_gate		// Call JIT func or GATE_JL/GATE_JC.
-	|	subidx BASE, BASE, func
-
 #if 0
 	/* Clear undefined results TOP <= o < func+nresults. */
 	if (nresults > 0) {
@@ -594,11 +659,11 @@ static void jit_op_call(jit_State *J, int func, int nargs, int nresults)
 	}
 #endif
 	if (nresults >= 0) {
-		|	addidx TVALUE:r8, BASE, nresults
-		jit_wipe_r8_to_TOP(J);
 		|	move TOP, CI->top
-	} 
+	}
+	|	subidx BASE, BASE, func
 }
+
 
 static void jit_op_tailcall(jit_State *J, int func, int nargs)
 {
@@ -1055,7 +1120,6 @@ static void jit_op_getglobal(jit_State *J, int dest, int kidx)
 	|
 	|	// Take the TValue that fell out of it and move to R(dest)
 	|	copyslot BASE[dest], TOP[0]
-	|	setnilvalue TOP[0]
 }
 
 static void jit_op_setglobal(jit_State *J, int rval, int kidx)
@@ -1843,15 +1907,15 @@ static void jit_op_test(jit_State *J, int cond, int dest, int src)
 	/* Check if we can omit the stack copy. */
 	if (dest == src) {  /* Yes, invert branch condition. */
 		if (cond) {
-			|	bz r1, =>target
-		} else {
 			|	bnz r1, =>target
+		} else {
+			|	bz r1, =>target
 		}
 	} else {  /* No, jump around copy code. */
 		if (cond) {
-			|	bnz r1, >1
-		} else {
 			|	bz r1, >1
+		} else {
+			|	bnz r1, >1
 		}
 		|	move r3, BASE[src].value.na[1]
 		|	move BASE[dest].tt, r0
