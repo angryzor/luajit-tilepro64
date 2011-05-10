@@ -1,13 +1,14 @@
 local function generator()
-	local i = 0
+--[[	local i = 0
 	return function()
 			i = i + 1
 			return i
-		end
+		end]]
+	return 5
 end
 
 
 local a = generator()
-print(a())
-print(a())
+local b = a
+print(b)
 

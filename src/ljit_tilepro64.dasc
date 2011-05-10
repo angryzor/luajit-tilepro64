@@ -188,6 +188,7 @@ static int jit_compile_jsub(jit_State *J)
 	|	// Init our global types
 	|	globals_LJ_L r0
 	|	globals_LJ r1
+	|	globals_LJ_LCL BASE->value	
 	|
 	|	// Prevent stackless yield. TODO: figure out what a stackless yield is.
 	|	addi L->nCcalls, L->nCcalls, 1
@@ -662,6 +663,7 @@ static void jit_op_call(jit_State *J, int func, int nargs, int nresults)
 		|	move TOP, CI->top
 	}
 	|	subidx BASE, BASE, func
+	|	move LCL, BASE[-1].value
 }
 
 
@@ -1419,10 +1421,8 @@ static void jit_op_settable(jit_State *J, int tab, int rkey, int rval)
 
 static void jit_op_self(jit_State *J, int dest, int tab, int rkey)
 {
-#if 0
 	|	copyslot BASE[dest+1], BASE[tab]
 	jit_op_gettable(J, dest, tab, rkey);
-#endif
 }
 
 /* ------------------------------------------------------------------------ */
@@ -1578,19 +1578,15 @@ static void jit_op_arith(jit_State *J, int dest, int rkb, int rkc, int ev)
 	default:
 	}
 fpstore:
-	if(ev == TM_LT || ev == TM_LE)
-	{
-		if(dest)
-		{
+	if(ev == TM_LT || ev == TM_LE) {
+		if(dest) {
 			|	bnz r0, =>target
 		}
-		else
-		{
+		else {
 			|	bz r0, =>target
 		}
 	}
-	else
-	{
+	else {
 		/* Store result and set result type (if necessary). */
 		|	storenumber BASE[dest], r0, r1
 		if (dest != rkb && dest != rkc) {
@@ -1600,35 +1596,42 @@ fpstore:
 	return;
 fallback:
 
-	/* Generic fallback for arithmetic ops. */
-	if (kkb) {
-		|	movewi r2, kkb
-	} else {
-		|	addidx r2, BASE, rkb
-	}
-	if (kkc) {
-		|	movewi r3, kkc
-	} else {
-		|	addidx r3, BASE, rkc
-	}
-#if 0
 	if (target) {  /* TM_LT or TM_LE. */
-		|	mov L->savedpc, &(J->nextins+1)
-		|	call &ev==TM_LT?luaV_lessthan:luaV_lessequal, L, ecx, edx
-		|	test eax, eax
-		|	mov BASE, L->base
-		if (dest) {  /* cond */
-			|	jnz =>target
+		if (kkb) {
+			|	movewi r1, kkb
 		} else {
-			|	jz =>target
+			|	addidx r1, BASE, rkb
+		}
+		if (kkc) {
+			|	movewi r2, kkc
+		} else {
+			|	addidx r2, BASE, rkc
+		}
+		|	movemwi L->savedpc, J->nextins+1
+		|	move r0, L
+		|	jal ev==TM_LT?&luaV_lessthan:&luaV_lessequal
+		if (dest) {  /* cond */
+			|	bnz r0, =>target
+		} else {
+			|	bz r0, =>target
 		}
 	} else {
-#endif
-	|	movemwi L->savedpc, J->nextins
-	|	move r0, L
-	|	addidx r1, BASE, dest
-	|	movei r4, ev
-	|	jal &luaV_arith
+		if (kkb) {
+			|	movewi r2, kkb
+		} else {
+			|	addidx r2, BASE, rkb
+		}
+		if (kkc) {
+			|	movewi r3, kkc
+		} else {
+			|	addidx r3, BASE, rkc
+		}
+		|	movemwi L->savedpc, J->nextins
+		|	move r0, L
+		|	addidx r1, BASE, dest
+		|	movei r4, ev
+		|	jal &luaV_arith
+	}
 }
 
 /* ------------------------------------------------------------------------ */
@@ -1664,6 +1667,12 @@ static void jit_fallback_len(lua_State *L, StkId ra, const TValue *rb)
 
 static void jit_op_len(jit_State *J, int dest, int rb)
 {
+	|	globals_JL
+	|	move r0, L
+	|	addidx r1, BASE, dest
+	|	addidx r2, BASE, rb
+	|	jal &jit_fallback_len
+	|	globals_LJ L->base
 #if 0
 	switch (ttype(hint_get(J, TYPE))) {
 	case LUA_TTABLE:
@@ -1716,6 +1725,17 @@ static void jit_op_not(jit_State *J, int dest, int rb)
 
 static void jit_op_concat(jit_State *J, int dest, int first, int last)
 {
+	|	globals_JL
+	|	move r0, L
+	|	movei r1, last-first+1   // GRAY ASSUME: !(last > 255)
+	|	movei r2, last
+	|	jal &luaV_concat
+	|	globals_LJ L->base
+	if(dest != first)
+	{
+		|	copyslot BASE[dest], BASE[first]
+	}
+	/* TODO: jit_checkGC(J); */
 #if 0
 	int num = last-first+1;
 	if (num == 2 && ttisstring(hint_get(J, TYPE))) {  /* Optimize common case. */
@@ -2073,12 +2093,30 @@ static void jit_op_closure(jit_State *J, int dest, int ptidx)
 {
 	Proto *npt = J->pt->p[ptidx];
 	int nup = npt->nups;
+	const Instruction* pc = J->nextins;
+	int j = 0;
+	
 	|	move r0, L
 	|	movei r1, nup
 	|	move r2, LCL->env
 	|	jal &luaF_newLclosure
 	|	movemwi LCL:r0->p, npt			// Store new proto in returned closure.
 	|	setclvaluer BASE[dest], r0
+	for (j=0; j<nup; j++, pc++) {
+		if (GET_OPCODE(*pc) == OP_GETUPVAL)
+			|	move LCL:r0->upvals[j], LCL->upvals[GETARG_B(*pc)]
+		else {
+			|//lua_assert(GET_OPCODE(*pc) == OP_MOVE);
+			|	move r30, r0
+			|	globals_JL
+			|	move r0, L
+			|	addidx r1, BASE, GETARG_B(*pc)
+			|	jal &luaF_findupval
+			|	move LCL:r30->upvals[j], UPVAL:r0
+			|	globals_LJ L->base
+		}
+	}
+	J->combine += nup;
 #if 0
 	/* Process pseudo-instructions for upvalues. */
 	if (nup > 0) {

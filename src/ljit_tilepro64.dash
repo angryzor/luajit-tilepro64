@@ -121,8 +121,8 @@
 |	move TOP, L->top
 |.endmacro
 |
-|.macro globals_LJ_LCL
-|	move LCL, BASE->value
+|.macro globals_LJ_LCL, orig
+|	move LCL, orig
 |.endmacro
 |
 |.macro globals_LJ_CI
@@ -132,7 +132,6 @@
 |.macro globals_LJ, base
 |	globals_LJ_BASE base
 |	globals_LJ_TOP
-|	globals_LJ_LCL
 |	globals_LJ_CI
 |.endmacro
 |

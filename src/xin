@@ -1,1 +1,14 @@
-do end
+local function generator()
+--[[	local i = 0
+	return function()
+			i = i + 1
+			return i
+		end]]
+	return 5
+end
+
+
+local a = generator()
+local b = a
+print(b)
+

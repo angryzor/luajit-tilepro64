@@ -1,0 +1,10 @@
+name basic-concat
+
+%%
+local a = "I feel a"
+local b = " great disturbance "
+local c = "in my town!"
+print(a .. b .. c)
+
+%%
+I feel a great disturbance in my town!

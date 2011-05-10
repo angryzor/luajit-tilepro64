@@ -40,7 +40,7 @@ succ_tn=0
 fail_tn=0
 fail_ts=""
 
-for file in $tests_folder/*.lua.tc
+for file in ${1:-$tests_folder/*.lua.tc}
 do
 	rm -f out
 	perform_single_test "$file" && {

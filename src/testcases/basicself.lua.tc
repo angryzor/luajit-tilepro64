@@ -1,0 +1,7 @@
+name basic-self
+
+%%
+local foo = "Fiery Blaze"
+print(foo:sub(7))
+%%
+Blaze
