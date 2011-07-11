@@ -1818,15 +1818,17 @@ static void jit_op_concat(jit_State *J, int dest, int first, int last)
 
 static void jit_op_eq(jit_State *J, int cond, int rkb, int rkc)
 {
-#if 0
+	const TValue *kkb = ISK(rkb) ? &J->pt->k[INDEXK(rkb)] : NULL;
+	const TValue *kkc = ISK(rkc) ? &J->pt->k[INDEXK(rkc)] : NULL;
 	int target = jit_jmp_target(J);
+#if 0
 	int condtarget = cond ? (J->nextpc+1) : target;
 	jit_assert(cond == 0 || cond == 1);
 
 	/* Comparison of two constants. Evaluate at compile time. */
 	if (ISK(rkb&rkc)) {
 		if ((rkb == rkc) == cond) {  /* Constants are already unique. */
-			|	jmp =>target
+			|	j =>target
 		}
 		return;
 	}
@@ -1837,24 +1839,23 @@ static void jit_op_eq(jit_State *J, int cond, int rkb, int rkc)
 		kk = &J->pt->k[INDEXK(rkc)];
 		switch (ttype(kk)) {
 		case LUA_TNIL:
-			|	isnil rkb
+			|	isnil r0, rkb
 			break;
 		case LUA_TBOOLEAN:
 			if (bvalue(kk)) {
-	|	mov eax, BASE[rkb].tt
-	|	mov ecx, BASE[rkb].value
-	|	dec eax
-	|	dec ecx
-	|	or eax, ecx
+				|	move r2, BASE[rkb].tt
+				|	move r3, BASE[rkb].value
+				|	addi r2, r2, -1
+				|	addi r3, r3, -1
+				|	or r0, r2, r3
 			} else {
-	|	mov eax, BASE[rkb].tt
-	|	dec eax
-	|	or eax, BASE[rkb].value
+				|	mov r2, BASE[rkb].tt
+				|	addi r2, r2, -1
+				|	or r0, r2, BASE[rkb].value
 			}
 			break;
 		case LUA_TNUMBER:
-			|// Note: bitwise comparison is not faster (and needs to handle -0 == 0).
-			|	isnumber rkb
+			|	isnumber r1, rkb
 			|	jne =>condtarget
 			|	fld qword BASE[rkb].value
 			|	fld qword [&kk->value]
@@ -1905,7 +1906,28 @@ static void jit_op_eq(jit_State *J, int cond, int rkb, int rkc)
 		|	jne =>target
 	}
 #endif
+	if (kkb) {
+		|	movewi r1, kkb
+	} else {
+		|	addidx r1, BASE, rkb
+	}
+	if (kkc) {
+		|	movewi r2, kkc
+	} else {
+		|	addidx r2, BASE, rkc
+	}
+
+	|	move r0, L
+	|	jal &luaV_equalval
+
+	if(cond) {
+		|	bnz r0, =>target
+	}
+	else {
+		|	bz r0, =>target
+	}
 }
+
 
 /* ------------------------------------------------------------------------ */
 

@@ -1,0 +1,35 @@
+name basic-eq
+
+%%
+local a = 53.54
+local b = 53.54
+local c = true
+local d = nil
+local e = nil
+local g = true
+
+if a == d then
+	print("no")
+else
+	print("yes")
+end
+if c == d then
+	print("no")
+else
+	print("yes")
+end
+if a == b then
+	print("yes")
+else
+	print("no")
+end
+if c == g then
+	print("yes")
+else
+	print("no")
+end
+%%
+yes
+yes
+yes
+yes

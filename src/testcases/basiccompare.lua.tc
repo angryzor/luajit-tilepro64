@@ -26,7 +26,7 @@ if b >= a then
 else
 	print("fail")
 end
-if a > b then
+--[[if a > b then
 	print("fail")
 else
 	print("ok")
@@ -48,13 +48,9 @@ if b <= a then
 	print("fail")
 else
 	print("ok")
-end
+end]]
 
 %%
-ok
-ok
-ok
-ok
 ok
 ok
 ok

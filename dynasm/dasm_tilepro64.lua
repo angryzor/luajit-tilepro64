@@ -218,16 +218,6 @@ end
 
 ------------------------------------------------------------------------------
 
--- Put action for label arg (IMM_LG, IMM_PC, REL_LG, REL_PC).
-local function wputlabel(aprefix, imm, num)
-  if type(imm) == "number" then
-    waction(aprefix.."LG", nil, num);
-    wputxw(imm)
-  else
-    waction(aprefix.."PC", imm, num)
-  end
-end
-
 local function wputimm(immtype, expr)
 	waction("IMM")
 	wiem(immtype)
@@ -246,6 +236,11 @@ local function wputl(immtype, expr)
 	wputxw(expr)
 end
 
+local function wputpc(immtype, expr)
+	waction("PC")
+	wiem(immtype)
+	waparam(expr)
+end
 
 ------------------------------------------------------------------------------
 
@@ -394,7 +389,8 @@ local imm_enc_modes = {
 	X1_Br = "IEM_X1_Br",
 	X1_Shift = "IEM_X1_Shift",
 	X1_J = "IEM_X1_J",
-	X1_J_jal = "IEM_X1_J_jal"
+	X1_J_jal = "IEM_X1_J_jal",
+	X1_J_j = "IEM_X1_J_j"
 }
 
 -- Parse immediate expression.
@@ -402,11 +398,13 @@ local function parseimm(expr, immtype)
 
 
 	local prefix = sub(expr, 1, 2)
---[[	-- =>expr (pc label reference)
+	-- =>expr (pc label reference)
 	if prefix == "=>" then
-		return "iJ", sub(expr, 3)
+		return make_operand(0, { function()
+											wputpc(immtype, sub(expr, 3))
+									end })
 	end
---]]
+
 
 	-- ->name (global label reference)
 	if prefix == "->" then
@@ -631,6 +629,13 @@ function special_instr_parsers.X1_J_jal()
 	end
 end
 
+function special_instr_parsers.X1_J_j()
+	return function(params)
+		local Off = params[1]
+		return instr_builders.X1_J(0, parseimm(Off, imm_enc_modes.X1_J_j))
+	end
+end
+
 
 
 ------------------------------------------------------------------
@@ -717,11 +722,13 @@ map_instr_X1 = {
 	bzt_2 = instr_parsers.X1_Br(5, 0, 0x1),
 	jal_1 = special_instr_parsers.X1_J_jal(),
 	jalr_1 = special_instr_parsers.X1_RRR_no_Dst_and_B(1, 0, 0x09),
+	j_1 = special_instr_parsers.X1_J_j(),
 	jr_1 = special_instr_parsers.X1_RRR_no_Dst_and_B(1, 0, 0x0C),
 	jrp_1 = special_instr_parsers.X1_RRR_no_Dst_and_B(1, 0, 0x0B),
 
 	-- Logical opcodes
 	shli_3 = instr_parsers.X1_Shift(8, 0, 0x4),
+	shri_3 = instr_parsers.X1_Shift(8, 0, 0x7),
 
 	-- Memory opcodes
 	lw_2 = instr_parsers.X1_Unary(8, 0, 0xB, 0xE),
@@ -754,6 +761,7 @@ map_op = {
 	bzt_2 = wrap_put_nop_X0(map_instr_X1["bzt_2"]),
 	jal_1 = wrap_put_nop_X0(map_instr_X1["jal_1"]),
 	jalr_1 = wrap_put_nop_X0(map_instr_X1["jalr_1"]),
+	j_1 = wrap_put_nop_X0(map_instr_X1["j_1"]),
 	jr_1 = wrap_put_nop_X0(map_instr_X1["jr_1"]),
 	jrp_1 = wrap_put_nop_X0(map_instr_X1["jrp_1"]),
 
@@ -763,6 +771,7 @@ map_op = {
 	or_3 = wrap_put_nop_X1(map_instr_X0["or_3"]),
 	ori_3 = wrap_put_nop_X1(map_instr_X0["ori_3"]),
 	shli_3 = wrap_put_nop_X0(map_instr_X1["shli_3"]),
+	shri_3 = wrap_put_nop_X0(map_instr_X1["shri_3"]),
 
 	-- Memory opcodes
 	lw_2 = wrap_put_nop_X0(map_instr_X1["lw_2"]),
@@ -798,11 +807,13 @@ end
 
 local function parse_label_def(expr)
 	local prefix = sub(expr, 1, 2)
---[[	-- =>expr (pc label reference)
+	-- =>expr (pc label reference)
 	if prefix == "=>" then
-		return "iJ", sub(expr, 3)
+		waction("LABEL_PC")
+		waparam(sub(expr, 3))
+		return
 	end
---]]
+
 
 	-- ->name (global label reference)
 	if prefix == "->" then
@@ -826,18 +837,6 @@ end
 map_op[".label_2"] = function(params)
 	if not params then return "[1-9] | ->global | =>pcexpr  [, addr]" end
 	parse_label_def(params[1])
-
-	--[[ SETLABEL must immediately follow LABEL_LG/LABEL_PC.
-  local addr = params[2]
-  if addr then
-    local a = parseoperand(params[2])
-    if a.mode == "iPJ" then
-      waction("SETLABEL", a.imm) -- !x64 (secpos)
-    else
-      werror("bad label assignment")
-    end
-  end
-  --]]
 end
 map_op[".label_1"] = map_op[".label_2"]
 --]]

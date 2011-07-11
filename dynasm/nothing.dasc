@@ -1,0 +1,11 @@
+|.arch x86
+|.actionlist alist
+|.globals JSUB_
+
+void main()
+{
+	|	mov eax, ->MEH
+	|->MEH:
+	|	mov eax, 1
+}
+

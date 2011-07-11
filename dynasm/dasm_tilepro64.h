@@ -2,6 +2,7 @@
 #include <stdarg.h>
 #include <string.h>
 #include <stdlib.h>
+#include <stdio.h>
 
 #define DASM_ARCH "tilepro64"
 
@@ -199,7 +200,7 @@ void dasm_put( Dst_DECL, int start, ...) {
 			p++; /* Constant encoding mode */
 			unsigned long n = va_arg(ap,unsigned long); /* Semiconstant immediate value */
 			b[pos++] = n;
-		} else if (action <= DASM_PC) {
+		} else if (action < DASM_PC) {
 			p++; /* Constant encoding mode */
 			unsigned long n = *p++; /* Constant label ID */
 
@@ -225,8 +226,22 @@ void dasm_put( Dst_DECL, int start, ...) {
 				}
 				break;
 			}
+		} else if (action == DASM_PC) {
+			p++; /* Constant encoding mode */
+			unsigned long n = va_arg(ap,unsigned long); /* Semiconstant label ID */
+			if (D->pclabels[n] < 0)
+				b[pos++] = -D->pclabels[n];
+			else {
+				b[pos] = D->pclabels[n];
+				D->pclabels[n] = pos++;
+			}
+		} else if(action == DASM_LABEL_PC) {
+			unsigned long n = va_arg(ap,unsigned long); /* Semiconstant label ID */
+			if (D->pclabels[n] >= 0)
+				collapse_chain(D, ofs, &D->pclabels[n]);
+			D->pclabels[n] = -ofs;
 		} else if (action <= DASM_SECTION) {
-			unsigned long n = *p++; /* Constant alignment value */
+			unsigned long n = *p++; /* Constant alignment value / label ID */
 
 			switch (action) {
 			case DASM_LABEL_L:
@@ -247,7 +262,7 @@ void dasm_put( Dst_DECL, int start, ...) {
 				D->section = &D->sections[n];
 				goto stop;
 			}
-		} else
+		} else {
 			switch (action) {
 			case DASM_ESC:
 				p++;
@@ -256,6 +271,7 @@ void dasm_put( Dst_DECL, int start, ...) {
 			case DASM_STOP:
 				goto stop;
 			}
+		}
 	}
 	stop: va_end(ap);
 	sec->pos = pos;
@@ -291,7 +307,6 @@ int dasm_link( Dst_DECL, size_t *szp) {
 			}
 		}
 	}
-
 	/* Combine all code sections. No support for data sections (yet). */
 	for (secnum = 0; secnum < D->maxsection; secnum++) {
 		dasm_Section *sec = D->sections + secnum;
@@ -303,10 +318,15 @@ int dasm_link( Dst_DECL, size_t *szp) {
 			dasm_ActList p = D->actionlist + b[pos++];
 			while (1) {
 				int action = *p++;
+
 				switch (action) {
 				case DASM_IMM:
 					p++;
 					pos++;
+					break;
+				case DASM_PC:
+					p++;
+					b[pos++] += ofs;
 					break;
 				case DASM_L:
 				case DASM_G:
@@ -319,6 +339,8 @@ int dasm_link( Dst_DECL, size_t *szp) {
 				case DASM_ESC:
 				default:
 					p++;
+					break;
+				case DASM_LABEL_PC:
 					break;
 				case DASM_SECTION:
 				case DASM_STOP:
@@ -357,29 +379,36 @@ static void encode_refactoring(unsigned long* tgt, jit_encmodes mode, unsigned l
 	case IEM_X1_Shift:
 		*tgthi |= (r << 11);
 		break;
+	case IEM_X1_J_j:
 	case IEM_X1_J_jal:
 		if (r - (unsigned long) tgt <= 0x80000000 ) { // TODO: Possible off-by-one error here. Should think about this.
 			/*
-			 * Jump forward. use jalf.
+			 * Jump forward. use j(al)f.
 			 * setNextPC(getCurrentPC() + BACKWARD_OFFSET +
 			 *			 (JOff << (INSTRUCTION_SIZE_LOG_2 - BYTE_SIZE_LOG_2)));
 			 * ==> nextPC = curPC + (JOff << 3)
 			 * <=> JOff = (nextPC - curPC) >> 3
 			 */
 			r = (r - (unsigned long) tgt) >> 3;
-			/* Add the jalf instruction. */
-			*tgthi |= (0xC << 27);
+			/* Add the j(al)f instruction. */
+			if(mode == IEM_X1_J_jal)
+				*tgthi |= (0xC << 27);
+			else
+				*tgthi |= (0xA << 27);
 		} else {
 			/*
-			 * Jump backward. use jalb.
+			 * Jump backward. use j(al)b.
 			 * setNextPC(getCurrentPC() +
 			 *			 (JOff << (INSTRUCTION_SIZE_LOG_2 - BYTE_SIZE_LOG_2)));
 			 * ==> nextPC = curPC + 0x80000000 + (JOff << 3)
 			 * <=> JOff = (nextPC - curPC - 0x80000000) >> 3
 			 */
 			r = (r - (unsigned long) tgt - 0x80000000) >> 3;
-			/* Add the jalb instruction. */
-			*tgthi |= (0xD << 27);
+			/* Add the j(al)b instruction. */
+			if(mode == IEM_X1_J_jal)
+				*tgthi |= (0xD << 27);
+			else
+				*tgthi |= (0xB << 27);
 		}
 		/* Continue as we would for a normal X1_J encoding */
 	case IEM_X1_J:
@@ -422,7 +451,7 @@ int dasm_encode( Dst_DECL, void *buffer) {
 				int action = *p++;
 				int param = (action >= DASM_IMM && action <= DASM_PC) ? *b++ : 0;
 				jit_encmodes mode =	(action >= DASM_IMM && action <= DASM_PC) ? *p++ : 0;
-				int cparam = (action >= DASM_L && action <= DASM_ALIGN) ? *p++ : 0;
+				int cparam = (action >= DASM_L && action <= DASM_ALIGN && action != DASM_PC && action != DASM_LABEL_PC) ? *p++ : 0;
 
 				switch (action) {
 				case DASM_IMM:
@@ -430,10 +459,8 @@ int dasm_encode( Dst_DECL, void *buffer) {
 					break;
 				case DASM_L:
 				case DASM_G:
-					encode_refactoring(cp - 2, mode, (unsigned long)base + (param << 2));
-					break;
 				case DASM_PC:
-					// TODO
+					encode_refactoring(cp - 2, mode, (unsigned long)base + (param << 2));
 					break;
 				case DASM_LABEL_L:
 				case DASM_LABEL_PC:
@@ -465,16 +492,15 @@ int dasm_encode( Dst_DECL, void *buffer) {
 }
 
 /* Get PC label offset. */
-int dasm_getpclabel( Dst_DECL, unsigned int pc) {
-#if 0
-	dasm_State *D = Dst_REF;
-	if (pc*sizeof(int) < D->pcsize) {
-		int pos = D->pclabels[pc];
-		if (pos < 0) return *DASM_POS2PTR(D, -pos);
-		if (pos > 0) return -1; /* Undefined. */
-	}
-#endif
-	return -2; /* Unused or out of range. */
+int dasm_getpclabel(Dst_DECL, unsigned int pc)
+{
+  dasm_State *D = Dst_REF;
+  if (pc*sizeof(int) < D->pcsize) {
+    int pos = D->pclabels[pc];
+    if (pos < 0) return *DASM_POS2PTR(D, -pos);
+    if (pos > 0) return -1;  /* Undefined. */
+  }
+  return -2;  /* Unused or out of range. */
 }
 
 #ifdef DASM_CHECKS
