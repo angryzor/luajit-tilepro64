@@ -27,6 +27,8 @@ extern double __float64_rem(double,double);
 extern double __float64_neg(double,double);
 extern int __float64_lt(double,double);
 extern int __float64_le(double,double);
+extern int __float64_gt(double,double);
+extern int __float64_ge(double,double);
 #include <math.h>
 #include <stdio.h>
 
@@ -1126,13 +1128,21 @@ static void jit_op_getglobal(jit_State *J, int dest, int kidx)
 
 static void jit_op_setglobal(jit_State *J, int rval, int kidx)
 {
-#if 0
+	/* At this point, we just do a call to the Lua setfield function here */
 	const TValue *kk = &J->pt->k[kidx];
 	jit_assert(ttisstring(kk));
-	|	mov TSTRING:edx, &&kk->value.gc->ts
-	|	addidx BASE, rval
-	|	call ->SETGLOBAL
-#endif
+	|	movewi TSTRING:r2, &kk->value.gc->ts
+	|	addi r2, r2, #TSTRING
+	|	moveli r1, -10002	// LUA_GLOBALSINDEX
+	|	move r0, L
+	|
+	|	addidx TOP, TOP, 1
+	|	copyslot TOP[0], BASE[rval]
+	|
+	|	// lua_setfield gets something from the stack top, so set L->top
+	|	globals_JL_TOP
+	|	jal &lua_setfield
+	|
 }
 
 enum { TKEY_KSTR = -2, TKEY_STR = -1, TKEY_ANY = 0 };
@@ -2000,6 +2010,11 @@ static void jit_for_coerce(lua_State *L, TValue *o)
 
 static void jit_op_forprep(jit_State *J, int ra, int target)
 {
+	|	loadnumber r0, r1, BASE[ra+FOR_IDX]
+	|	loadnumber r2, r3, BASE[ra+FOR_STP]
+	|	jal &__float64_sub
+	|	storenumber BASE[ra+FOR_IDX], r0, r1
+	|	j =>target
 #if 0
 	const TValue *step = hint_get(J, FOR_STEP_K);
 	if (ttisnumber(step)) {
@@ -2048,38 +2063,39 @@ static void jit_op_forprep(jit_State *J, int ra, int target)
 
 static void jit_op_forloop(jit_State *J, int ra, int target)
 {
-#if 0
+	|	loadnumber r0, r1, BASE[ra+FOR_IDX]
+	|	loadnumber r2, r3, BASE[ra+FOR_STP]
+	|	jal &__float64_add
+	|	storenumber BASE[ra+FOR_IDX], r0, r1
+	|	storenumber BASE[ra+FOR_EXT], r0, r1
 	const TValue *step = hint_getpc(J, FOR_STEP_K, target-1);
 	if (ttisnumber(step)) {
-		|	fld qword BASE[ra+FOR_LIM].value	// [lim]        (FP stack notation)
-		|	fld qword BASE[ra+FOR_IDX].value	// [idx lim]
-		|	fadd qword BASE[ra+FOR_STP].value // [nidx lim]
-		|	fst qword BASE[ra+FOR_EXT].value	// extidx = nidx
-		|	fst qword BASE[ra+FOR_IDX].value	// idx = nidx
-		|	settt BASE[ra+FOR_EXT], LUA_TNUMBER
-		|	fcomparepp			// nidx >< lim ?
-		if (nvalue(step) < (lua_Number)0) {
-			|	jae =>target			// step < 0 && nidx >= lim: loop again.
-		} else {
-			|	jbe =>target			// step >= 0 && nidx <= lim: loop again.
+		|	loadnumber r2, r3, BASE[ra+FOR_LIM]
+		if(nvalue(step) < (lua_Number)0) {
+			|	jal &__float64_ge
 		}
-	} else {
-		|	mov eax, BASE[ra+FOR_STP].value.na[1]	// Sign bit is in hi dword.
-		|	fld qword BASE[ra+FOR_LIM].value	// [lim]        (FP stack notation)
-		|	fld qword BASE[ra+FOR_IDX].value	// [idx lim]
-		|	fld qword BASE[ra+FOR_STP].value	// [stp idx lim]
-		|	faddp st1			// [nidx lim]
-		|	fst qword BASE[ra+FOR_IDX].value	// idx = nidx
-		|	fst qword BASE[ra+FOR_EXT].value	// extidx = nidx
-		|	settt BASE[ra+FOR_EXT], LUA_TNUMBER
-		|	test eax, eax			// step >< 0 ?
-		|	js >1
-		|	fxch				// if (step > 0) [lim nidx]
-		|1:
-		|	fcomparepp			// step > 0 ? lim >= nidx : nidx >= lim
-		|	jae =>target			// Loop again.
+		else {
+			|	jal &__float64_le
+		}
 	}
-#endif
+	else {
+		|	loadnumber r0, r1, BASE[ra+FOR_STP]
+		|	move r2, zero
+		|	move r3, zero
+		|	jal &__float64_lt
+		|	bz r0, >3
+		|	loadnumber r0, r1, BASE[ra+FOR_IDX]
+		|	loadnumber r2, r3, BASE[ra+FOR_LIM]
+		|	jal &__float64_ge
+		|	j >4
+		|3:
+		|	loadnumber r0, r1, BASE[ra+FOR_IDX]
+		|	loadnumber r2, r3, BASE[ra+FOR_LIM]
+		|	jal &__float64_le
+		|4:
+	}
+	
+	|	bnz r0, =>target
 }
 
 /* ------------------------------------------------------------------------ */

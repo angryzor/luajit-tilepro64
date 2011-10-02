@@ -11,4 +11,3 @@ print(a and c and e)
 print(a or b or e)
 print(c or b or f)
 print(c or d or f)
-
