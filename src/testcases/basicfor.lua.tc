@@ -1,0 +1,12 @@
+name basic-for
+
+%%
+for i = 1,2,0.2 do print(i) end
+
+%%
+1
+1.2
+1.4
+1.6
+1.8
+2
