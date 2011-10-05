@@ -325,7 +325,6 @@ static int jit_compile_jsub(jit_State *J)
 	|.align 64
 	|//-----------------------------------------------------------------------
 
-	dasm_checkstep(Dst, DASM_SECTION_CODE);
 	status = luaJIT_link(J, &J->jsubmcode, &J->szjsubmcode);
 	if (status != JIT_S_OK)
 		return status;
@@ -793,7 +792,8 @@ static void jit_op_loadk(jit_State *J, int dest, int kidx)
 
 static void jit_op_loadnil(jit_State *J, int first, int last)
 {
-	for(int i = first; i <= last; i++)
+	int i;
+	for(i = first; i <= last; i++)
 	{
 		|	setnilvalue BASE[i]
 	}
@@ -1586,6 +1586,7 @@ static void jit_op_arith(jit_State *J, int dest, int rkb, int rkc, int ev)
 		|	jal &__float64_le
 		break;
 	default:
+		break;
 	}
 fpstore:
 	if(ev == TM_LT || ev == TM_LE) {

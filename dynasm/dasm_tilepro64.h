@@ -285,7 +285,7 @@ static void encode_refactoring(unsigned long* tgt, jit_encmodes mode, unsigned l
 		*tgtlo |= ((r & 0xFFFF) << 12);
 		break;
 	case IEM_X1_Br:
-		r = r - (unsigned long)tgt >> 3;
+		r = (r - (unsigned long) tgt) >> 3;
 		*tgthi |= ((r & 0x7FFF) << 11);
 		*tgthi |= (((r >> 15) & 3) << 3);
 		break;

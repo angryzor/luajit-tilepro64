@@ -21,7 +21,7 @@
 #include "ltm.h"
 #include "lvm.h"
 #include "lopcodes.h"
-#include "ldebug.h"
+//#include "ldebug.h"
 #include "lzio.h"
 
 #include "ljit.h"

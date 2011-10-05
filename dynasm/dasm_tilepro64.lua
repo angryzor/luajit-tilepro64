@@ -932,8 +932,8 @@ map_op[".actionnames_1"] = function(params)
 	wline("};");
 	wline([[
 
-#define lo16(n) (((signed int)n << 16) >> 16)
-#define hi16(n) ((signed int)n >> 16)
+#define lo16(n) ((((signed int)n) << 16) >> 16)
+#define hi16(n) (((signed int)n) >> 16)
 #define ha16(n) ((lo16(n) < 0) ? hi16(n) + 1 : hi16(n))
 
 ]]);

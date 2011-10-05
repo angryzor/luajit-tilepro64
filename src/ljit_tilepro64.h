@@ -324,8 +324,8 @@ enum	jit_actionnames {
 	DASM_STOP,
 };
 
-#define lo16(n) (((signed int)n << 16) >> 16)
-#define hi16(n) ((signed int)n >> 16)
+#define lo16(n) ((((signed int)n) << 16) >> 16)
+#define hi16(n) (((signed int)n) >> 16)
 #define ha16(n) ((lo16(n) < 0) ? hi16(n) + 1 : hi16(n))
 
 
@@ -1188,7 +1188,6 @@ static int jit_compile_jsub(jit_State *J)
 	dasm_put(Dst, 871, lo16(Dt1(->top)), ha16(Dt1(->top)), &luaD_growstack, lo16(Dt1(->top)), ha16(Dt1(->top)), &luaD_growCI);
 # 327 "ljit_tilepro64.dasc"
 
-	dasm_checkstep(Dst, DASM_SECTION_CODE);
 	status = luaJIT_link(J, &J->jsubmcode, &J->szjsubmcode);
 	if (status != JIT_S_OK)
 		return status;
@@ -1200,13 +1199,13 @@ static int jit_compile_jsub(jit_State *J)
 	return JIT_S_OK;
 }
 
-# 358 "ljit_tilepro64.dasc"
+# 357 "ljit_tilepro64.dasc"
 /* Called before every instruction. */
 static void jit_ins_start(jit_State *J)
 {
 	//|=>J->nextpc:
 	dasm_put(Dst, 944, J->nextpc);
-# 362 "ljit_tilepro64.dasc"
+# 361 "ljit_tilepro64.dasc"
 	jit_emit_stackdump(J, luaP_opnames[GET_OPCODE(*(J->nextins-1))]);
 }
 
@@ -1220,7 +1219,7 @@ static void jit_ins_last(jit_State *J, int lastpc, int sizemfm)
 	//|	// The previous two awords are only word, but not aword aligned.
 	//|	// Copying them is easier than aligning them and adjusting mfm handling.
 	dasm_put(Dst, 946);
-# 374 "ljit_tilepro64.dasc"
+# 373 "ljit_tilepro64.dasc"
 }
 
 
@@ -1237,30 +1236,30 @@ static void jit_prologue(jit_State *J)
 	//|	addidx BASE, BASE, 1
 	//|	move TOP, r9
 	dasm_put(Dst, 977, (1)*sizeof(TValue));
-# 389 "ljit_tilepro64.dasc"
+# 388 "ljit_tilepro64.dasc"
 
 	if(!pt->is_vararg)
 	{
 		//|	addidx TVALUE:r8, BASE, numparams
 		dasm_put(Dst, 984, (numparams)*sizeof(TValue));
-# 393 "ljit_tilepro64.dasc"
+# 392 "ljit_tilepro64.dasc"
 		jit_wipe_r8_to_TOP(J);
 	}
-# 453 "ljit_tilepro64.dasc"
+# 452 "ljit_tilepro64.dasc"
 
-# 479 "ljit_tilepro64.dasc"
+# 478 "ljit_tilepro64.dasc"
 }
 
 /* Check if we can combine 'return const'. */
 static int jit_return_k(jit_State *J)
 {
 	return 0;
-# 508 "ljit_tilepro64.dasc"
+# 507 "ljit_tilepro64.dasc"
 }
 
 static void jit_op_return(jit_State *J, int rbase, int nresults)
 {
-# 540 "ljit_tilepro64.dasc"
+# 539 "ljit_tilepro64.dasc"
 
 	/* May need to close open upvalues. */
 	if (!fhint_isset(J, NOCLOSE)) {
@@ -1268,7 +1267,7 @@ static void jit_op_return(jit_State *J, int rbase, int nresults)
 		//|	move r1, BASE
 		//|	jal &luaF_close
 		dasm_put(Dst, 989, &luaF_close);
-# 546 "ljit_tilepro64.dasc"
+# 545 "ljit_tilepro64.dasc"
 	}
 
 	/* Go to the previous CallInfo, load the current into r7 */
@@ -1276,7 +1275,7 @@ static void jit_op_return(jit_State *J, int rbase, int nresults)
 	//|	subidx CI, CI, 1
 	//|	subidx BASE, BASE, 1
 	dasm_put(Dst, 998, -(1)*sizeof(CallInfo), -(1)*sizeof(TValue));
-# 552 "ljit_tilepro64.dasc"
+# 551 "ljit_tilepro64.dasc"
 
 	/* Previous op was open: 'return f()' or 'return ...' */
 	if (nresults < 0) {
@@ -1293,7 +1292,7 @@ static void jit_op_return(jit_State *J, int rbase, int nresults)
 		//|2:
 		//|	setnilvalue TOP[0]
 		dasm_put(Dst, 1007, -(1)*sizeof(TValue), lo16(Dt7([1].value)), ha16(Dt7([1].value)), lo16(Dt7([0].value)), ha16(Dt7([0].value)), lo16(Dt7([1].value.na[1])), ha16(Dt7([1].value.na[1])), lo16(Dt7([0].value.na[1])), ha16(Dt7([0].value.na[1])), lo16(Dt7([1].tt)), ha16(Dt7([1].tt)), lo16(Dt7([0].tt)), ha16(Dt7([0].tt)), (1)*sizeof(TValue), lo16(Dt3([0].tt)), ha16(Dt3([0].tt)));
-# 587 "ljit_tilepro64.dasc"
+# 586 "ljit_tilepro64.dasc"
 	}
 	else
 	{
@@ -1302,57 +1301,57 @@ static void jit_op_return(jit_State *J, int rbase, int nresults)
 		{
 			//|	copyslot BASE[i], BASE[rbase+i+1]
 			dasm_put(Dst, 1114, lo16(Dt2([rbase+i+1].value)), ha16(Dt2([rbase+i+1].value)), lo16(Dt2([i].value)), ha16(Dt2([i].value)), lo16(Dt2([rbase+i+1].value.na[1])), ha16(Dt2([rbase+i+1].value.na[1])), lo16(Dt2([i].value.na[1])), ha16(Dt2([i].value.na[1])), lo16(Dt2([rbase+i+1].tt)), ha16(Dt2([rbase+i+1].tt)), lo16(Dt2([i].tt)), ha16(Dt2([i].tt)));
-# 594 "ljit_tilepro64.dasc"
+# 593 "ljit_tilepro64.dasc"
 		}
 		//|	addidx TVALUE:r8, BASE, nresults
 		dasm_put(Dst, 1181, (nresults)*sizeof(TValue));
-# 596 "ljit_tilepro64.dasc"
+# 595 "ljit_tilepro64.dasc"
 		jit_wipe_r8_to_TOP(J);
 		//|	addidx TOP, BASE, nresults
 		dasm_put(Dst, 1186, (nresults)*sizeof(TValue));
-# 598 "ljit_tilepro64.dasc"
+# 597 "ljit_tilepro64.dasc"
 	}
 
 	//|	epilogue LUAFUNC_STACK_SIZE
 	//|	jrp lr
 	dasm_put(Dst, 1191);
-# 602 "ljit_tilepro64.dasc"
+# 601 "ljit_tilepro64.dasc"
 }
 
 static void jit_op_call(jit_State *J, int func, int nargs, int nresults)
 {
-# 610 "ljit_tilepro64.dasc"
+# 609 "ljit_tilepro64.dasc"
 	//|	addidx BASE, BASE, func
 	//|//  move CI, L->ci
 	//|//   isfunction 0			// BASE[0] is L->base[func].
 	dasm_put(Dst, 1198, (func)*sizeof(TValue));
-# 613 "ljit_tilepro64.dasc"
+# 612 "ljit_tilepro64.dasc"
 	if (nargs >= 0) {  /* Previous op was not open and did not set TOP. */
 		//|	addidx TOP, BASE, nargs+1
 		dasm_put(Dst, 1203, (nargs+1)*sizeof(TValue));
-# 615 "ljit_tilepro64.dasc"
+# 614 "ljit_tilepro64.dasc"
 	}
 	//|	move LCL, BASE->value
 	//|	movemwi CI->savedpc, J->nextins
-# 644 "ljit_tilepro64.dasc"
+# 643 "ljit_tilepro64.dasc"
 	//|	jalr LCL->jit_gate		// Call JIT func or GATE_JL/GATE_JC.
 	dasm_put(Dst, 1208, lo16(Dt2(->value)), ha16(Dt2(->value)), lo16(J->nextins), ha16(J->nextins), lo16(Dt4(->savedpc)), ha16(Dt4(->savedpc)), lo16(Dt5(->jit_gate)), ha16(Dt5(->jit_gate)));
-# 664 "ljit_tilepro64.dasc"
+# 663 "ljit_tilepro64.dasc"
 	if (nresults >= 0) {
 		//|	move TOP, CI->top
 		dasm_put(Dst, 1253, lo16(Dt4(->top)), ha16(Dt4(->top)));
-# 666 "ljit_tilepro64.dasc"
+# 665 "ljit_tilepro64.dasc"
 	}
 	//|	subidx BASE, BASE, func
 	//|	move LCL, BASE[-1].value
 	dasm_put(Dst, 1266, -(func)*sizeof(TValue), lo16(Dt2([-1].value)), ha16(Dt2([-1].value)));
-# 669 "ljit_tilepro64.dasc"
+# 668 "ljit_tilepro64.dasc"
 }
 
 
 static void jit_op_tailcall(jit_State *J, int func, int nargs)
 {
-# 773 "ljit_tilepro64.dasc"
+# 772 "ljit_tilepro64.dasc"
 }
 
 /* ------------------------------------------------------------------------ */
@@ -1361,7 +1360,7 @@ static void jit_op_move(jit_State *J, int dest, int src)
 {
 	//|	copyslot BASE[dest], BASE[src]
 	dasm_put(Dst, 1283, lo16(Dt2([src].value)), ha16(Dt2([src].value)), lo16(Dt2([dest].value)), ha16(Dt2([dest].value)), lo16(Dt2([src].value.na[1])), ha16(Dt2([src].value.na[1])), lo16(Dt2([dest].value.na[1])), ha16(Dt2([dest].value.na[1])), lo16(Dt2([src].tt)), ha16(Dt2([src].tt)), lo16(Dt2([dest].tt)), ha16(Dt2([dest].tt)));
-# 780 "ljit_tilepro64.dasc"
+# 779 "ljit_tilepro64.dasc"
 }
 
 static void jit_op_loadk(jit_State *J, int dest, int kidx)
@@ -1372,17 +1371,18 @@ static void jit_op_loadk(jit_State *J, int dest, int kidx)
 	//|	movewi r1, kk
 	//|	copyslot BASE[dest], TVALUE:r1[0]
 	dasm_put(Dst, 1350, lo16(kk), ha16(kk), lo16(Dt9([0].value)), ha16(Dt9([0].value)), lo16(Dt2([dest].value)), ha16(Dt2([dest].value)), lo16(Dt9([0].value.na[1])), ha16(Dt9([0].value.na[1])), lo16(Dt2([dest].value.na[1])), ha16(Dt2([dest].value.na[1])), lo16(Dt9([0].tt)), ha16(Dt9([0].tt)), lo16(Dt2([dest].tt)), ha16(Dt2([dest].tt)));
-# 789 "ljit_tilepro64.dasc"
+# 788 "ljit_tilepro64.dasc"
 	if (rk) {
 		//|	jrp lr
 		dasm_put(Dst, 1425);
-# 791 "ljit_tilepro64.dasc"
+# 790 "ljit_tilepro64.dasc"
 	}
 }
 
 static void jit_op_loadnil(jit_State *J, int first, int last)
 {
-	for(int i = first; i <= last; i++)
+	int i;
+	for(i = first; i <= last; i++)
 	{
 		//|	setnilvalue BASE[i]
 		dasm_put(Dst, 1428, lo16(Dt2([i].tt)), ha16(Dt2([i].tt)));
@@ -1696,29 +1696,30 @@ static void jit_op_arith(jit_State *J, int dest, int rkb, int rkc, int ev)
 # 1587 "ljit_tilepro64.dasc"
 		break;
 	default:
+		break;
 	}
 fpstore:
 	if(ev == TM_LT || ev == TM_LE) {
 		if(dest) {
 			//|	bnz r0, =>target
 			dasm_put(Dst, 2402, target);
-# 1594 "ljit_tilepro64.dasc"
+# 1595 "ljit_tilepro64.dasc"
 		}
 		else {
 			//|	bz r0, =>target
 			dasm_put(Dst, 2407, target);
-# 1597 "ljit_tilepro64.dasc"
+# 1598 "ljit_tilepro64.dasc"
 		}
 	}
 	else {
 		/* Store result and set result type (if necessary). */
 		//|	storenumber BASE[dest], r0, r1
 		dasm_put(Dst, 2412, lo16(Dt2([dest].value)), ha16(Dt2([dest].value)), lo16(Dt2([dest].value.na[1])), ha16(Dt2([dest].value.na[1])));
-# 1602 "ljit_tilepro64.dasc"
+# 1603 "ljit_tilepro64.dasc"
 		if (dest != rkb && dest != rkc) {
 			//|	settti BASE[dest], LUA_TNUMBER
 			dasm_put(Dst, 2437, lo16(Dt2([dest].tt)), ha16(Dt2([dest].tt)));
-# 1604 "ljit_tilepro64.dasc"
+# 1605 "ljit_tilepro64.dasc"
 		}
 	}
 	return;
@@ -1728,53 +1729,53 @@ fallback:
 		if (kkb) {
 			//|	movewi r1, kkb
 			dasm_put(Dst, 2450, lo16(kkb), ha16(kkb));
-# 1612 "ljit_tilepro64.dasc"
+# 1613 "ljit_tilepro64.dasc"
 		} else {
 			//|	addidx r1, BASE, rkb
 			dasm_put(Dst, 2459, (rkb)*sizeof(TValue));
-# 1614 "ljit_tilepro64.dasc"
+# 1615 "ljit_tilepro64.dasc"
 		}
 		if (kkc) {
 			//|	movewi r2, kkc
 			dasm_put(Dst, 2464, lo16(kkc), ha16(kkc));
-# 1617 "ljit_tilepro64.dasc"
+# 1618 "ljit_tilepro64.dasc"
 		} else {
 			//|	addidx r2, BASE, rkc
 			dasm_put(Dst, 2473, (rkc)*sizeof(TValue));
-# 1619 "ljit_tilepro64.dasc"
+# 1620 "ljit_tilepro64.dasc"
 		}
 		//|	movemwi L->savedpc, J->nextins+1
 		//|	move r0, L
 		//|	jal ev==TM_LT?&luaV_lessthan:&luaV_lessequal
 		dasm_put(Dst, 2478, lo16(J->nextins+1), ha16(J->nextins+1), lo16(Dt1(->savedpc)), ha16(Dt1(->savedpc)), ev==TM_LT?&luaV_lessthan:&luaV_lessequal);
-# 1623 "ljit_tilepro64.dasc"
+# 1624 "ljit_tilepro64.dasc"
 		if (dest) {  /* cond */
 			//|	bnz r0, =>target
 			dasm_put(Dst, 2505, target);
-# 1625 "ljit_tilepro64.dasc"
+# 1626 "ljit_tilepro64.dasc"
 		} else {
 			//|	bz r0, =>target
 			dasm_put(Dst, 2510, target);
-# 1627 "ljit_tilepro64.dasc"
+# 1628 "ljit_tilepro64.dasc"
 		}
 	} else {
 		if (kkb) {
 			//|	movewi r2, kkb
 			dasm_put(Dst, 2515, lo16(kkb), ha16(kkb));
-# 1631 "ljit_tilepro64.dasc"
+# 1632 "ljit_tilepro64.dasc"
 		} else {
 			//|	addidx r2, BASE, rkb
 			dasm_put(Dst, 2524, (rkb)*sizeof(TValue));
-# 1633 "ljit_tilepro64.dasc"
+# 1634 "ljit_tilepro64.dasc"
 		}
 		if (kkc) {
 			//|	movewi r3, kkc
 			dasm_put(Dst, 2529, lo16(kkc), ha16(kkc));
-# 1636 "ljit_tilepro64.dasc"
+# 1637 "ljit_tilepro64.dasc"
 		} else {
 			//|	addidx r3, BASE, rkc
 			dasm_put(Dst, 2538, (rkc)*sizeof(TValue));
-# 1638 "ljit_tilepro64.dasc"
+# 1639 "ljit_tilepro64.dasc"
 		}
 		//|	movemwi L->savedpc, J->nextins
 		//|	move r0, L
@@ -1782,7 +1783,7 @@ fallback:
 		//|	movei r4, ev
 		//|	jal &luaV_arith
 		dasm_put(Dst, 2543, lo16(J->nextins), ha16(J->nextins), lo16(Dt1(->savedpc)), ha16(Dt1(->savedpc)), (dest)*sizeof(TValue), ev, &luaV_arith);
-# 1644 "ljit_tilepro64.dasc"
+# 1645 "ljit_tilepro64.dasc"
 	}
 }
 
@@ -1826,7 +1827,7 @@ static void jit_op_len(jit_State *J, int dest, int rb)
 	//|	jal &jit_fallback_len
 	//|	globals_LJ L->base
 	dasm_put(Dst, 2578, lo16(Dt1(->base)), ha16(Dt1(->base)), lo16(Dt1(->ci)), ha16(Dt1(->ci)), lo16(Dt1(->top)), ha16(Dt1(->top)), lo16(Dt4(->savedpc)), ha16(Dt4(->savedpc)), lo16(Dt1(->savedpc)), ha16(Dt1(->savedpc)), (dest)*sizeof(TValue), (rb)*sizeof(TValue), &jit_fallback_len, lo16(Dt1(->base)), ha16(Dt1(->base)), lo16(Dt1(->top)), ha16(Dt1(->top)), lo16(Dt1(->ci)), ha16(Dt1(->ci)));
-# 1717 "ljit_tilepro64.dasc"
+# 1718 "ljit_tilepro64.dasc"
 }
 
 static void jit_op_not(jit_State *J, int dest, int rb)
@@ -1843,7 +1844,7 @@ static void jit_op_not(jit_State *J, int dest, int rb)
 	//|	movei BASE[dest].tt, LUA_TBOOLEAN
 	//|	move BASE[dest].value, r0
 	dasm_put(Dst, 2687, lo16(Dt2([rb].tt)), ha16(Dt2([rb].tt)), lo16(Dt2([rb].value)), ha16(Dt2([rb].value)), lo16(Dt2([dest].tt)), ha16(Dt2([dest].tt)), lo16(Dt2([dest].value)), ha16(Dt2([dest].value)));
-# 1732 "ljit_tilepro64.dasc"
+# 1733 "ljit_tilepro64.dasc"
 }
 
 /* ------------------------------------------------------------------------ */
@@ -1857,15 +1858,15 @@ static void jit_op_concat(jit_State *J, int dest, int first, int last)
 	//|	jal &luaV_concat
 	//|	globals_LJ L->base
 	dasm_put(Dst, 2744, lo16(Dt1(->base)), ha16(Dt1(->base)), lo16(Dt1(->ci)), ha16(Dt1(->ci)), lo16(Dt1(->top)), ha16(Dt1(->top)), lo16(Dt4(->savedpc)), ha16(Dt4(->savedpc)), lo16(Dt1(->savedpc)), ha16(Dt1(->savedpc)), last-first+1, last, &luaV_concat, lo16(Dt1(->base)), ha16(Dt1(->base)), lo16(Dt1(->top)), ha16(Dt1(->top)), lo16(Dt1(->ci)), ha16(Dt1(->ci)));
-# 1744 "ljit_tilepro64.dasc"
+# 1745 "ljit_tilepro64.dasc"
 	if(dest != first)
 	{
 		//|	copyslot BASE[dest], BASE[first]
 		dasm_put(Dst, 2853, lo16(Dt2([first].value)), ha16(Dt2([first].value)), lo16(Dt2([dest].value)), ha16(Dt2([dest].value)), lo16(Dt2([first].value.na[1])), ha16(Dt2([first].value.na[1])), lo16(Dt2([dest].value.na[1])), ha16(Dt2([dest].value.na[1])), lo16(Dt2([first].tt)), ha16(Dt2([first].tt)), lo16(Dt2([dest].tt)), ha16(Dt2([dest].tt)));
-# 1747 "ljit_tilepro64.dasc"
+# 1748 "ljit_tilepro64.dasc"
 	}
 	/* TODO: jit_checkGC(J); */
-# 1825 "ljit_tilepro64.dasc"
+# 1826 "ljit_tilepro64.dasc"
 }
 
 /* ------------------------------------------------------------------------ */
@@ -1875,40 +1876,40 @@ static void jit_op_eq(jit_State *J, int cond, int rkb, int rkc)
 	const TValue *kkb = ISK(rkb) ? &J->pt->k[INDEXK(rkb)] : NULL;
 	const TValue *kkc = ISK(rkc) ? &J->pt->k[INDEXK(rkc)] : NULL;
 	int target = jit_jmp_target(J);
-# 1919 "ljit_tilepro64.dasc"
+# 1920 "ljit_tilepro64.dasc"
 	if (kkb) {
 		//|	movewi r1, kkb
 		dasm_put(Dst, 2920, lo16(kkb), ha16(kkb));
-# 1921 "ljit_tilepro64.dasc"
+# 1922 "ljit_tilepro64.dasc"
 	} else {
 		//|	addidx r1, BASE, rkb
 		dasm_put(Dst, 2929, (rkb)*sizeof(TValue));
-# 1923 "ljit_tilepro64.dasc"
+# 1924 "ljit_tilepro64.dasc"
 	}
 	if (kkc) {
 		//|	movewi r2, kkc
 		dasm_put(Dst, 2934, lo16(kkc), ha16(kkc));
-# 1926 "ljit_tilepro64.dasc"
+# 1927 "ljit_tilepro64.dasc"
 	} else {
 		//|	addidx r2, BASE, rkc
 		dasm_put(Dst, 2943, (rkc)*sizeof(TValue));
-# 1928 "ljit_tilepro64.dasc"
+# 1929 "ljit_tilepro64.dasc"
 	}
 
 	//|	move r0, L
 	//|	jal &luaV_equalval
 	dasm_put(Dst, 2948, &luaV_equalval);
-# 1932 "ljit_tilepro64.dasc"
+# 1933 "ljit_tilepro64.dasc"
 
 	if(cond) {
 		//|	bnz r0, =>target
 		dasm_put(Dst, 2955, target);
-# 1935 "ljit_tilepro64.dasc"
+# 1936 "ljit_tilepro64.dasc"
 	}
 	else {
 		//|	bz r0, =>target
 		dasm_put(Dst, 2960, target);
-# 1938 "ljit_tilepro64.dasc"
+# 1939 "ljit_tilepro64.dasc"
 	}
 }
 
@@ -1930,28 +1931,28 @@ static void jit_op_test(jit_State *J, int cond, int dest, int src)
 	//|	add r1, r1, r0
 	//|	shri r1, r1, 1
 	dasm_put(Dst, 2965, lo16(Dt2([src].tt)), ha16(Dt2([src].tt)), lo16(Dt2([src].value)), ha16(Dt2([src].value)));
-# 1958 "ljit_tilepro64.dasc"
+# 1959 "ljit_tilepro64.dasc"
 
 	/* Check if we can omit the stack copy. */
 	if (dest == src) {  /* Yes, invert branch condition. */
 		if (cond) {
 			//|	bnz r1, =>target
 			dasm_put(Dst, 3000, target);
-# 1963 "ljit_tilepro64.dasc"
+# 1964 "ljit_tilepro64.dasc"
 		} else {
 			//|	bz r1, =>target
 			dasm_put(Dst, 3005, target);
-# 1965 "ljit_tilepro64.dasc"
+# 1966 "ljit_tilepro64.dasc"
 		}
 	} else {  /* No, jump around copy code. */
 		if (cond) {
 			//|	bz r1, >1
 			dasm_put(Dst, 3010);
-# 1969 "ljit_tilepro64.dasc"
+# 1970 "ljit_tilepro64.dasc"
 		} else {
 			//|	bnz r1, >1
 			dasm_put(Dst, 3016);
-# 1971 "ljit_tilepro64.dasc"
+# 1972 "ljit_tilepro64.dasc"
 		}
 		//|	move r3, BASE[src].value.na[1]
 		//|	move BASE[dest].tt, r0
@@ -1960,7 +1961,7 @@ static void jit_op_test(jit_State *J, int cond, int dest, int src)
 		//|	j =>target
 		//|1:
 		dasm_put(Dst, 3022, lo16(Dt2([src].value.na[1])), ha16(Dt2([src].value.na[1])), lo16(Dt2([dest].tt)), ha16(Dt2([dest].tt)), lo16(Dt2([dest].value)), ha16(Dt2([dest].value)), lo16(Dt2([dest].value.na[1])), ha16(Dt2([dest].value.na[1])), target);
-# 1978 "ljit_tilepro64.dasc"
+# 1979 "ljit_tilepro64.dasc"
 	}
 }
 
@@ -1968,7 +1969,7 @@ static void jit_op_jmp(jit_State *J, int target)
 {
 	//|	j =>target
 	dasm_put(Dst, 3077, target);
-# 1984 "ljit_tilepro64.dasc"
+# 1985 "ljit_tilepro64.dasc"
 }
 
 /* ------------------------------------------------------------------------ */
@@ -2004,7 +2005,7 @@ static void jit_op_forprep(jit_State *J, int ra, int target)
 	//|	storenumber BASE[ra+FOR_IDX], r0, r1
 	//|	j =>target
 	dasm_put(Dst, 3082, lo16(Dt2([ra+FOR_IDX].value)), ha16(Dt2([ra+FOR_IDX].value)), lo16(Dt2([ra+FOR_IDX].value.na[1])), ha16(Dt2([ra+FOR_IDX].value.na[1])), lo16(Dt2([ra+FOR_STP].value)), ha16(Dt2([ra+FOR_STP].value)), lo16(Dt2([ra+FOR_STP].value.na[1])), ha16(Dt2([ra+FOR_STP].value.na[1])), &__float64_sub, lo16(Dt2([ra+FOR_IDX].value)), ha16(Dt2([ra+FOR_IDX].value)), lo16(Dt2([ra+FOR_IDX].value.na[1])), ha16(Dt2([ra+FOR_IDX].value.na[1])), target);
-# 2062 "ljit_tilepro64.dasc"
+# 2063 "ljit_tilepro64.dasc"
 }
 
 static void jit_op_forloop(jit_State *J, int ra, int target)
@@ -2015,21 +2016,21 @@ static void jit_op_forloop(jit_State *J, int ra, int target)
 	//|	storenumber BASE[ra+FOR_IDX], r0, r1
 	//|	storenumber BASE[ra+FOR_EXT], r0, r1
 	dasm_put(Dst, 3163, lo16(Dt2([ra+FOR_IDX].value)), ha16(Dt2([ra+FOR_IDX].value)), lo16(Dt2([ra+FOR_IDX].value.na[1])), ha16(Dt2([ra+FOR_IDX].value.na[1])), lo16(Dt2([ra+FOR_STP].value)), ha16(Dt2([ra+FOR_STP].value)), lo16(Dt2([ra+FOR_STP].value.na[1])), ha16(Dt2([ra+FOR_STP].value.na[1])), &__float64_add, lo16(Dt2([ra+FOR_IDX].value)), ha16(Dt2([ra+FOR_IDX].value)), lo16(Dt2([ra+FOR_IDX].value.na[1])), ha16(Dt2([ra+FOR_IDX].value.na[1])), lo16(Dt2([ra+FOR_EXT].value)), ha16(Dt2([ra+FOR_EXT].value)), lo16(Dt2([ra+FOR_EXT].value.na[1])), ha16(Dt2([ra+FOR_EXT].value.na[1])));
-# 2071 "ljit_tilepro64.dasc"
+# 2072 "ljit_tilepro64.dasc"
 	const TValue *step = hint_getpc(J, FOR_STEP_K, target-1);
 	if (ttisnumber(step)) {
 		//|	loadnumber r2, r3, BASE[ra+FOR_LIM]
 		dasm_put(Dst, 3264, lo16(Dt2([ra+FOR_LIM].value)), ha16(Dt2([ra+FOR_LIM].value)), lo16(Dt2([ra+FOR_LIM].value.na[1])), ha16(Dt2([ra+FOR_LIM].value.na[1])));
-# 2074 "ljit_tilepro64.dasc"
+# 2075 "ljit_tilepro64.dasc"
 		if(nvalue(step) < (lua_Number)0) {
 			//|	jal &__float64_ge
 			dasm_put(Dst, 3289, &__float64_ge);
-# 2076 "ljit_tilepro64.dasc"
+# 2077 "ljit_tilepro64.dasc"
 		}
 		else {
 			//|	jal &__float64_le
 			dasm_put(Dst, 3294, &__float64_le);
-# 2079 "ljit_tilepro64.dasc"
+# 2080 "ljit_tilepro64.dasc"
 		}
 	}
 	else {
@@ -2048,19 +2049,19 @@ static void jit_op_forloop(jit_State *J, int ra, int target)
 		//|	jal &__float64_le
 		//|4:
 		dasm_put(Dst, 3299, lo16(Dt2([ra+FOR_STP].value)), ha16(Dt2([ra+FOR_STP].value)), lo16(Dt2([ra+FOR_STP].value.na[1])), ha16(Dt2([ra+FOR_STP].value.na[1])), &__float64_lt, lo16(Dt2([ra+FOR_IDX].value)), ha16(Dt2([ra+FOR_IDX].value)), lo16(Dt2([ra+FOR_IDX].value.na[1])), ha16(Dt2([ra+FOR_IDX].value.na[1])), lo16(Dt2([ra+FOR_LIM].value)), ha16(Dt2([ra+FOR_LIM].value)), lo16(Dt2([ra+FOR_LIM].value.na[1])), ha16(Dt2([ra+FOR_LIM].value.na[1])), &__float64_ge, lo16(Dt2([ra+FOR_IDX].value)), ha16(Dt2([ra+FOR_IDX].value)), lo16(Dt2([ra+FOR_IDX].value.na[1])), ha16(Dt2([ra+FOR_IDX].value.na[1])), lo16(Dt2([ra+FOR_LIM].value)), ha16(Dt2([ra+FOR_LIM].value)), lo16(Dt2([ra+FOR_LIM].value.na[1])), ha16(Dt2([ra+FOR_LIM].value.na[1])), &__float64_le);
-# 2096 "ljit_tilepro64.dasc"
+# 2097 "ljit_tilepro64.dasc"
 	}
 	
 	//|	bnz r0, =>target
 	dasm_put(Dst, 3450, target);
-# 2099 "ljit_tilepro64.dasc"
+# 2100 "ljit_tilepro64.dasc"
 }
 
 /* ------------------------------------------------------------------------ */
 
 static void jit_op_tforloop(jit_State *J, int ra, int nresults)
 {
-# 2118 "ljit_tilepro64.dasc"
+# 2119 "ljit_tilepro64.dasc"
 }
 
 /* ------------------------------------------------------------------------ */
@@ -2071,7 +2072,7 @@ static void jit_op_close(jit_State *J, int ra)
 	//|	addidx r1, BASE, ra
     //|	jal &luaF_close
     dasm_put(Dst, 3455, (ra)*sizeof(TValue), &luaF_close);
-# 2127 "ljit_tilepro64.dasc"
+# 2128 "ljit_tilepro64.dasc"
 }
 
 
@@ -2089,12 +2090,12 @@ static void jit_op_closure(jit_State *J, int dest, int ptidx)
 	//|	movemwi LCL:r0->p, npt			// Store new proto in returned closure.
 	//|	setclvaluer BASE[dest], r0
 	dasm_put(Dst, 3466, nup, lo16(Dt5(->env)), ha16(Dt5(->env)), &luaF_newLclosure, lo16(npt), ha16(npt), lo16(Dt5(->p)), ha16(Dt5(->p)), lo16(Dt2([dest].value)), ha16(Dt2([dest].value)), lo16(Dt2([dest].tt)), ha16(Dt2([dest].tt)));
-# 2143 "ljit_tilepro64.dasc"
+# 2144 "ljit_tilepro64.dasc"
 	for (j=0; j<nup; j++, pc++) {
 		if (GET_OPCODE(*pc) == OP_GETUPVAL)
 			//|	move LCL:r0->upvals[j], LCL->upvals[GETARG_B(*pc)]
 			dasm_put(Dst, 3533, lo16(Dt5(->upvals[GETARG_B(*pc)])), ha16(Dt5(->upvals[GETARG_B(*pc)])), lo16(Dt5(->upvals[j])), ha16(Dt5(->upvals[j])));
-# 2146 "ljit_tilepro64.dasc"
+# 2147 "ljit_tilepro64.dasc"
 		else {
 			//|//lua_assert(GET_OPCODE(*pc) == OP_MOVE);
 			//|	move r30, r0
@@ -2105,11 +2106,11 @@ static void jit_op_closure(jit_State *J, int dest, int ptidx)
 			//|	move LCL:r30->upvals[j], UPVAL:r0
 			//|	globals_LJ L->base
 			dasm_put(Dst, 3556, lo16(Dt1(->base)), ha16(Dt1(->base)), lo16(Dt1(->ci)), ha16(Dt1(->ci)), lo16(Dt1(->top)), ha16(Dt1(->top)), lo16(Dt4(->savedpc)), ha16(Dt4(->savedpc)), lo16(Dt1(->savedpc)), ha16(Dt1(->savedpc)), (GETARG_B(*pc))*sizeof(TValue), &luaF_findupval, lo16(Dt5(->upvals[j])), ha16(Dt5(->upvals[j])), lo16(Dt1(->base)), ha16(Dt1(->base)), lo16(Dt1(->top)), ha16(Dt1(->top)), lo16(Dt1(->ci)), ha16(Dt1(->ci)));
-# 2155 "ljit_tilepro64.dasc"
+# 2156 "ljit_tilepro64.dasc"
 		}
 	}
 	J->combine += nup;
-# 2195 "ljit_tilepro64.dasc"
+# 2196 "ljit_tilepro64.dasc"
 	/* TODO jit_checkGC(J); */
 }
 
@@ -2117,7 +2118,7 @@ static void jit_op_closure(jit_State *J, int dest, int ptidx)
 
 static void jit_op_vararg(jit_State *J, int dest, int num)
 {
-# 2269 "ljit_tilepro64.dasc"
+# 2270 "ljit_tilepro64.dasc"
 }
 
 /* ------------------------------------------------------------------------ */
