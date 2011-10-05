@@ -1,5 +1,4 @@
 |.arch tilepro64
-|.section code
 |
 |// Types
 |.type L,		lua_State,	r42

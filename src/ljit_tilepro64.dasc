@@ -9,6 +9,7 @@
 |.globals JSUB_
 
 /* ------------------------------------------------------------------------ */
+#define DASM_MAXSECTION 1
 
 /* Arch string. */
 const char luaJIT_arch[] = "tilepro64";
@@ -173,7 +174,6 @@ static int jit_compile_jsub(jit_State *J)
 	|.macro .endjsub;  .endcapture; .endmacro
 	|.macro .dumpjsub;  .dumpcapture JSUB; .endmacro
 	|
-	|.code
 	||//-----------------------------------------------------------------------
 	||// Procedure: GATE_LJ(lua_State* L, TValue* func, int nresults)
 	||// L contains the Lua state

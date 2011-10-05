@@ -1,10 +1,6 @@
-At least this function gets called	3
-function: 0xf8248
-nil
-b = 	1000064
-The result of that calculation would be 	990064	 sir.
-b = 	1000064
-The result of that calculation would be 	990064	 sir.
-At least this function gets called	3
-function: 0xf85b0
-nil
+false
+true
+false
+true
+true
+false
