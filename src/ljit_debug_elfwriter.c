@@ -1,8 +1,16 @@
 #include "ljit_debug_elfwriter.h"
 
+#include <stdlib.h>
+#include <string.h>
+const char shstrtab [] =
+{
+		'\0',
+		'.','s','h','s','t',  'r','t','a','b','\0',
+		'.','s','t','r','t',  'a','b','\0',
+		'.','s','y','m','t',  'a','b','\0'
+};
 
-
-debug_elf* debug_elf_create(unsigned int buffer_size)
+debug_elf* debug_elf_create()
 {
 	Elf *e;
 	Elf32_Ehdr *ehdr;
@@ -17,10 +25,17 @@ debug_elf* debug_elf_create(unsigned int buffer_size)
 	memset(de->symtab,0,sizeof(de->symtab));
 	de->symtab_len = 0;
 
-	de->elf_data = (char*)malloc(sizeof(char)*buffer_size);
-	de->elf_file = fmemopen(de->elf_data,sizeof(char)*buffer_size,"w");
+	elf_version(EV_CURRENT);
 
-	de->elf = e = elf_begin(fileno(de->elf_file), ELF_C_WRITE, NULL);
+	de->elf_data = (char*)malloc(sizeof(char)*ELF_BUF_SIZE);
+	de->elf_file = fmemopen(de->elf_data,sizeof(char)*ELF_BUF_SIZE,"w");
+	//de->elf_file = fopen("lololol","w");
+
+	if((de->elf = e = elf_begin(fileno(de->elf_file), ELF_C_WRITE, NULL)) == 0)
+		{
+			const char* e = elf_errmsg(elf_errno());
+			printf(e);
+		}
 
 
 	ehdr = elf32_newehdr(e);
@@ -71,7 +86,7 @@ void debug_elf_add_symbol(debug_elf* de, char* name, void* addr)
 {
 	Elf32_Sym* sym = &de->symtab[de->symtab_len++];
 	sym->st_name = de->strtab_len;
-	sym->st_value = addr;
+	sym->st_value = (unsigned int)addr;
 	sym->st_info = STT_FUNC;
 
 	strcpy(de->strtab+de->strtab_len,name);

@@ -16,6 +16,7 @@
 #define ELF_SYMTAB_SIZE 50
 
 
+
 typedef struct {
 	Elf* elf;
 	char* elf_data;
@@ -24,14 +25,6 @@ typedef struct {
 	Elf_Scn* strtab_scn;
 	Elf_Scn* symtab_scn;
 
-	const char shstrtab [] =
-	{
-			'\0',
-			'.','s','h','s','t',  'r','t','a','b','\0',
-			'.','s','t','r','t',  'a','b','\0',
-			'.','s','y','m','t',  'a','b','\0'
-	};
-
 	char strtab[ELF_STRTAB_SIZE];
 	unsigned int strtab_len;
 
@@ -39,7 +32,7 @@ typedef struct {
 	unsigned int symtab_len;
 } debug_elf;
 
-debug_elf* debug_elf_create(unsigned int buffer_size);
+debug_elf* debug_elf_create();
 void debug_elf_add_symbol(debug_elf* de, char* name, void* addr);
 void debug_elf_finalize(debug_elf* de);
 char* debug_elf_getaddr(debug_elf* de);

@@ -12,7 +12,7 @@ CFLAGS= -g -O0 -fomit-frame-pointer -Wall $(MYCFLAGS) $(COCOCFLAGS) $(JITCFLAGS)
 AR= tile-ar rcu
 RANLIB= tile-ranlib
 RM= rm -f
-LIBS= -lm $(MYLIBS)
+LIBS= -lm $(MYLIBS) -lelf
 
 MYCFLAGS=
 MYLDFLAGS=
@@ -50,7 +50,7 @@ DASMDISTFLAGS= -LN
 DASM= lua $(DASMDIR)/dynasm.lua
 
 JITCFLAGS= -I$(DASMDIR)
-JIT_O= ljit_core.o ljit_mem.o ljit_dasm.o ljit_backend.o
+JIT_O= ljit_core.o ljit_mem.o ljit_dasm.o ljit_backend.o ljit_debug_elfwriter.o ljit_debug_gdb_jit_binding.o
 JITLIB_O=  ljitlib.o
 
 ALL_DH = ljit_tilepro64.h

@@ -136,6 +136,9 @@
 |
 |.macro globals_JL_BASE
 |	move L->base, BASE
+|	move CI->base, BASE
+|	subidx TVALUE:r25, BASE, 1
+|	move CI->func, r25
 |.endmacro
 |
 |.macro globals_JL_CI

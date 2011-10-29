@@ -28,6 +28,8 @@
 #include "ljit_hints.h"
 #include "ljit_dasm.h"
 
+#include "ljit_debug_gdb_jit_binding.h"
+
 /* ------------------------------------------------------------------------ */
 
 /* Get target of combined JMP op. */
@@ -52,6 +54,7 @@ static int jit_jmp_target(jit_State *J)
 #endif
 #include "ljit_tilepro64.h"
 
+#include "ljit_debug_gdb_jit_binding.h"
 
 /* ------------------------------------------------------------------------ */
 
@@ -240,6 +243,13 @@ nextdeopt:
   if (status != JIT_S_OK)
     return status;
 
+  static i = 0;
+  char b[100];
+  memset(b,0,sizeof(b));
+  sprintf(b,"jitted_func_%04d",i++);
+  debug_module* dm = debug_module_begin();
+  debug_module_add_symbol(dm,b,mcode);
+  debug_module_commit(dm);
 
   jit_mfm_merge(J, tempmfm, JIT_MCMFM(mcode, sz), maxpc);
 #if 0

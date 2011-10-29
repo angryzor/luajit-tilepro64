@@ -24,14 +24,21 @@ extern double __float64_add(double,double);
 extern double __float64_sub(double,double);
 extern double __float64_mul(double,double);
 extern double __float64_div(double,double);
-extern double __float64_rem(double,double);
 extern double __float64_neg(double,double);
-extern int __float64_lt(double,double);
-extern int __float64_le(double,double);
-extern int __float64_gt(double,double);
-extern int __float64_ge(double,double);
+extern int __float64_gcc_lt(double,double);
+extern int __float64_gcc_le(double,double);
+extern int __float64_gcc_gt(double,double);
+extern int __float64_gcc_ge(double,double);
 #include <math.h>
 #include <stdio.h>
+
+// apparently got removed. using modf of a div now
+double __float64_rem(double x, double y)
+{
+	double i;
+	modf(x / y, &i);
+	return x - y * i;
+}
 
 static void dumpstack(TValue* base, TValue* top, CallInfo* ci, lua_State* L, const char* opname)
 {
@@ -41,7 +48,7 @@ static void dumpstack(TValue* base, TValue* top, CallInfo* ci, lua_State* L, con
 	fprintf(f,"------------------------------------------------------------------------\n");
 	fprintf(f," PRE-OPCODE: %s\n", opname);
 	fprintf(f,"''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''\n");
-	fprintf(f," L->base = %08x\n L->top = %08x\n L->ci = %08x\n L->stack = %08x\n L->stack_last = %08x\n\n", base - L->stack, top - L->stack, ci, L->stack, L->stack_last - L->stack);
+	fprintf(f," L->base = %08x\n L->top = %08x\n L->ci = %08x\n L->stack = %08x\n L->stack_last = %08x\n\n", base - L->stack, top - L->stack, (unsigned int)ci, (unsigned int)L->stack, L->stack_last - L->stack);
 	fprintf(f," CI->func = %08x\n CI->base = %08x\n CI->top = %08x\n\n", ci->func - L->stack, ci->base - L->stack, ci->top - L->stack);
 	fprintf(f," STACK:\n");
 	for(s = L->stack; s <= L->stack_last; s++)
@@ -69,7 +76,7 @@ static void dumpstack(TValue* base, TValue* top, CallInfo* ci, lua_State* L, con
 			break;
 		case LUA_TFUNCTION:
 			if(iscfunction(s))
-				fprintf(f, "cfunction: %08x\n", clvalue(s)->c.f);
+				fprintf(f, "cfunction: %08x\n", (unsigned int)clvalue(s)->c.f);
 			else
 				fprintf(f, "lfunction\n");
 			break;
@@ -144,6 +151,7 @@ static int jit_std_prologue(jit_State *J, int stacksize)
 	|2:
 	|	addidx CI, CI, 1
 	|	move CI->top, r9
+	return 0;
 }
 
 static int jit_wipe_r8_to_TOP(jit_State *J)
@@ -153,6 +161,7 @@ static int jit_wipe_r8_to_TOP(jit_State *J)
 	|	addi r8, r8, #TVALUE
 	|	slt_u r0, TVALUE:r8, TOP
 	|	bnzt r0, <7
+	return 0;
 }
 
 /* Compile JIT subroutines (once). */
@@ -198,6 +207,8 @@ static int jit_compile_jsub(jit_State *J)
 	|	// Store number of requested results.
 	|	storeonstack r2, 28
 	|
+	jit_emit_stackdump(J,"Entering LJ gate");
+	|
 	|	// Call the gate, probably not compiled yet, but may be compiled.
 	|	jalr LCL->jit_gate
 	|
@@ -225,6 +236,8 @@ static int jit_compile_jsub(jit_State *J)
 	|	// Push our "fast" state to the "slow" interpreter state
 	|	globals_JL
 	|
+	jit_emit_stackdump(J,"Returning from LJ gate");
+	|
 	|	// Restore "global type" registers
 	|	restoreglobalregs
 	|	movei r0, PCRC
@@ -237,6 +250,7 @@ static int jit_compile_jsub(jit_State *J)
 	|.align 64
 	|->GATE_JL:
 	|	prologue 8
+	jit_emit_stackdump(J,"Entering JL gate");
 	|	move PROTO:r6, LCL->p
 	|	seqi r0, PROTO:r6->jit_status, JIT_S_OK
 	|	bz r0, >1		// Already compiled?
@@ -259,10 +273,12 @@ static int jit_compile_jsub(jit_State *J)
 	|	move r0, L
 	|	movei r1, 1
 	|	jal &luaV_execute
+	jit_emit_stackdump(J,"After executing uncompiled function");
 	|
 	|2:
 	|//	add BASE, BASE, L->stack
 	|	globals_LJ L->base
+	jit_emit_stackdump(J,"Returning from JL gate");
 	|	epilogue 8
 	|	jrp lr
 	|
@@ -271,6 +287,7 @@ static int jit_compile_jsub(jit_State *J)
 
 	jit_std_prologue(J, LUA_MINSTACK);
 
+	jit_emit_stackdump(J,"Entering JC gate");
 	|	move CI->func, BASE
 	|	move CCLOSURE:r7, BASE->value
 	|	addidx BASE, BASE, 1
@@ -302,7 +319,7 @@ static int jit_compile_jsub(jit_State *J)
 	|2:
 	|	add TOP, BASE, r3
 	|
-	jit_emit_stackdump(J,upthere);
+	jit_emit_stackdump(J,"Returning from JC gate");
 	|	epilogue LUAFUNC_STACK_SIZE
 	|	jrp lr
 	|
@@ -596,6 +613,8 @@ static void jit_op_return(jit_State *J, int rbase, int nresults)
 		|	addidx TOP, BASE, nresults
 	}
 
+	jit_emit_stackdump(J,"After RETURN");
+
 	|	epilogue LUAFUNC_STACK_SIZE
 	|	jrp lr
 }
@@ -660,6 +679,7 @@ static void jit_op_call(jit_State *J, int func, int nargs, int nresults)
 		}
 	}
 #endif
+	jit_emit_stackdump(J,"Before return from call");
 	if (nresults >= 0) {
 		|	move TOP, CI->top
 	}
@@ -1580,10 +1600,10 @@ static void jit_op_arith(jit_State *J, int dest, int rkb, int rkc, int ev)
 		|	jal &__float64_neg
 		break;
 	case TM_LT:
-		|	jal &__float64_lt
+		|	jal &__float64_gcc_lt
 		break;
 	case TM_LE:
-		|	jal &__float64_le
+		|	jal &__float64_gcc_le
 		break;
 	default:
 		break;
@@ -2073,26 +2093,26 @@ static void jit_op_forloop(jit_State *J, int ra, int target)
 	if (ttisnumber(step)) {
 		|	loadnumber r2, r3, BASE[ra+FOR_LIM]
 		if(nvalue(step) < (lua_Number)0) {
-			|	jal &__float64_ge
+			|	jal &__float64_gcc_ge
 		}
 		else {
-			|	jal &__float64_le
+			|	jal &__float64_gcc_le
 		}
 	}
 	else {
 		|	loadnumber r0, r1, BASE[ra+FOR_STP]
 		|	move r2, zero
 		|	move r3, zero
-		|	jal &__float64_lt
+		|	jal &__float64_gcc_lt
 		|	bz r0, >3
 		|	loadnumber r0, r1, BASE[ra+FOR_IDX]
 		|	loadnumber r2, r3, BASE[ra+FOR_LIM]
-		|	jal &__float64_ge
+		|	jal &__float64_gcc_ge
 		|	j >4
 		|3:
 		|	loadnumber r0, r1, BASE[ra+FOR_IDX]
 		|	loadnumber r2, r3, BASE[ra+FOR_LIM]
-		|	jal &__float64_le
+		|	jal &__float64_gcc_le
 		|4:
 	}
 	

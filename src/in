@@ -1,13 +1,12 @@
-local a = true
-local b = true
-local c = false
-local d = false
-local e = true
-local f = false
+local function generator()
+	local i = 0
+	return function()
+			i = i + 1
+			return i
+		end
+end
 
-print(c and d and f)
-print(a and b and e)
-print(a and c and e)
-print(a or b or e)
-print(c or b or f)
-print(c or d or f)
+
+local a = generator()
+print(a())
+print(a())
