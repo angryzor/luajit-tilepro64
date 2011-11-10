@@ -2103,20 +2103,20 @@ static void jit_op_forloop(jit_State *J, int ra, int target)
 		|	loadnumber r0, r1, BASE[ra+FOR_STP]
 		|	move r2, zero
 		|	move r3, zero
-		|	jal &__float64_gcc_lt
-		|	bz r0, >3
+		|	jal &__float64_gcc_lt	//
+		|	bz r0, >3				// if (FOR_STP >= 0) goto >3
 		|	loadnumber r0, r1, BASE[ra+FOR_IDX]
 		|	loadnumber r2, r3, BASE[ra+FOR_LIM]
-		|	jal &__float64_gcc_ge
+		|	jal &__float64_gcc_ge	// return FOR_IDX >= FOR_LIM
 		|	j >4
 		|3:
 		|	loadnumber r0, r1, BASE[ra+FOR_IDX]
 		|	loadnumber r2, r3, BASE[ra+FOR_LIM]
-		|	jal &__float64_gcc_le
+		|	jal &__float64_gcc_le	// return FOR_IDX <= FOR_LIM
 		|4:
 	}
 	
-	|	bnz r0, =>target
+	|	bnz r0, =>target	// if(result) goto =>target
 }
 
 /* ------------------------------------------------------------------------ */

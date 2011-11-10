@@ -1,2 +1,49 @@
-for i = 1,2,0.2 do print(i) end
+local a = 4
+local b = 5
+local c = 3.5743465
+local d = 86.2315235
+
+if a < b then
+print("ok")
+else
+print("fail")
+end
+if d > c then
+print("ok")
+else
+print("fail")
+end
+if c <= d then
+print("ok")
+else
+print("fail")
+end
+if b >= a then
+print("ok")
+else
+print("fail")
+end
+--[[if a > b then
+print("fail")
+else
+print("ok")
+end
+
+if d < c then
+print("fail")
+else
+print("ok")
+end
+
+if c >= d then
+print("fail")
+else
+print("ok")
+end
+
+if b <= a then
+print("fail")
+else
+print("ok")
+end]]
 
