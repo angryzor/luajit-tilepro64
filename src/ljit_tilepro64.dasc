@@ -40,16 +40,17 @@ double __float64_rem(double x, double y)
 	return x - y * i;
 }
 
-static void dumpstack(TValue* base, TValue* top, CallInfo* ci, lua_State* L, const char* opname)
+static void dumpstack(TValue* base, TValue* top, CallInfo* ci, lua_State* L, const char* opname, int ra, int rb, int rc, int rbx)
 {
 	TValue* s;
 
 	FILE* f = fopen("log.log","a");
 	fprintf(f,"------------------------------------------------------------------------\n");
-	fprintf(f," PRE-OPCODE: %s\n", opname);
+	fprintf(f," PRE-OPCODE: %s,\t\tA = %08x, B = %08x, C = %08x, Bx = %08x\n", opname, ra, rb, rc, rbx);
 	fprintf(f,"''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''\n");
 	fprintf(f," L->base = %08x\n L->top = %08x\n L->ci = %08x\n L->stack = %08x\n L->stack_last = %08x\n\n", base - L->stack, top - L->stack, (unsigned int)ci, (unsigned int)L->stack, L->stack_last - L->stack);
 	fprintf(f," CI->func = %08x\n CI->base = %08x\n CI->top = %08x\n\n", ci->func - L->stack, ci->base - L->stack, ci->top - L->stack);
+	//fprintf(f," (CI-1)->func = %08x\n (CI-1)->base = %08x\n (CI-1)->top = %08x\n\n", (ci-1)->func - L->stack, (ci-1)->base - L->stack, (ci-1)->top - L->stack);
 	fprintf(f," STACK:\n");
 	for(s = L->stack; s <= L->stack_last; s++)
 	{
@@ -95,17 +96,25 @@ static void dumpstack(TValue* base, TValue* top, CallInfo* ci, lua_State* L, con
 	fclose(f);
 }
 
-static void jit_emit_stackdump(jit_State *J, const char* curop_name)
+static void jit_emit_stackdump(jit_State *J, const char* curop_name, int ra, int rb, int rc, int rbx)
 {
 	|	move r0, BASE
 	|	move r1, TOP
 	|	move r2, CI
 	|	move r3, L
 	|	movewi r4, curop_name
+	|	movewi r5, ra
+	|	movewi r6, rb
+	|	movewi r7, rc
+	|	movewi r8, rbx
 	|	jal &dumpstack
 }
 
-char upthere[] = "---^";
+static void jit_emit_custom_stackdump(jit_State *J, const char* curop_name)
+{
+	jit_emit_stackdump(J,curop_name,0,0,0,0);
+}
+
 
 /* Detect CPU features and set JIT flags. */
 static int jit_cpudetect(jit_State *J)
@@ -135,6 +144,8 @@ static int jit_std_prologue(jit_State *J, int stacksize)
 {
 	|	prologue LUAFUNC_STACK_SIZE
 	|
+	//jit_emit_stackdump(J,"Prologue");
+	|
 	|	addidx r9, BASE, stacksize+1
 	|	movei r1, stacksize+1
 	|	slt_u r0, r9, L->stack_last
@@ -156,11 +167,14 @@ static int jit_std_prologue(jit_State *J, int stacksize)
 
 static int jit_wipe_r8_to_TOP(jit_State *J)
 {
+	|	slt_u r0, TVALUE:r8, TOP
+	|	bz r0, >8
 	|7:
 	|	setnilvalue TVALUE:r8[0]		// the new TOP is always set to NIL at this point. i don't care. it don't hurt.
 	|	addi r8, r8, #TVALUE
 	|	slt_u r0, TVALUE:r8, TOP
 	|	bnzt r0, <7
+	|8:
 	return 0;
 }
 
@@ -207,7 +221,7 @@ static int jit_compile_jsub(jit_State *J)
 	|	// Store number of requested results.
 	|	storeonstack r2, 28
 	|
-	jit_emit_stackdump(J,"Entering LJ gate");
+	//jit_emit_custom_stackdump(J,"Entering LJ gate");
 	|
 	|	// Call the gate, probably not compiled yet, but may be compiled.
 	|	jalr LCL->jit_gate
@@ -232,11 +246,11 @@ static int jit_compile_jsub(jit_State *J)
 	|2:
 	|	addi L->nCcalls, L->nCcalls, -1
 	|
-	|	move BASE, CI->base
+	|	//move BASE, CI->base
 	|	// Push our "fast" state to the "slow" interpreter state
 	|	globals_JL
 	|
-	jit_emit_stackdump(J,"Returning from LJ gate");
+	//jit_emit_custom_stackdump(J,"Returning from LJ gate");
 	|
 	|	// Restore "global type" registers
 	|	restoreglobalregs
@@ -250,7 +264,7 @@ static int jit_compile_jsub(jit_State *J)
 	|.align 64
 	|->GATE_JL:
 	|	prologue 8
-	jit_emit_stackdump(J,"Entering JL gate");
+	//jit_emit_custom_stackdump(J,"Entering JL gate");
 	|	move PROTO:r6, LCL->p
 	|	seqi r0, PROTO:r6->jit_status, JIT_S_OK
 	|	bz r0, >1		// Already compiled?
@@ -273,12 +287,12 @@ static int jit_compile_jsub(jit_State *J)
 	|	move r0, L
 	|	movei r1, 1
 	|	jal &luaV_execute
-	jit_emit_stackdump(J,"After executing uncompiled function");
+	//jit_emit_custom_stackdump(J,"After executing uncompiled function");
 	|
 	|2:
 	|//	add BASE, BASE, L->stack
 	|	globals_LJ L->base
-	jit_emit_stackdump(J,"Returning from JL gate");
+	//jit_emit_custom_stackdump(J,"Returning from JL gate");
 	|	epilogue 8
 	|	jrp lr
 	|
@@ -287,7 +301,7 @@ static int jit_compile_jsub(jit_State *J)
 
 	jit_std_prologue(J, LUA_MINSTACK);
 
-	jit_emit_stackdump(J,"Entering JC gate");
+	//jit_emit_custom_stackdump(J,"Entering JC gate");
 	|	move CI->func, BASE
 	|	move CCLOSURE:r7, BASE->value
 	|	addidx BASE, BASE, 1
@@ -319,7 +333,7 @@ static int jit_compile_jsub(jit_State *J)
 	|2:
 	|	add TOP, BASE, r3
 	|
-	jit_emit_stackdump(J,"Returning from JC gate");
+	//jit_emit_custom_stackdump(J,"Returning from JC gate");
 	|	epilogue LUAFUNC_STACK_SIZE
 	|	jrp lr
 	|
@@ -374,8 +388,9 @@ static void jit_vararg_table(lua_State *L)
 /* Called before every instruction. */
 static void jit_ins_start(jit_State *J)
 {
+	const Instruction thisins = *(J->nextins-1);
 	|=>J->nextpc:
-	jit_emit_stackdump(J, luaP_opnames[GET_OPCODE(*(J->nextins-1))]);
+	jit_emit_stackdump(J, luaP_opnames[GET_OPCODE(thisins)], GETARG_A(thisins), GETARG_B(thisins), GETARG_C(thisins), GETARG_Bx(thisins));
 }
 
 /* Called after the last instruction has been encoded. */
@@ -399,8 +414,10 @@ static void jit_prologue(jit_State *J)
 
 	jit_std_prologue(J, stacksize);
 
-	|//	move CI->func, BASE
+	// Slower
+	|	move CI->func, BASE // Used to be removed
 	|	addidx BASE, BASE, 1
+	|	move CI->base, BASE // Used to be removed
 	|	move TOP, r9
 
 	if(!pt->is_vararg)
@@ -608,12 +625,12 @@ static void jit_op_return(jit_State *J, int rbase, int nresults)
 		{
 			|	copyslot BASE[i], BASE[rbase+i+1]
 		}
-		|	addidx TVALUE:r8, BASE, nresults
-		jit_wipe_r8_to_TOP(J);
+		|//	addidx TVALUE:r8, BASE, nresults
+		//jit_wipe_r8_to_TOP(J);
 		|	addidx TOP, BASE, nresults
 	}
 
-	jit_emit_stackdump(J,"After RETURN");
+	//jit_emit_custom_stackdump(J,"After RETURN");
 
 	|	epilogue LUAFUNC_STACK_SIZE
 	|	jrp lr
@@ -679,8 +696,11 @@ static void jit_op_call(jit_State *J, int func, int nargs, int nresults)
 		}
 	}
 #endif
-	jit_emit_stackdump(J,"Before return from call");
+	//jit_emit_custom_stackdump(J,"Before return from call");
 	if (nresults >= 0) {
+		|	move r8, TOP
+		|	addidx TOP, BASE, nresults
+		jit_wipe_r8_to_TOP(J);
 		|	move TOP, CI->top
 	}
 	|	subidx BASE, BASE, func
@@ -1459,9 +1479,65 @@ static void jit_op_self(jit_State *J, int dest, int tab, int rkey)
 
 static void jit_op_setlist(jit_State *J, int ra, int num, int batch)
 {
-#if 0
 	if (batch == 0) { batch = (int)(*J->nextins); J->combine++; }
 	batch = (batch-1)*LFIELDS_PER_FLUSH;
+	if(num == 0) {
+		|	push r30
+		|	push r31
+		|	push r32
+		|	push r33
+
+		// TValue* r7 = start of new table values
+		|	addidx TVALUE:r30, BASE, ra+1
+
+		// Table* r1 = our table
+		|	move TABLE:r31, BASE[ra].value.gc
+		|//	move TABLE:r31, GCOBJECT:r31->h
+
+		// r9 = our batch
+		|	movewi r32, batch
+
+		// Check if size is sufficient
+		|	sub TVALUE:r3, TOP, TVALUE:r30
+		|.if not TVALUE_SIZE == 16
+		|	.fatal Unsupported TVALUE size
+		|.endif
+		|	shri TVALUE:r3, TVALUE:r3, 4
+		|	add r33, r32, r3
+		|	slte_u r0, r33, TABLE:r31->sizearray
+		|	bnzt r0, >3
+		
+		// Otherwise, increase table size
+		|	move r2, r33
+		|	move r1, r31
+		|	move r0, L
+		|	jal &luaH_resizearray
+
+		// Size is ok. now do the rest
+		|3:
+		|	slt_u r0, TVALUE:r30, TOP
+		|	bz r0, >5
+		|4:
+		|	subidx TOP, TOP, 1
+		|	move r2, r33
+		|	move r1, r31
+		|	move r0, L
+		|	jal &luaH_setnum
+		|	copyslot TVALUE:r0[0], TOP[0]
+		|	barriert TABLE:r31, TOP
+		|	addi r33, r33, -1
+		|	slt_u r0, TVALUE:r30, TOP
+		|	bnzt r0, <4
+		|5:
+		|	move TOP, CI->top
+
+		// Popping
+		|	pop r33
+		|	pop r32
+		|	pop r31
+		|	pop r30
+	}
+#if 0
 	if (num == 0) {  /* Previous op was open and set TOP: {f()} or {...}. */
 		|	mov L->env.value, TOP		// Need to save TOP (edi).
 		|	lea eax, BASE[ra+1]
@@ -1609,12 +1685,20 @@ static void jit_op_arith(jit_State *J, int dest, int rkb, int rkc, int ev)
 		break;
 	}
 fpstore:
-	if(ev == TM_LT || ev == TM_LE) {
+	if(ev == TM_LT) {
 		if(dest) {
-			|	bnz r0, =>target
+			|	blz r0, =>target
 		}
 		else {
-			|	bz r0, =>target
+			|	bgez r0, =>target
+		}
+	}
+	else if(ev == TM_LE) {
+		if(dest) {
+			|	blez r0, =>target
+		}
+		else {
+			|	bgz r0, =>target
 		}
 	}
 	else {
@@ -2094,9 +2178,11 @@ static void jit_op_forloop(jit_State *J, int ra, int target)
 		|	loadnumber r2, r3, BASE[ra+FOR_LIM]
 		if(nvalue(step) < (lua_Number)0) {
 			|	jal &__float64_gcc_ge
+			|	bgez r0, =>target
 		}
 		else {
 			|	jal &__float64_gcc_le
+			|	blez r0, =>target
 		}
 	}
 	else {
@@ -2104,38 +2190,41 @@ static void jit_op_forloop(jit_State *J, int ra, int target)
 		|	move r2, zero
 		|	move r3, zero
 		|	jal &__float64_gcc_lt	//
-		|	bz r0, >3				// if (FOR_STP >= 0) goto >3
+		|	bgez r0, >3				// if (FOR_STP >= 0) goto >3
 		|	loadnumber r0, r1, BASE[ra+FOR_IDX]
 		|	loadnumber r2, r3, BASE[ra+FOR_LIM]
 		|	jal &__float64_gcc_ge	// return FOR_IDX >= FOR_LIM
+		|	bgez r0, =>target
 		|	j >4
 		|3:
 		|	loadnumber r0, r1, BASE[ra+FOR_IDX]
 		|	loadnumber r2, r3, BASE[ra+FOR_LIM]
 		|	jal &__float64_gcc_le	// return FOR_IDX <= FOR_LIM
+		|	blez r0, =>target
 		|4:
 	}
 	
-	|	bnz r0, =>target	// if(result) goto =>target
+	|//	bnz r0, =>target	// if(result) goto =>target
 }
 
 /* ------------------------------------------------------------------------ */
 
 static void jit_op_tforloop(jit_State *J, int ra, int nresults)
 {
-#if 0
 	int target = jit_jmp_target(J);
 	int i;
+#if 0
 	if (jit_inline_tforloop(J, ra, nresults, target)) return;  /* Inlined? */
+#endif
 	for (i = 2; i >= 0; i--) {
 		|	copyslot BASE[ra+i+3], BASE[ra+i]  // Copy ctlvar/state/callable.
 	}
 	jit_op_call(J, ra+3, 2, nresults);
-	|	isnil ra+3; je >1
+	|	isnil r0, ra+3
+	|	bnz r0, >1
 	|	copyslot BASE[ra+2], BASE[ra+3]	// Save control variable.
-	|	jmp =>target
+	|	j =>target
 	|1:
-#endif
 }
 
 /* ------------------------------------------------------------------------ */
@@ -2161,6 +2250,7 @@ static void jit_op_closure(jit_State *J, int dest, int ptidx)
 	|	jal &luaF_newLclosure
 	|	movemwi LCL:r0->p, npt			// Store new proto in returned closure.
 	|	setclvaluer BASE[dest], r0
+	|	push r30
 	for (j=0; j<nup; j++, pc++) {
 		if (GET_OPCODE(*pc) == OP_GETUPVAL)
 			|	move LCL:r0->upvals[j], LCL->upvals[GETARG_B(*pc)]
@@ -2175,6 +2265,7 @@ static void jit_op_closure(jit_State *J, int dest, int ptidx)
 			|	globals_LJ L->base
 		}
 	}
+	|	pop r30
 	J->combine += nup;
 #if 0
 	/* Process pseudo-instructions for upvalues. */

@@ -1,21 +1,21 @@
 ------------------------------------------------------------------------
- PRE-OPCODE: Entering LJ gate
+ PRE-OPCODE: CLOSURE,		A = 00000000, B = 00000000, C = 00000000, Bx = 00000000
 ''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
- L->base = 00000004
- L->top = 00000007
- L->ci = 000e01b0
+ L->base = 00000005
+ L->top = 0000000a
+ L->ci = 000e01c8
  L->stack = 000e0260
  L->stack_last = 00000027
 
- CI->func = 00000001
- CI->base = 00000002
- CI->top = 00000017
+ CI->func = 00000004
+ CI->base = 00000005
+ CI->top = 0000000a
 
  STACK:
 	00000000 | TYPE: nil
-	00000001 | TYPE: cfunction: 00016610
+	00000001 | TYPE: cfunction: 000165f0
 	00000002 | TYPE: lightuserdata
-	00000003 | TYPE: cfunction: 00013710
+	00000003 | TYPE: cfunction: 000136f0
 	00000004 | TYPE: lfunction
 	00000005 | TYPE: string: >
 	00000006 | TYPE: string: out
@@ -54,25 +54,25 @@
 	00000027 | TYPE: nil
 ------------------------------------------------------------------------
 ------------------------------------------------------------------------
- PRE-OPCODE: LOADK
+ PRE-OPCODE: NEWTABLE,		A = 00000001, B = 00000002, C = 00000000, Bx = 00000400
 ''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
  L->base = 00000005
- L->top = 0000000b
+ L->top = 0000000a
  L->ci = 000e01c8
  L->stack = 000e0260
  L->stack_last = 00000027
 
- CI->func = 00000003
- CI->base = 00000004
- CI->top = 0000000b
+ CI->func = 00000004
+ CI->base = 00000005
+ CI->top = 0000000a
 
  STACK:
 	00000000 | TYPE: nil
-	00000001 | TYPE: cfunction: 00016610
+	00000001 | TYPE: cfunction: 000165f0
 	00000002 | TYPE: lightuserdata
-	00000003 | TYPE: cfunction: 00013710
+	00000003 | TYPE: cfunction: 000136f0
 	00000004 | TYPE: lfunction
-	00000005 | TYPE: string: >
+	00000005 | TYPE: lfunction
 	00000006 | TYPE: string: out
 	00000007 | TYPE: table
 	00000008 | TYPE: lightuserdata
@@ -109,26 +109,26 @@
 	00000027 | TYPE: nil
 ------------------------------------------------------------------------
 ------------------------------------------------------------------------
- PRE-OPCODE: LOADK
+ PRE-OPCODE: LOADK,		A = 00000002, B = 00000000, C = 00000000, Bx = 00000000
 ''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
  L->base = 00000005
- L->top = 0000000b
+ L->top = 0000000a
  L->ci = 000e01c8
  L->stack = 000e0260
  L->stack_last = 00000027
 
- CI->func = 00000003
- CI->base = 00000004
- CI->top = 0000000b
+ CI->func = 00000004
+ CI->base = 00000005
+ CI->top = 0000000a
 
  STACK:
 	00000000 | TYPE: nil
-	00000001 | TYPE: cfunction: 00016610
+	00000001 | TYPE: cfunction: 000165f0
 	00000002 | TYPE: lightuserdata
-	00000003 | TYPE: cfunction: 00013710
+	00000003 | TYPE: cfunction: 000136f0
 	00000004 | TYPE: lfunction
-	00000005 | TYPE: number: 1.000000
-	00000006 | TYPE: string: out
+	00000005 | TYPE: lfunction
+	00000006 | TYPE: table
 	00000007 | TYPE: table
 	00000008 | TYPE: lightuserdata
 	00000009 | TYPE: thread
@@ -164,27 +164,27 @@
 	00000027 | TYPE: nil
 ------------------------------------------------------------------------
 ------------------------------------------------------------------------
- PRE-OPCODE: LOADK
+ PRE-OPCODE: LOADK,		A = 00000003, B = 00000000, C = 00000001, Bx = 00000001
 ''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
  L->base = 00000005
- L->top = 0000000b
+ L->top = 0000000a
  L->ci = 000e01c8
  L->stack = 000e0260
  L->stack_last = 00000027
 
- CI->func = 00000003
- CI->base = 00000004
- CI->top = 0000000b
+ CI->func = 00000004
+ CI->base = 00000005
+ CI->top = 0000000a
 
  STACK:
 	00000000 | TYPE: nil
-	00000001 | TYPE: cfunction: 00016610
+	00000001 | TYPE: cfunction: 000165f0
 	00000002 | TYPE: lightuserdata
-	00000003 | TYPE: cfunction: 00013710
+	00000003 | TYPE: cfunction: 000136f0
 	00000004 | TYPE: lfunction
-	00000005 | TYPE: number: 1.000000
-	00000006 | TYPE: number: 2.000000
-	00000007 | TYPE: table
+	00000005 | TYPE: lfunction
+	00000006 | TYPE: table
+	00000007 | TYPE: number: 5.000000
 	00000008 | TYPE: lightuserdata
 	00000009 | TYPE: thread
 	0000000a | TYPE: string: DASM_ERROR
@@ -219,28 +219,28 @@
 	00000027 | TYPE: nil
 ------------------------------------------------------------------------
 ------------------------------------------------------------------------
- PRE-OPCODE: FORPREP
+ PRE-OPCODE: MOVE,		A = 00000004, B = 00000000, C = 00000000, Bx = 00000000
 ''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
  L->base = 00000005
- L->top = 0000000b
+ L->top = 0000000a
  L->ci = 000e01c8
  L->stack = 000e0260
  L->stack_last = 00000027
 
- CI->func = 00000003
- CI->base = 00000004
- CI->top = 0000000b
+ CI->func = 00000004
+ CI->base = 00000005
+ CI->top = 0000000a
 
  STACK:
 	00000000 | TYPE: nil
-	00000001 | TYPE: cfunction: 00016610
+	00000001 | TYPE: cfunction: 000165f0
 	00000002 | TYPE: lightuserdata
-	00000003 | TYPE: cfunction: 00013710
+	00000003 | TYPE: cfunction: 000136f0
 	00000004 | TYPE: lfunction
-	00000005 | TYPE: number: 1.000000
-	00000006 | TYPE: number: 2.000000
-	00000007 | TYPE: number: 0.200000
-	00000008 | TYPE: lightuserdata
+	00000005 | TYPE: lfunction
+	00000006 | TYPE: table
+	00000007 | TYPE: number: 5.000000
+	00000008 | TYPE: number: 6.000000
 	00000009 | TYPE: thread
 	0000000a | TYPE: string: DASM_ERROR
 	0000000b | TYPE: nil
@@ -274,32 +274,1187 @@
 	00000027 | TYPE: nil
 ------------------------------------------------------------------------
 ------------------------------------------------------------------------
- PRE-OPCODE: FORLOOP
+ PRE-OPCODE: CALL,		A = 00000004, B = 00000001, C = 00000000, Bx = 00000200
 ''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
  L->base = 00000005
- L->top = 0000000b
+ L->top = 0000000a
  L->ci = 000e01c8
  L->stack = 000e0260
  L->stack_last = 00000027
 
- CI->func = 00000003
- CI->base = 00000004
- CI->top = 0000000b
+ CI->func = 00000004
+ CI->base = 00000005
+ CI->top = 0000000a
 
  STACK:
 	00000000 | TYPE: nil
-	00000001 | TYPE: cfunction: 00016610
+	00000001 | TYPE: cfunction: 000165f0
 	00000002 | TYPE: lightuserdata
-	00000003 | TYPE: cfunction: 00013710
+	00000003 | TYPE: cfunction: 000136f0
 	00000004 | TYPE: lfunction
-	00000005 | TYPE: number: 0.800000
-	00000006 | TYPE: number: 2.000000
-	00000007 | TYPE: number: 0.200000
-	00000008 | TYPE: lightuserdata
-	00000009 | TYPE: thread
+	00000005 | TYPE: lfunction
+	00000006 | TYPE: table
+	00000007 | TYPE: number: 5.000000
+	00000008 | TYPE: number: 6.000000
+	00000009 | TYPE: lfunction
 	0000000a | TYPE: string: DASM_ERROR
 	0000000b | TYPE: nil
 	0000000c | TYPE: nil
+	0000000d | TYPE: nil
+	0000000e | TYPE: nil
+	0000000f | TYPE: nil
+	00000010 | TYPE: nil
+	00000011 | TYPE: nil
+	00000012 | TYPE: nil
+	00000013 | TYPE: nil
+	00000014 | TYPE: nil
+	00000015 | TYPE: nil
+	00000016 | TYPE: nil
+	00000017 | TYPE: nil
+	00000018 | TYPE: nil
+	00000019 | TYPE: nil
+	0000001a | TYPE: nil
+	0000001b | TYPE: nil
+	0000001c | TYPE: nil
+	0000001d | TYPE: nil
+	0000001e | TYPE: nil
+	0000001f | TYPE: nil
+	00000020 | TYPE: nil
+	00000021 | TYPE: nil
+	00000022 | TYPE: nil
+	00000023 | TYPE: nil
+	00000024 | TYPE: nil
+	00000025 | TYPE: nil
+	00000026 | TYPE: nil
+	00000027 | TYPE: nil
+------------------------------------------------------------------------
+------------------------------------------------------------------------
+ PRE-OPCODE: LOADK,		A = 00000000, B = 00000000, C = 00000000, Bx = 00000000
+''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+ L->base = 0000000a
+ L->top = 0000000d
+ L->ci = 000e01e0
+ L->stack = 000e0260
+ L->stack_last = 00000027
+
+ CI->func = 00000009
+ CI->base = 0000000a
+ CI->top = 0000000d
+
+ STACK:
+	00000000 | TYPE: nil
+	00000001 | TYPE: cfunction: 000165f0
+	00000002 | TYPE: lightuserdata
+	00000003 | TYPE: cfunction: 000136f0
+	00000004 | TYPE: lfunction
+	00000005 | TYPE: lfunction
+	00000006 | TYPE: table
+	00000007 | TYPE: number: 5.000000
+	00000008 | TYPE: number: 6.000000
+	00000009 | TYPE: lfunction
+	0000000a | TYPE: nil
+	0000000b | TYPE: nil
+	0000000c | TYPE: nil
+	0000000d | TYPE: nil
+	0000000e | TYPE: nil
+	0000000f | TYPE: nil
+	00000010 | TYPE: nil
+	00000011 | TYPE: nil
+	00000012 | TYPE: nil
+	00000013 | TYPE: nil
+	00000014 | TYPE: nil
+	00000015 | TYPE: nil
+	00000016 | TYPE: nil
+	00000017 | TYPE: nil
+	00000018 | TYPE: nil
+	00000019 | TYPE: nil
+	0000001a | TYPE: nil
+	0000001b | TYPE: nil
+	0000001c | TYPE: nil
+	0000001d | TYPE: nil
+	0000001e | TYPE: nil
+	0000001f | TYPE: nil
+	00000020 | TYPE: nil
+	00000021 | TYPE: nil
+	00000022 | TYPE: nil
+	00000023 | TYPE: nil
+	00000024 | TYPE: nil
+	00000025 | TYPE: nil
+	00000026 | TYPE: nil
+	00000027 | TYPE: nil
+------------------------------------------------------------------------
+------------------------------------------------------------------------
+ PRE-OPCODE: LOADK,		A = 00000001, B = 00000000, C = 00000001, Bx = 00000001
+''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+ L->base = 0000000a
+ L->top = 0000000d
+ L->ci = 000e01e0
+ L->stack = 000e0260
+ L->stack_last = 00000027
+
+ CI->func = 00000009
+ CI->base = 0000000a
+ CI->top = 0000000d
+
+ STACK:
+	00000000 | TYPE: nil
+	00000001 | TYPE: cfunction: 000165f0
+	00000002 | TYPE: lightuserdata
+	00000003 | TYPE: cfunction: 000136f0
+	00000004 | TYPE: lfunction
+	00000005 | TYPE: lfunction
+	00000006 | TYPE: table
+	00000007 | TYPE: number: 5.000000
+	00000008 | TYPE: number: 6.000000
+	00000009 | TYPE: lfunction
+	0000000a | TYPE: number: 1.000000
+	0000000b | TYPE: nil
+	0000000c | TYPE: nil
+	0000000d | TYPE: nil
+	0000000e | TYPE: nil
+	0000000f | TYPE: nil
+	00000010 | TYPE: nil
+	00000011 | TYPE: nil
+	00000012 | TYPE: nil
+	00000013 | TYPE: nil
+	00000014 | TYPE: nil
+	00000015 | TYPE: nil
+	00000016 | TYPE: nil
+	00000017 | TYPE: nil
+	00000018 | TYPE: nil
+	00000019 | TYPE: nil
+	0000001a | TYPE: nil
+	0000001b | TYPE: nil
+	0000001c | TYPE: nil
+	0000001d | TYPE: nil
+	0000001e | TYPE: nil
+	0000001f | TYPE: nil
+	00000020 | TYPE: nil
+	00000021 | TYPE: nil
+	00000022 | TYPE: nil
+	00000023 | TYPE: nil
+	00000024 | TYPE: nil
+	00000025 | TYPE: nil
+	00000026 | TYPE: nil
+	00000027 | TYPE: nil
+------------------------------------------------------------------------
+------------------------------------------------------------------------
+ PRE-OPCODE: LOADK,		A = 00000002, B = 00000000, C = 00000002, Bx = 00000002
+''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+ L->base = 0000000a
+ L->top = 0000000d
+ L->ci = 000e01e0
+ L->stack = 000e0260
+ L->stack_last = 00000027
+
+ CI->func = 00000009
+ CI->base = 0000000a
+ CI->top = 0000000d
+
+ STACK:
+	00000000 | TYPE: nil
+	00000001 | TYPE: cfunction: 000165f0
+	00000002 | TYPE: lightuserdata
+	00000003 | TYPE: cfunction: 000136f0
+	00000004 | TYPE: lfunction
+	00000005 | TYPE: lfunction
+	00000006 | TYPE: table
+	00000007 | TYPE: number: 5.000000
+	00000008 | TYPE: number: 6.000000
+	00000009 | TYPE: lfunction
+	0000000a | TYPE: number: 1.000000
+	0000000b | TYPE: number: 2.000000
+	0000000c | TYPE: nil
+	0000000d | TYPE: nil
+	0000000e | TYPE: nil
+	0000000f | TYPE: nil
+	00000010 | TYPE: nil
+	00000011 | TYPE: nil
+	00000012 | TYPE: nil
+	00000013 | TYPE: nil
+	00000014 | TYPE: nil
+	00000015 | TYPE: nil
+	00000016 | TYPE: nil
+	00000017 | TYPE: nil
+	00000018 | TYPE: nil
+	00000019 | TYPE: nil
+	0000001a | TYPE: nil
+	0000001b | TYPE: nil
+	0000001c | TYPE: nil
+	0000001d | TYPE: nil
+	0000001e | TYPE: nil
+	0000001f | TYPE: nil
+	00000020 | TYPE: nil
+	00000021 | TYPE: nil
+	00000022 | TYPE: nil
+	00000023 | TYPE: nil
+	00000024 | TYPE: nil
+	00000025 | TYPE: nil
+	00000026 | TYPE: nil
+	00000027 | TYPE: nil
+------------------------------------------------------------------------
+------------------------------------------------------------------------
+ PRE-OPCODE: RETURN,		A = 00000000, B = 00000004, C = 00000000, Bx = 00000800
+''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+ L->base = 0000000a
+ L->top = 0000000d
+ L->ci = 000e01e0
+ L->stack = 000e0260
+ L->stack_last = 00000027
+
+ CI->func = 00000009
+ CI->base = 0000000a
+ CI->top = 0000000d
+
+ STACK:
+	00000000 | TYPE: nil
+	00000001 | TYPE: cfunction: 000165f0
+	00000002 | TYPE: lightuserdata
+	00000003 | TYPE: cfunction: 000136f0
+	00000004 | TYPE: lfunction
+	00000005 | TYPE: lfunction
+	00000006 | TYPE: table
+	00000007 | TYPE: number: 5.000000
+	00000008 | TYPE: number: 6.000000
+	00000009 | TYPE: lfunction
+	0000000a | TYPE: number: 1.000000
+	0000000b | TYPE: number: 2.000000
+	0000000c | TYPE: number: 4.000000
+	0000000d | TYPE: nil
+	0000000e | TYPE: nil
+	0000000f | TYPE: nil
+	00000010 | TYPE: nil
+	00000011 | TYPE: nil
+	00000012 | TYPE: nil
+	00000013 | TYPE: nil
+	00000014 | TYPE: nil
+	00000015 | TYPE: nil
+	00000016 | TYPE: nil
+	00000017 | TYPE: nil
+	00000018 | TYPE: nil
+	00000019 | TYPE: nil
+	0000001a | TYPE: nil
+	0000001b | TYPE: nil
+	0000001c | TYPE: nil
+	0000001d | TYPE: nil
+	0000001e | TYPE: nil
+	0000001f | TYPE: nil
+	00000020 | TYPE: nil
+	00000021 | TYPE: nil
+	00000022 | TYPE: nil
+	00000023 | TYPE: nil
+	00000024 | TYPE: nil
+	00000025 | TYPE: nil
+	00000026 | TYPE: nil
+	00000027 | TYPE: nil
+------------------------------------------------------------------------
+------------------------------------------------------------------------
+ PRE-OPCODE: SETLIST,		A = 00000001, B = 00000000, C = 00000001, Bx = 00000001
+''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+ L->base = 00000005
+ L->top = 0000000c
+ L->ci = 000e01c8
+ L->stack = 000e0260
+ L->stack_last = 00000027
+
+ CI->func = 00000004
+ CI->base = 00000005
+ CI->top = 0000000a
+
+ STACK:
+	00000000 | TYPE: nil
+	00000001 | TYPE: cfunction: 000165f0
+	00000002 | TYPE: lightuserdata
+	00000003 | TYPE: cfunction: 000136f0
+	00000004 | TYPE: lfunction
+	00000005 | TYPE: lfunction
+	00000006 | TYPE: table
+	00000007 | TYPE: number: 5.000000
+	00000008 | TYPE: number: 6.000000
+	00000009 | TYPE: number: 1.000000
+	0000000a | TYPE: number: 2.000000
+	0000000b | TYPE: number: 4.000000
+	0000000c | TYPE: number: 4.000000
+	0000000d | TYPE: nil
+	0000000e | TYPE: nil
+	0000000f | TYPE: nil
+	00000010 | TYPE: nil
+	00000011 | TYPE: nil
+	00000012 | TYPE: nil
+	00000013 | TYPE: nil
+	00000014 | TYPE: nil
+	00000015 | TYPE: nil
+	00000016 | TYPE: nil
+	00000017 | TYPE: nil
+	00000018 | TYPE: nil
+	00000019 | TYPE: nil
+	0000001a | TYPE: nil
+	0000001b | TYPE: nil
+	0000001c | TYPE: nil
+	0000001d | TYPE: nil
+	0000001e | TYPE: nil
+	0000001f | TYPE: nil
+	00000020 | TYPE: nil
+	00000021 | TYPE: nil
+	00000022 | TYPE: nil
+	00000023 | TYPE: nil
+	00000024 | TYPE: nil
+	00000025 | TYPE: nil
+	00000026 | TYPE: nil
+	00000027 | TYPE: nil
+------------------------------------------------------------------------
+------------------------------------------------------------------------
+ PRE-OPCODE: GETGLOBAL,		A = 00000002, B = 00000000, C = 00000002, Bx = 00000002
+''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+ L->base = 00000005
+ L->top = 0000000a
+ L->ci = 000e01c8
+ L->stack = 000e0260
+ L->stack_last = 00000027
+
+ CI->func = 00000004
+ CI->base = 00000005
+ CI->top = 0000000a
+
+ STACK:
+	00000000 | TYPE: nil
+	00000001 | TYPE: cfunction: 000165f0
+	00000002 | TYPE: lightuserdata
+	00000003 | TYPE: cfunction: 000136f0
+	00000004 | TYPE: lfunction
+	00000005 | TYPE: lfunction
+	00000006 | TYPE: table
+	00000007 | TYPE: number: 5.000000
+	00000008 | TYPE: number: 6.000000
+	00000009 | TYPE: number: 1.000000
+	0000000a | TYPE: number: 2.000000
+	0000000b | TYPE: number: 4.000000
+	0000000c | TYPE: number: 4.000000
+	0000000d | TYPE: nil
+	0000000e | TYPE: nil
+	0000000f | TYPE: nil
+	00000010 | TYPE: nil
+	00000011 | TYPE: nil
+	00000012 | TYPE: nil
+	00000013 | TYPE: nil
+	00000014 | TYPE: nil
+	00000015 | TYPE: nil
+	00000016 | TYPE: nil
+	00000017 | TYPE: nil
+	00000018 | TYPE: nil
+	00000019 | TYPE: nil
+	0000001a | TYPE: nil
+	0000001b | TYPE: nil
+	0000001c | TYPE: nil
+	0000001d | TYPE: nil
+	0000001e | TYPE: nil
+	0000001f | TYPE: nil
+	00000020 | TYPE: nil
+	00000021 | TYPE: nil
+	00000022 | TYPE: nil
+	00000023 | TYPE: nil
+	00000024 | TYPE: nil
+	00000025 | TYPE: nil
+	00000026 | TYPE: nil
+	00000027 | TYPE: nil
+------------------------------------------------------------------------
+------------------------------------------------------------------------
+ PRE-OPCODE: GETTABLE,		A = 00000003, B = 00000001, C = 00000103, Bx = 00000303
+''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+ L->base = 00000005
+ L->top = 0000000a
+ L->ci = 000e01c8
+ L->stack = 000e0260
+ L->stack_last = 00000027
+
+ CI->func = 00000004
+ CI->base = 00000005
+ CI->top = 0000000a
+
+ STACK:
+	00000000 | TYPE: nil
+	00000001 | TYPE: cfunction: 000165f0
+	00000002 | TYPE: lightuserdata
+	00000003 | TYPE: cfunction: 000136f0
+	00000004 | TYPE: lfunction
+	00000005 | TYPE: lfunction
+	00000006 | TYPE: table
+	00000007 | TYPE: cfunction: 00084c60
+	00000008 | TYPE: number: 6.000000
+	00000009 | TYPE: number: 1.000000
+	0000000a | TYPE: cfunction: 00084c60
+	0000000b | TYPE: number: 4.000000
+	0000000c | TYPE: number: 4.000000
+	0000000d | TYPE: nil
+	0000000e | TYPE: nil
+	0000000f | TYPE: nil
+	00000010 | TYPE: nil
+	00000011 | TYPE: nil
+	00000012 | TYPE: nil
+	00000013 | TYPE: nil
+	00000014 | TYPE: nil
+	00000015 | TYPE: nil
+	00000016 | TYPE: nil
+	00000017 | TYPE: nil
+	00000018 | TYPE: nil
+	00000019 | TYPE: nil
+	0000001a | TYPE: nil
+	0000001b | TYPE: nil
+	0000001c | TYPE: nil
+	0000001d | TYPE: nil
+	0000001e | TYPE: nil
+	0000001f | TYPE: nil
+	00000020 | TYPE: nil
+	00000021 | TYPE: nil
+	00000022 | TYPE: nil
+	00000023 | TYPE: nil
+	00000024 | TYPE: nil
+	00000025 | TYPE: nil
+	00000026 | TYPE: nil
+	00000027 | TYPE: nil
+------------------------------------------------------------------------
+------------------------------------------------------------------------
+ PRE-OPCODE: CALL,		A = 00000002, B = 00000002, C = 00000001, Bx = 00000401
+''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+ L->base = 00000005
+ L->top = 0000000a
+ L->ci = 000e01c8
+ L->stack = 000e0260
+ L->stack_last = 00000027
+
+ CI->func = 00000004
+ CI->base = 00000005
+ CI->top = 0000000a
+
+ STACK:
+	00000000 | TYPE: nil
+	00000001 | TYPE: cfunction: 000165f0
+	00000002 | TYPE: lightuserdata
+	00000003 | TYPE: cfunction: 000136f0
+	00000004 | TYPE: lfunction
+	00000005 | TYPE: lfunction
+	00000006 | TYPE: table
+	00000007 | TYPE: cfunction: 00084c60
+	00000008 | TYPE: number: 5.000000
+	00000009 | TYPE: number: 1.000000
+	0000000a | TYPE: cfunction: 00084c60
+	0000000b | TYPE: number: 4.000000
+	0000000c | TYPE: number: 4.000000
+	0000000d | TYPE: nil
+	0000000e | TYPE: nil
+	0000000f | TYPE: nil
+	00000010 | TYPE: nil
+	00000011 | TYPE: nil
+	00000012 | TYPE: nil
+	00000013 | TYPE: nil
+	00000014 | TYPE: nil
+	00000015 | TYPE: nil
+	00000016 | TYPE: nil
+	00000017 | TYPE: nil
+	00000018 | TYPE: nil
+	00000019 | TYPE: nil
+	0000001a | TYPE: nil
+	0000001b | TYPE: nil
+	0000001c | TYPE: nil
+	0000001d | TYPE: nil
+	0000001e | TYPE: nil
+	0000001f | TYPE: nil
+	00000020 | TYPE: nil
+	00000021 | TYPE: nil
+	00000022 | TYPE: nil
+	00000023 | TYPE: nil
+	00000024 | TYPE: nil
+	00000025 | TYPE: nil
+	00000026 | TYPE: nil
+	00000027 | TYPE: nil
+------------------------------------------------------------------------
+------------------------------------------------------------------------
+ PRE-OPCODE: GETGLOBAL,		A = 00000002, B = 00000000, C = 00000002, Bx = 00000002
+''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+ L->base = 00000005
+ L->top = 0000000a
+ L->ci = 000e01c8
+ L->stack = 000e0260
+ L->stack_last = 00000027
+
+ CI->func = 00000004
+ CI->base = 00000005
+ CI->top = 0000000a
+
+ STACK:
+	00000000 | TYPE: nil
+	00000001 | TYPE: cfunction: 000165f0
+	00000002 | TYPE: lightuserdata
+	00000003 | TYPE: cfunction: 000136f0
+	00000004 | TYPE: lfunction
+	00000005 | TYPE: lfunction
+	00000006 | TYPE: table
+	00000007 | TYPE: cfunction: 00084c60
+	00000008 | TYPE: number: 5.000000
+	00000009 | TYPE: cfunction: 00087a68
+	0000000a | TYPE: string: 5
+	0000000b | TYPE: nil
+	0000000c | TYPE: nil
+	0000000d | TYPE: nil
+	0000000e | TYPE: nil
+	0000000f | TYPE: nil
+	00000010 | TYPE: nil
+	00000011 | TYPE: nil
+	00000012 | TYPE: nil
+	00000013 | TYPE: nil
+	00000014 | TYPE: nil
+	00000015 | TYPE: nil
+	00000016 | TYPE: nil
+	00000017 | TYPE: nil
+	00000018 | TYPE: nil
+	00000019 | TYPE: nil
+	0000001a | TYPE: nil
+	0000001b | TYPE: nil
+	0000001c | TYPE: nil
+	0000001d | TYPE: nil
+	0000001e | TYPE: nil
+	0000001f | TYPE: nil
+	00000020 | TYPE: nil
+	00000021 | TYPE: nil
+	00000022 | TYPE: nil
+	00000023 | TYPE: nil
+	00000024 | TYPE: nil
+	00000025 | TYPE: nil
+	00000026 | TYPE: nil
+	00000027 | TYPE: nil
+------------------------------------------------------------------------
+------------------------------------------------------------------------
+ PRE-OPCODE: GETTABLE,		A = 00000003, B = 00000001, C = 00000104, Bx = 00000304
+''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+ L->base = 00000005
+ L->top = 0000000a
+ L->ci = 000e01c8
+ L->stack = 000e0260
+ L->stack_last = 00000027
+
+ CI->func = 00000004
+ CI->base = 00000005
+ CI->top = 0000000a
+
+ STACK:
+	00000000 | TYPE: nil
+	00000001 | TYPE: cfunction: 000165f0
+	00000002 | TYPE: lightuserdata
+	00000003 | TYPE: cfunction: 000136f0
+	00000004 | TYPE: lfunction
+	00000005 | TYPE: lfunction
+	00000006 | TYPE: table
+	00000007 | TYPE: cfunction: 00084c60
+	00000008 | TYPE: number: 5.000000
+	00000009 | TYPE: cfunction: 00087a68
+	0000000a | TYPE: cfunction: 00084c60
+	0000000b | TYPE: nil
+	0000000c | TYPE: nil
+	0000000d | TYPE: nil
+	0000000e | TYPE: nil
+	0000000f | TYPE: nil
+	00000010 | TYPE: nil
+	00000011 | TYPE: nil
+	00000012 | TYPE: nil
+	00000013 | TYPE: nil
+	00000014 | TYPE: nil
+	00000015 | TYPE: nil
+	00000016 | TYPE: nil
+	00000017 | TYPE: nil
+	00000018 | TYPE: nil
+	00000019 | TYPE: nil
+	0000001a | TYPE: nil
+	0000001b | TYPE: nil
+	0000001c | TYPE: nil
+	0000001d | TYPE: nil
+	0000001e | TYPE: nil
+	0000001f | TYPE: nil
+	00000020 | TYPE: nil
+	00000021 | TYPE: nil
+	00000022 | TYPE: nil
+	00000023 | TYPE: nil
+	00000024 | TYPE: nil
+	00000025 | TYPE: nil
+	00000026 | TYPE: nil
+	00000027 | TYPE: nil
+------------------------------------------------------------------------
+------------------------------------------------------------------------
+ PRE-OPCODE: CALL,		A = 00000002, B = 00000002, C = 00000001, Bx = 00000401
+''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+ L->base = 00000005
+ L->top = 0000000a
+ L->ci = 000e01c8
+ L->stack = 000e0260
+ L->stack_last = 00000027
+
+ CI->func = 00000004
+ CI->base = 00000005
+ CI->top = 0000000a
+
+ STACK:
+	00000000 | TYPE: nil
+	00000001 | TYPE: cfunction: 000165f0
+	00000002 | TYPE: lightuserdata
+	00000003 | TYPE: cfunction: 000136f0
+	00000004 | TYPE: lfunction
+	00000005 | TYPE: lfunction
+	00000006 | TYPE: table
+	00000007 | TYPE: cfunction: 00084c60
+	00000008 | TYPE: number: 6.000000
+	00000009 | TYPE: cfunction: 00087a68
+	0000000a | TYPE: cfunction: 00084c60
+	0000000b | TYPE: nil
+	0000000c | TYPE: nil
+	0000000d | TYPE: nil
+	0000000e | TYPE: nil
+	0000000f | TYPE: nil
+	00000010 | TYPE: nil
+	00000011 | TYPE: nil
+	00000012 | TYPE: nil
+	00000013 | TYPE: nil
+	00000014 | TYPE: nil
+	00000015 | TYPE: nil
+	00000016 | TYPE: nil
+	00000017 | TYPE: nil
+	00000018 | TYPE: nil
+	00000019 | TYPE: nil
+	0000001a | TYPE: nil
+	0000001b | TYPE: nil
+	0000001c | TYPE: nil
+	0000001d | TYPE: nil
+	0000001e | TYPE: nil
+	0000001f | TYPE: nil
+	00000020 | TYPE: nil
+	00000021 | TYPE: nil
+	00000022 | TYPE: nil
+	00000023 | TYPE: nil
+	00000024 | TYPE: nil
+	00000025 | TYPE: nil
+	00000026 | TYPE: nil
+	00000027 | TYPE: nil
+------------------------------------------------------------------------
+------------------------------------------------------------------------
+ PRE-OPCODE: GETGLOBAL,		A = 00000002, B = 00000000, C = 00000002, Bx = 00000002
+''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+ L->base = 00000005
+ L->top = 0000000a
+ L->ci = 000e01c8
+ L->stack = 000e0260
+ L->stack_last = 00000027
+
+ CI->func = 00000004
+ CI->base = 00000005
+ CI->top = 0000000a
+
+ STACK:
+	00000000 | TYPE: nil
+	00000001 | TYPE: cfunction: 000165f0
+	00000002 | TYPE: lightuserdata
+	00000003 | TYPE: cfunction: 000136f0
+	00000004 | TYPE: lfunction
+	00000005 | TYPE: lfunction
+	00000006 | TYPE: table
+	00000007 | TYPE: cfunction: 00084c60
+	00000008 | TYPE: number: 6.000000
+	00000009 | TYPE: cfunction: 00087a68
+	0000000a | TYPE: string: 6
+	0000000b | TYPE: string: 6
+	0000000c | TYPE: string: 6
+	0000000d | TYPE: nil
+	0000000e | TYPE: nil
+	0000000f | TYPE: nil
+	00000010 | TYPE: nil
+	00000011 | TYPE: nil
+	00000012 | TYPE: nil
+	00000013 | TYPE: nil
+	00000014 | TYPE: nil
+	00000015 | TYPE: nil
+	00000016 | TYPE: nil
+	00000017 | TYPE: nil
+	00000018 | TYPE: nil
+	00000019 | TYPE: nil
+	0000001a | TYPE: nil
+	0000001b | TYPE: nil
+	0000001c | TYPE: nil
+	0000001d | TYPE: nil
+	0000001e | TYPE: nil
+	0000001f | TYPE: nil
+	00000020 | TYPE: nil
+	00000021 | TYPE: nil
+	00000022 | TYPE: nil
+	00000023 | TYPE: nil
+	00000024 | TYPE: nil
+	00000025 | TYPE: nil
+	00000026 | TYPE: nil
+	00000027 | TYPE: nil
+------------------------------------------------------------------------
+------------------------------------------------------------------------
+ PRE-OPCODE: GETTABLE,		A = 00000003, B = 00000001, C = 00000105, Bx = 00000305
+''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+ L->base = 00000005
+ L->top = 0000000a
+ L->ci = 000e01c8
+ L->stack = 000e0260
+ L->stack_last = 00000027
+
+ CI->func = 00000004
+ CI->base = 00000005
+ CI->top = 0000000a
+
+ STACK:
+	00000000 | TYPE: nil
+	00000001 | TYPE: cfunction: 000165f0
+	00000002 | TYPE: lightuserdata
+	00000003 | TYPE: cfunction: 000136f0
+	00000004 | TYPE: lfunction
+	00000005 | TYPE: lfunction
+	00000006 | TYPE: table
+	00000007 | TYPE: cfunction: 00084c60
+	00000008 | TYPE: number: 6.000000
+	00000009 | TYPE: cfunction: 00087a68
+	0000000a | TYPE: cfunction: 00084c60
+	0000000b | TYPE: string: 6
+	0000000c | TYPE: string: 6
+	0000000d | TYPE: nil
+	0000000e | TYPE: nil
+	0000000f | TYPE: nil
+	00000010 | TYPE: nil
+	00000011 | TYPE: nil
+	00000012 | TYPE: nil
+	00000013 | TYPE: nil
+	00000014 | TYPE: nil
+	00000015 | TYPE: nil
+	00000016 | TYPE: nil
+	00000017 | TYPE: nil
+	00000018 | TYPE: nil
+	00000019 | TYPE: nil
+	0000001a | TYPE: nil
+	0000001b | TYPE: nil
+	0000001c | TYPE: nil
+	0000001d | TYPE: nil
+	0000001e | TYPE: nil
+	0000001f | TYPE: nil
+	00000020 | TYPE: nil
+	00000021 | TYPE: nil
+	00000022 | TYPE: nil
+	00000023 | TYPE: nil
+	00000024 | TYPE: nil
+	00000025 | TYPE: nil
+	00000026 | TYPE: nil
+	00000027 | TYPE: nil
+------------------------------------------------------------------------
+------------------------------------------------------------------------
+ PRE-OPCODE: CALL,		A = 00000002, B = 00000002, C = 00000001, Bx = 00000401
+''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+ L->base = 00000005
+ L->top = 0000000a
+ L->ci = 000e01c8
+ L->stack = 000e0260
+ L->stack_last = 00000027
+
+ CI->func = 00000004
+ CI->base = 00000005
+ CI->top = 0000000a
+
+ STACK:
+	00000000 | TYPE: nil
+	00000001 | TYPE: cfunction: 000165f0
+	00000002 | TYPE: lightuserdata
+	00000003 | TYPE: cfunction: 000136f0
+	00000004 | TYPE: lfunction
+	00000005 | TYPE: lfunction
+	00000006 | TYPE: table
+	00000007 | TYPE: cfunction: 00084c60
+	00000008 | TYPE: number: 1.000000
+	00000009 | TYPE: cfunction: 00087a68
+	0000000a | TYPE: cfunction: 00084c60
+	0000000b | TYPE: string: 6
+	0000000c | TYPE: string: 6
+	0000000d | TYPE: nil
+	0000000e | TYPE: nil
+	0000000f | TYPE: nil
+	00000010 | TYPE: nil
+	00000011 | TYPE: nil
+	00000012 | TYPE: nil
+	00000013 | TYPE: nil
+	00000014 | TYPE: nil
+	00000015 | TYPE: nil
+	00000016 | TYPE: nil
+	00000017 | TYPE: nil
+	00000018 | TYPE: nil
+	00000019 | TYPE: nil
+	0000001a | TYPE: nil
+	0000001b | TYPE: nil
+	0000001c | TYPE: nil
+	0000001d | TYPE: nil
+	0000001e | TYPE: nil
+	0000001f | TYPE: nil
+	00000020 | TYPE: nil
+	00000021 | TYPE: nil
+	00000022 | TYPE: nil
+	00000023 | TYPE: nil
+	00000024 | TYPE: nil
+	00000025 | TYPE: nil
+	00000026 | TYPE: nil
+	00000027 | TYPE: nil
+------------------------------------------------------------------------
+------------------------------------------------------------------------
+ PRE-OPCODE: GETGLOBAL,		A = 00000002, B = 00000000, C = 00000002, Bx = 00000002
+''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+ L->base = 00000005
+ L->top = 0000000a
+ L->ci = 000e01c8
+ L->stack = 000e0260
+ L->stack_last = 00000027
+
+ CI->func = 00000004
+ CI->base = 00000005
+ CI->top = 0000000a
+
+ STACK:
+	00000000 | TYPE: nil
+	00000001 | TYPE: cfunction: 000165f0
+	00000002 | TYPE: lightuserdata
+	00000003 | TYPE: cfunction: 000136f0
+	00000004 | TYPE: lfunction
+	00000005 | TYPE: lfunction
+	00000006 | TYPE: table
+	00000007 | TYPE: cfunction: 00084c60
+	00000008 | TYPE: number: 1.000000
+	00000009 | TYPE: cfunction: 00087a68
+	0000000a | TYPE: string: 1
+	0000000b | TYPE: string: 1
+	0000000c | TYPE: string: 1
+	0000000d | TYPE: nil
+	0000000e | TYPE: nil
+	0000000f | TYPE: nil
+	00000010 | TYPE: nil
+	00000011 | TYPE: nil
+	00000012 | TYPE: nil
+	00000013 | TYPE: nil
+	00000014 | TYPE: nil
+	00000015 | TYPE: nil
+	00000016 | TYPE: nil
+	00000017 | TYPE: nil
+	00000018 | TYPE: nil
+	00000019 | TYPE: nil
+	0000001a | TYPE: nil
+	0000001b | TYPE: nil
+	0000001c | TYPE: nil
+	0000001d | TYPE: nil
+	0000001e | TYPE: nil
+	0000001f | TYPE: nil
+	00000020 | TYPE: nil
+	00000021 | TYPE: nil
+	00000022 | TYPE: nil
+	00000023 | TYPE: nil
+	00000024 | TYPE: nil
+	00000025 | TYPE: nil
+	00000026 | TYPE: nil
+	00000027 | TYPE: nil
+------------------------------------------------------------------------
+------------------------------------------------------------------------
+ PRE-OPCODE: GETTABLE,		A = 00000003, B = 00000001, C = 00000106, Bx = 00000306
+''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+ L->base = 00000005
+ L->top = 0000000a
+ L->ci = 000e01c8
+ L->stack = 000e0260
+ L->stack_last = 00000027
+
+ CI->func = 00000004
+ CI->base = 00000005
+ CI->top = 0000000a
+
+ STACK:
+	00000000 | TYPE: nil
+	00000001 | TYPE: cfunction: 000165f0
+	00000002 | TYPE: lightuserdata
+	00000003 | TYPE: cfunction: 000136f0
+	00000004 | TYPE: lfunction
+	00000005 | TYPE: lfunction
+	00000006 | TYPE: table
+	00000007 | TYPE: cfunction: 00084c60
+	00000008 | TYPE: number: 1.000000
+	00000009 | TYPE: cfunction: 00087a68
+	0000000a | TYPE: cfunction: 00084c60
+	0000000b | TYPE: string: 1
+	0000000c | TYPE: string: 1
+	0000000d | TYPE: nil
+	0000000e | TYPE: nil
+	0000000f | TYPE: nil
+	00000010 | TYPE: nil
+	00000011 | TYPE: nil
+	00000012 | TYPE: nil
+	00000013 | TYPE: nil
+	00000014 | TYPE: nil
+	00000015 | TYPE: nil
+	00000016 | TYPE: nil
+	00000017 | TYPE: nil
+	00000018 | TYPE: nil
+	00000019 | TYPE: nil
+	0000001a | TYPE: nil
+	0000001b | TYPE: nil
+	0000001c | TYPE: nil
+	0000001d | TYPE: nil
+	0000001e | TYPE: nil
+	0000001f | TYPE: nil
+	00000020 | TYPE: nil
+	00000021 | TYPE: nil
+	00000022 | TYPE: nil
+	00000023 | TYPE: nil
+	00000024 | TYPE: nil
+	00000025 | TYPE: nil
+	00000026 | TYPE: nil
+	00000027 | TYPE: nil
+------------------------------------------------------------------------
+------------------------------------------------------------------------
+ PRE-OPCODE: CALL,		A = 00000002, B = 00000002, C = 00000001, Bx = 00000401
+''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+ L->base = 00000005
+ L->top = 0000000a
+ L->ci = 000e01c8
+ L->stack = 000e0260
+ L->stack_last = 00000027
+
+ CI->func = 00000004
+ CI->base = 00000005
+ CI->top = 0000000a
+
+ STACK:
+	00000000 | TYPE: nil
+	00000001 | TYPE: cfunction: 000165f0
+	00000002 | TYPE: lightuserdata
+	00000003 | TYPE: cfunction: 000136f0
+	00000004 | TYPE: lfunction
+	00000005 | TYPE: lfunction
+	00000006 | TYPE: table
+	00000007 | TYPE: cfunction: 00084c60
+	00000008 | TYPE: number: 2.000000
+	00000009 | TYPE: cfunction: 00087a68
+	0000000a | TYPE: cfunction: 00084c60
+	0000000b | TYPE: string: 1
+	0000000c | TYPE: string: 1
+	0000000d | TYPE: nil
+	0000000e | TYPE: nil
+	0000000f | TYPE: nil
+	00000010 | TYPE: nil
+	00000011 | TYPE: nil
+	00000012 | TYPE: nil
+	00000013 | TYPE: nil
+	00000014 | TYPE: nil
+	00000015 | TYPE: nil
+	00000016 | TYPE: nil
+	00000017 | TYPE: nil
+	00000018 | TYPE: nil
+	00000019 | TYPE: nil
+	0000001a | TYPE: nil
+	0000001b | TYPE: nil
+	0000001c | TYPE: nil
+	0000001d | TYPE: nil
+	0000001e | TYPE: nil
+	0000001f | TYPE: nil
+	00000020 | TYPE: nil
+	00000021 | TYPE: nil
+	00000022 | TYPE: nil
+	00000023 | TYPE: nil
+	00000024 | TYPE: nil
+	00000025 | TYPE: nil
+	00000026 | TYPE: nil
+	00000027 | TYPE: nil
+------------------------------------------------------------------------
+------------------------------------------------------------------------
+ PRE-OPCODE: GETGLOBAL,		A = 00000002, B = 00000000, C = 00000002, Bx = 00000002
+''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+ L->base = 00000005
+ L->top = 0000000a
+ L->ci = 000e01c8
+ L->stack = 000e0260
+ L->stack_last = 00000027
+
+ CI->func = 00000004
+ CI->base = 00000005
+ CI->top = 0000000a
+
+ STACK:
+	00000000 | TYPE: nil
+	00000001 | TYPE: cfunction: 000165f0
+	00000002 | TYPE: lightuserdata
+	00000003 | TYPE: cfunction: 000136f0
+	00000004 | TYPE: lfunction
+	00000005 | TYPE: lfunction
+	00000006 | TYPE: table
+	00000007 | TYPE: cfunction: 00084c60
+	00000008 | TYPE: number: 2.000000
+	00000009 | TYPE: cfunction: 00087a68
+	0000000a | TYPE: string: 2
+	0000000b | TYPE: string: 2
+	0000000c | TYPE: string: 2
+	0000000d | TYPE: nil
+	0000000e | TYPE: nil
+	0000000f | TYPE: nil
+	00000010 | TYPE: nil
+	00000011 | TYPE: nil
+	00000012 | TYPE: nil
+	00000013 | TYPE: nil
+	00000014 | TYPE: nil
+	00000015 | TYPE: nil
+	00000016 | TYPE: nil
+	00000017 | TYPE: nil
+	00000018 | TYPE: nil
+	00000019 | TYPE: nil
+	0000001a | TYPE: nil
+	0000001b | TYPE: nil
+	0000001c | TYPE: nil
+	0000001d | TYPE: nil
+	0000001e | TYPE: nil
+	0000001f | TYPE: nil
+	00000020 | TYPE: nil
+	00000021 | TYPE: nil
+	00000022 | TYPE: nil
+	00000023 | TYPE: nil
+	00000024 | TYPE: nil
+	00000025 | TYPE: nil
+	00000026 | TYPE: nil
+	00000027 | TYPE: nil
+------------------------------------------------------------------------
+------------------------------------------------------------------------
+ PRE-OPCODE: GETTABLE,		A = 00000003, B = 00000001, C = 00000100, Bx = 00000300
+''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+ L->base = 00000005
+ L->top = 0000000a
+ L->ci = 000e01c8
+ L->stack = 000e0260
+ L->stack_last = 00000027
+
+ CI->func = 00000004
+ CI->base = 00000005
+ CI->top = 0000000a
+
+ STACK:
+	00000000 | TYPE: nil
+	00000001 | TYPE: cfunction: 000165f0
+	00000002 | TYPE: lightuserdata
+	00000003 | TYPE: cfunction: 000136f0
+	00000004 | TYPE: lfunction
+	00000005 | TYPE: lfunction
+	00000006 | TYPE: table
+	00000007 | TYPE: cfunction: 00084c60
+	00000008 | TYPE: number: 2.000000
+	00000009 | TYPE: cfunction: 00087a68
+	0000000a | TYPE: cfunction: 00084c60
+	0000000b | TYPE: string: 2
+	0000000c | TYPE: string: 2
+	0000000d | TYPE: nil
+	0000000e | TYPE: nil
+	0000000f | TYPE: nil
+	00000010 | TYPE: nil
+	00000011 | TYPE: nil
+	00000012 | TYPE: nil
+	00000013 | TYPE: nil
+	00000014 | TYPE: nil
+	00000015 | TYPE: nil
+	00000016 | TYPE: nil
+	00000017 | TYPE: nil
+	00000018 | TYPE: nil
+	00000019 | TYPE: nil
+	0000001a | TYPE: nil
+	0000001b | TYPE: nil
+	0000001c | TYPE: nil
+	0000001d | TYPE: nil
+	0000001e | TYPE: nil
+	0000001f | TYPE: nil
+	00000020 | TYPE: nil
+	00000021 | TYPE: nil
+	00000022 | TYPE: nil
+	00000023 | TYPE: nil
+	00000024 | TYPE: nil
+	00000025 | TYPE: nil
+	00000026 | TYPE: nil
+	00000027 | TYPE: nil
+------------------------------------------------------------------------
+------------------------------------------------------------------------
+ PRE-OPCODE: CALL,		A = 00000002, B = 00000002, C = 00000001, Bx = 00000401
+''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+ L->base = 00000005
+ L->top = 0000000a
+ L->ci = 000e01c8
+ L->stack = 000e0260
+ L->stack_last = 00000027
+
+ CI->func = 00000004
+ CI->base = 00000005
+ CI->top = 0000000a
+
+ STACK:
+	00000000 | TYPE: nil
+	00000001 | TYPE: cfunction: 000165f0
+	00000002 | TYPE: lightuserdata
+	00000003 | TYPE: cfunction: 000136f0
+	00000004 | TYPE: lfunction
+	00000005 | TYPE: lfunction
+	00000006 | TYPE: table
+	00000007 | TYPE: cfunction: 00084c60
+	00000008 | TYPE: number: 4.000000
+	00000009 | TYPE: cfunction: 00087a68
+	0000000a | TYPE: cfunction: 00084c60
+	0000000b | TYPE: string: 2
+	0000000c | TYPE: string: 2
+	0000000d | TYPE: nil
+	0000000e | TYPE: nil
+	0000000f | TYPE: nil
+	00000010 | TYPE: nil
+	00000011 | TYPE: nil
+	00000012 | TYPE: nil
+	00000013 | TYPE: nil
+	00000014 | TYPE: nil
+	00000015 | TYPE: nil
+	00000016 | TYPE: nil
+	00000017 | TYPE: nil
+	00000018 | TYPE: nil
+	00000019 | TYPE: nil
+	0000001a | TYPE: nil
+	0000001b | TYPE: nil
+	0000001c | TYPE: nil
+	0000001d | TYPE: nil
+	0000001e | TYPE: nil
+	0000001f | TYPE: nil
+	00000020 | TYPE: nil
+	00000021 | TYPE: nil
+	00000022 | TYPE: nil
+	00000023 | TYPE: nil
+	00000024 | TYPE: nil
+	00000025 | TYPE: nil
+	00000026 | TYPE: nil
+	00000027 | TYPE: nil
+------------------------------------------------------------------------
+------------------------------------------------------------------------
+ PRE-OPCODE: RETURN,		A = 00000000, B = 00000001, C = 00000000, Bx = 00000200
+''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+ L->base = 00000005
+ L->top = 0000000a
+ L->ci = 000e01c8
+ L->stack = 000e0260
+ L->stack_last = 00000027
+
+ CI->func = 00000004
+ CI->base = 00000005
+ CI->top = 0000000a
+
+ STACK:
+	00000000 | TYPE: nil
+	00000001 | TYPE: cfunction: 000165f0
+	00000002 | TYPE: lightuserdata
+	00000003 | TYPE: cfunction: 000136f0
+	00000004 | TYPE: lfunction
+	00000005 | TYPE: lfunction
+	00000006 | TYPE: table
+	00000007 | TYPE: cfunction: 00084c60
+	00000008 | TYPE: number: 4.000000
+	00000009 | TYPE: cfunction: 00087a68
+	0000000a | TYPE: string: 4
+	0000000b | TYPE: string: 4
+	0000000c | TYPE: string: 4
 	0000000d | TYPE: nil
 	0000000e | TYPE: nil
 	0000000f | TYPE: nil

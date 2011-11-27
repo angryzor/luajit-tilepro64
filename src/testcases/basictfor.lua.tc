@@ -1,5 +1,11 @@
+name basic-tfor
+
+%%
 local t = {}
 t[1] = 2
 t[2] = 3
 for i,v in ipairs(t) do print(i,v) end
 
+%%
+1	2
+2	3

@@ -88,6 +88,18 @@
 |	sw r25, reg
 |.endmacro
 |
+|// Push and pop, but ABI-compliant (that is, as long as you pop before you try to 
+|// load a certain stack slot
+|.macro push, reg
+|	storeonstack reg, 4
+|	addi sp, sp, -4
+|.endmacro
+|
+|.macro pop, reg
+|	addi sp, sp, 4
+|	loadfromstack reg, 4
+|.endmacro
+|
 |//==========================================================================
 |
 |.macro preserveglobalregs
@@ -136,9 +148,9 @@
 |
 |.macro globals_JL_BASE
 |	move L->base, BASE
-|	move CI->base, BASE
-|	subidx TVALUE:r25, BASE, 1
-|	move CI->func, r25
+|//	move CI->base, BASE
+|//	subidx TVALUE:r25, BASE, 1
+|//	move CI->func, r25
 |.endmacro
 |
 |.macro globals_JL_CI
@@ -286,10 +298,25 @@
 |.endmacro
 |
 |.macro addidx, dst, src, idx
-|	addi dst, src, (idx)*#src
+|	addli dst, src, (idx)*#src
 |.endmacro
 |
 |.macro subidx, dst, src, idx
-|	addi dst, src, -(idx)*#src
+|	addli dst, src, -(idx)*#src
 |.endmacro
 |
+|// Very specific helper macros
+|.macro barriert, t, v
+|	addi r25, v->tt, -LUA_TSTRING
+|	blz r25, >8
+|	move GCOBJECT:r26, v->value.gc
+|	andi r25, GCOBJECT:r26->gch.marked, WHITEBITS
+|	bz r25, >8
+|	andi r25, TABLE:t->marked, bitmask(BLACKBIT)
+|	bz r25, >8
+|	andi TABLE:t->marked, TABLE:t->marked, ~bitmask(BLACKBIT)&0xff //cast(lu_byte, ~bitmask(BLACKBIT))
+|	move GL:r26, L->l_G
+|	move TABLE:t->gclist, GL:r26->grayagain
+|	move GL:r26->grayagain, TABLE:t
+|8:
+|.endmacro

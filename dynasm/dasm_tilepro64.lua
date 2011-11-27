@@ -311,12 +311,18 @@ end
 local function parsetype(str, isdst)
 	local expr, accessor = string.match(str, "^([%w_:]+)%s*(.*)$")
 	if not expr then werror("Not a type: " .. str) end
-	local typename, reg_override = string.match(expr, "^([%w_]+):([%w_]+)$")
+	local typename, reg_override = string.match(expr, "^([%w_:]+):([%w_]+)$")
 	local post = nil
 	local reg
 
 	if not typename then
 		typename = expr
+	end
+
+	-- allow multiple type overrides. useful for macros etc
+	local firstcolon = string.find(typename,":")
+	if firstcolon then
+		typename = string.sub(typename,1,firstcolon-1)
 	end
 
 	local t = map_type[typename]
@@ -720,6 +726,15 @@ map_instr_X1 = {
 	bnzt_2 = instr_parsers.X1_Br(5, 0, 0x3),
 	bz_2 = instr_parsers.X1_Br(5, 0, 0x1),
 	bzt_2 = instr_parsers.X1_Br(5, 0, 0x1),
+	bgez_2 = instr_parsers.X1_Br(5, 0, 0x7),
+	bgezt_2 = instr_parsers.X1_Br(5, 0, 0x7),
+	bgz_2 = instr_parsers.X1_Br(5, 0, 0x5),
+	bgzt_2 = instr_parsers.X1_Br(5, 0, 0x5),
+	blez_2 = instr_parsers.X1_Br(5, 0, 0xB),
+	blezt_2 = instr_parsers.X1_Br(5, 0, 0xB),
+	blz_2 = instr_parsers.X1_Br(5, 0, 0x9),
+	blzt_2 = instr_parsers.X1_Br(5, 0, 0x9),
+
 	jal_1 = special_instr_parsers.X1_J_jal(),
 	jalr_1 = special_instr_parsers.X1_RRR_no_Dst_and_B(1, 0, 0x09),
 	j_1 = special_instr_parsers.X1_J_j(),
@@ -759,6 +774,14 @@ map_op = {
 	bnzt_2 = wrap_put_nop_X0(map_instr_X1["bnzt_2"]),
 	bz_2 = wrap_put_nop_X0(map_instr_X1["bz_2"]),
 	bzt_2 = wrap_put_nop_X0(map_instr_X1["bzt_2"]),
+	bgez_2 = wrap_put_nop_X0(map_instr_X1["bgez_2"]),
+	bgezt_2 = wrap_put_nop_X0(map_instr_X1["bgezt_2"]),
+	bgz_2 = wrap_put_nop_X0(map_instr_X1["bgz_2"]),
+	bgzt_2 = wrap_put_nop_X0(map_instr_X1["bgzt_2"]),
+	blez_2 = wrap_put_nop_X0(map_instr_X1["blez_2"]),
+	blezt_2 = wrap_put_nop_X0(map_instr_X1["blezt_2"]),
+	blz_2 = wrap_put_nop_X0(map_instr_X1["blz_2"]),
+	blzt_2 = wrap_put_nop_X0(map_instr_X1["blzt_2"]),
 	jal_1 = wrap_put_nop_X0(map_instr_X1["jal_1"]),
 	jalr_1 = wrap_put_nop_X0(map_instr_X1["jalr_1"]),
 	j_1 = wrap_put_nop_X0(map_instr_X1["j_1"]),

@@ -27,6 +27,7 @@ function perform_single_test {
 				;;
 			esac || { echo "Unknown command $cmd." > /dev/stderr; return 1; }
 		done
+		echo "Testing: $name"
 		while read line && [[ "$line" != "%%" ]]
 		do
 			echo "$line"
