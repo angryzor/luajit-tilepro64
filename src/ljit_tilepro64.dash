@@ -217,6 +217,7 @@
 |.macro storenumber, dst, reg1, reg2
 |	move dst.value, reg1
 |	move dst.value.na[1], reg2
+|	movei dst.tt, LUA_TNUMBER
 |.endmacro
 |
 #if 0

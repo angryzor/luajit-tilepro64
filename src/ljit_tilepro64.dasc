@@ -246,6 +246,7 @@ static int jit_compile_jsub(jit_State *J)
 	|2:
 	|	addi L->nCcalls, L->nCcalls, -1
 	|
+	||	// TODO: This causes the problems when calling an uncompiled func
 	|	//move BASE, CI->base
 	|	// Push our "fast" state to the "slow" interpreter state
 	|	globals_JL
@@ -585,7 +586,6 @@ static void jit_op_return(jit_State *J, int rbase, int nresults)
 
 	/* Previous op was open: 'return f()' or 'return ...' */
 	if (nresults < 0) {
-		/* TODO: Assuming CI->func is always BASE-1. Not sure if this is true. */
 		|	subidx TOP, TOP, 1
 		|	move SCRATCHTV, BASE
 		|	slt_u r0, SCRATCHTV, TOP
