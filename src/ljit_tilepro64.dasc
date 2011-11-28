@@ -246,8 +246,8 @@ static int jit_compile_jsub(jit_State *J)
 	|2:
 	|	addi L->nCcalls, L->nCcalls, -1
 	|
-	||	// TODO: This causes the problems when calling an uncompiled func
-	|	//move BASE, CI->base
+	||	/* TODO: This causes the problems when calling an uncompiled func */
+	|	move BASE, CI->base
 	|	// Push our "fast" state to the "slow" interpreter state
 	|	globals_JL
 	|
@@ -426,84 +426,8 @@ static void jit_prologue(jit_State *J)
 		|	addidx TVALUE:r8, BASE, numparams
 		jit_wipe_r8_to_TOP(J);
 	}
-#if 0
-	if (numparams > 0) {
-	  |	addi r1, BASE, numparams
-	}
-
-	if (!pt->is_vararg) {  /* Fixarg function. */
-		/* Must cap L->top at L->base+numparams because 1st LOADNIL is omitted. */
-		if (numparams == 0) {
-		  	|	move TOP, BASE
-		} else {
-		    |	slte_u r3, TOP, r1
-			|	bnz r3, >1
-			|	move TOP, r1
-			|1:
-		}
-		|	addi r1, BASE, stacksize	// New ci->top.
-		|	move CI->tailcalls, zero		// 0
-		|	 move CI->top, r1
-		|	 move L->top, r1
-		|	move L->base, BASE
-		|	move CI->base, BASE
-	}
-
-	else {  /* Vararg function. */
-	  int i;
-	  if (numparams > 0) {
-	    |// If some fixargs are missing we need to clear them and
-	    |// bump TOP to get a consistent frame layout for OP_VARARG.
-	    |	jb >5
-	    |4:
-	    |.tail
-	    |5:  // This is uncommon. So move it to .tail and use a loop.
-	    |	mov TOP->tt, eax
-	    |	add TOP, #TOP
-	    |	cmp TOP, edx
-	    |	jb <5
-	    |	jmp <4
-	    |.code
-	  }
-	  |	mov L->base, TOP			// New base is after last arg.
-	  |	mov CI->base, TOP
-	  |	 mov CI->tailcalls, eax		// 0
-	  for (i = 0; i < numparams; i++) {  /* Move/clear fixargs. */
-	    |// Inline this. Vararg funcs usually have very few fixargs.
-	    |	copyslot TOP[i], BASE[i], ecx, edx
-	    |	mov BASE[i].tt, eax		// Clear old fixarg slot (help the GC).
-	  }
-	  if (numparams > 0) {
-	    |	mov CI, L->ci			// Reload CI = ecx (used by move).
-	  }
-	  |	mov BASE, TOP
-	  |	 lea edx, BASE[stacksize]	// New ci->top.
-	  |	lea TOP, BASE[numparams]		// Start of vars to clear.
-	  |	 mov CI->top, edx
-	  |	 mov L->top, edx
-	  stacksize -= numparams;		/* Fixargs are already cleared. */
-	}
-#endif
 
 #if 0
-	/* Clear undefined args and all vars. Still LUA_TNIL = 0. */
-	/* Note: cannot clear only args because L->top has grown. */
-	if (stacksize <= EXTRA_STACK) {  /* Loopless clear. May use EXTRA_STACK. */
-	  int i;
-	  for (i = 0; i < stacksize; i++) {
-	    |	move TOP[i].tt, zero
-	  }
-	} else {  /* Standard loop. */
-	  |2:  // Unrolled for 2 stack slots. No initial check. May use EXTRA_STACK.
-	  |	move TOP[0].tt, zero
-	  |	move TOP[1].tt, zero
-	  |	addidx TOP, TOP, 2
-	  |	slt_u r3, TOP, r1
-	  |	bnz r3, <2
-	  |// Note: TOP is undefined now. TOP is only valid across calls/open ins.
-	}
-
-
 #ifdef LUA_COMPAT_VARARG
 	if (pt->is_vararg & VARARG_NEEDSARG) {
 	  |	call &jit_vararg_table, L
@@ -512,65 +436,9 @@ static void jit_prologue(jit_State *J)
 #endif
 }
 
-/* Check if we can combine 'return const'. */
-static int jit_return_k(jit_State *J)
-{
-	return 0;
-#if 0
-	if (!J->combine) return 0;  /* COMBINE hint set? */
-	/* May need to close open upvalues. */
-	if (!fhint_isset(J, NOCLOSE)) {
-		|	call &luaF_close, L, BASE
-	}
-	if (!J->pt->is_vararg) {  /* Fixarg function. */
-		|	sub aword L->ci, #CI
-		|	mov TOP, BASE
-
-		|	sub BASE, #BASE
-		|	add esp, FRAME_OFFSET
-	} else {  /* Vararg function. */
-		|	mov CI, L->ci
-		|	mov BASE, CI->func
-		|	sub CI, #CI
-		|	mov L->ci, CI
-		|	lea TOP, BASE[1]
-		|	add esp, FRAME_OFFSET
-	}
-	jit_assert(J->combine == 1);  /* Required to skip next RETURN instruction. */
-	return 1;
-#endif
-}
-
 static void jit_op_return(jit_State *J, int rbase, int nresults)
 {
-#if 0
-	/* Return hook check. */
-	if (J->flags & JIT_F_DEBUG_CALL) {
-		if (nresults < 0 && !(J->flags & JIT_F_DEBUG_INS)) {
-			| mov L->top, TOP
-		}
-		|// TODO: LUA_HOOKTAILRET (+ ci->tailcalls counting) or changed debug API.
-		|	test byte L->hookmask, LUA_MASKRET
-		|	jz >7
-		|	call ->HOOKRET
-		|7:
-		if (J->flags & JIT_F_DEBUG_INS) {
-			|	mov eax, FRAME_RETADDR
-			|	mov L->savedpc, eax
-		}
-
-		|.jsub HOOKRET
-		|	mov eax, [esp]			// Current machine code address.
-		|	mov L->savedpc, eax
-		|	sub esp, FRAME_OFFSET
-		|	call &luaD_callhook, L, LUA_HOOKRET, -1
-		|	add esp, FRAME_OFFSET
-		|	mov BASE, L->base		// Restore stack-relative pointers.
-		|	mov TOP, L->top
-		|	ret
-		|.endjsub
-	}
-#endif
+	/* TODO: RETURN hook */
 
 	/* May need to close open upvalues. */
 	if (!fhint_isset(J, NOCLOSE)) {
@@ -597,26 +465,6 @@ static void jit_op_return(jit_State *J, int rbase, int nresults)
 		|	bnzt r0, <1
 		|2:
 		|	setnilvalue TOP[0]
-#if 0
-		|// Relocate [BASE+rbase, 0xb7dc0508TOP) -> [ci->func, *).
-		|	move CI, L->ci
-		|	addidx BASE, BASE, rbase
-		|	move r2, CI->func
-		|	slt_u r0, BASE, TOP
-		|	bz r0, >2
-		|1:
-		|	lw r1, BASE
-		|	addi BASE, BASE, 4
-		|	sw r2, r1
-		|	addi r2, r2, 4
-		|	slt_u r0, BASE, TOP
-		|	bnz r0, <1
-		|2:
-		|	move BASE, CI->func
-		|	addi CI, CI, -#CI
- 		|	move TOP, r2			// Relocated TOP.
-		|	move L->ci, CI
-#endif
 	}
 	else
 	{
@@ -638,64 +486,17 @@ static void jit_op_return(jit_State *J, int rbase, int nresults)
 
 static void jit_op_call(jit_State *J, int func, int nargs, int nresults)
 {
-#if 0
-	int cltype = jit_inline_call(J, func, nargs, nresults);
-	if (cltype < 0) return;  /* Inlined? */
-#endif
 	|	addidx BASE, BASE, func
-	|//  move CI, L->ci
-	|//   isfunction 0			// BASE[0] is L->base[func].
-	if (nargs >= 0) {  /* Previous op was not open and did not set TOP. */
+	if (nargs >= 0) {
 		|	addidx TOP, BASE, nargs+1
 	}
 	|	move LCL, BASE->value
 	|	movemwi CI->savedpc, J->nextins
-#if 0
-	if (cltype == LUA_TFUNCTION) {
-		if (nargs == -1) {
-			| jne ->DEOPTIMIZE_OPEN		// TYPE hint was wrong (open op)?
-		} else {
-			| jne ->DEOPTIMIZE		// TYPE hint was wrong?
-		}
-	} else {
-		|	 je >1				// Skip __call handling for functions.
-		|	call ->METACALL
-		|1:
 
-		|.jsub METACALL			// CALL to __call metamethod.
-		|	sub esp, FRAME_OFFSET
-		|	mov L->savedpc, edx		// May throw errors. Save PC and TOP.
-		|	mov L->top, TOP
-		|	call &luaD_tryfuncTM, L, BASE	// Resolve __call metamethod.
-		|	add esp, FRAME_OFFSET
-		|	mov BASE, eax			// Restore stack-relative pointers.
-		|	mov TOP, L->top
-		|	mov LCL, BASE->value
-		|	mov CI, L->ci
-		|	ret
-		|.endjsub
-	}
-#endif
+	/* TODO: Call metamethod */
+
 	|	jalr LCL->jit_gate		// Call JIT func or GATE_JL/GATE_JC.
-#if 0
-	/* Clear undefined results TOP <= o < func+nresults. */
-	if (nresults > 0) {
-		if (nresults <= EXTRA_STACK) {  /* Loopless clear. May use EXTRA_STACK. */
-			int i;
-			for (i = 0; i < nresults; i++) {
-				|	move TOP[i].tt, zero
-			}
-		} else {  /* Standard loop. TODO: move to .tail? */
-			|	addidx r2, BASE, func+nresults
-			|1:  // Unrolled for 2 stack slots. No initial check. May use EXTRA_STACK.
-			|	move TOP[0].tt, zero			// LUA_TNIL
-			|	move TOP[1].tt, zero			// LUA_TNIL
-			|	addidx TOP, TOP, 2
-			|	slt r0, TOP, r2
-			|	bnzt r0, <1
-		}
-	}
-#endif
+
 	//jit_emit_custom_stackdump(J,"Before return from call");
 	if (nresults >= 0) {
 		|	move r8, TOP
@@ -703,112 +504,14 @@ static void jit_op_call(jit_State *J, int func, int nargs, int nresults)
 		jit_wipe_r8_to_TOP(J);
 		|	move TOP, CI->top
 	}
-	|	subidx BASE, BASE, func
+	|//	subidx BASE, BASE, func
+	|	move BASE, CI->base
 	|	move LCL, BASE[-1].value
 }
 
 
 static void jit_op_tailcall(jit_State *J, int func, int nargs)
 {
-#if 0
-	int cltype;
-
-	if (!fhint_isset(J, NOCLOSE)) {  /* May need to close open upvalues. */
-		|	call &luaF_close, L, BASE
-	}
-
-	cltype = jit_inline_call(J, func, nargs, -2);
-	if (cltype < 0) goto finish;  /* Inlined? */
-
-	if (cltype == LUA_TFUNCTION) {
-		jit_deopt_target(J, nargs);
-		|	isfunction func
-		|	jne L_DEOPTIMIZE			// TYPE hint was wrong?
-	} else {
-		|	isfunction func; jne >5		// Handle generic callables first.
-		|.tail
-		|5:  // Fallback for generic callables.
-		|	addidx BASE, func
-		if (nargs >= 0) {
-			|	lea TOP, BASE[1+nargs]
-		}
-		|	mov edx, &J->nextins
-		|	jmp ->METATAILCALL
-		|.code
-
-		|.jsub METATAILCALL			// TAILCALL to __call metamethod.
-		|	mov L->savedpc, edx
-		|	mov L->top, TOP
-		|	call &luaD_tryfuncTM, L, BASE	// Resolve __call metamethod.
-		|
-		|// Relocate [eax, L->top) -> [L->ci->func, *).
-		|	mov CI, L->ci
-		|	mov edx, L->top
-		|	mov TOP, CI->func
-		|1:
-		|	mov BASE, [eax]
-		|	add eax, aword*1
-		|	mov [TOP], BASE
-		|	add TOP, aword*1
-		|	cmp eax, edx
-		|	jb <1
-		|
-		|	mov BASE, CI->func
-		|	mov LCL, BASE->value
-		|	sub CI, #CI
-		|	add esp, FRAME_OFFSET
-		|	jmp aword LCL->jit_gate		// Chain to callgate.
-		|.endjsub
-	}
-
-	if (nargs >= 0) {  /* Previous op was not open and did not set TOP. */
-		int i;
-		/* Relocate [BASE+func, BASE+func+nargs] -> [ci->func, ci->func+nargs]. */
-		/* TODO: loop for large nargs? */
-		if (!J->pt->is_vararg) {  /* Fixarg function. */
-			|	mov LCL, BASE[func].value
-			for (i = 0; i < nargs; i++) {
-	|	copyslot BASE[i], BASE[func+1+i], ecx, edx
-			}
-			|	lea TOP, BASE[nargs]
-			|	 sub BASE, #BASE
-			|	mov CI, L->ci
-			|	mov BASE->value, LCL		// Sufficient to copy func->value.
-		} else {  /* Vararg function. */
-			|	 mov CI, L->ci
-			|	lea TOP, BASE[func]
-			|	 mov BASE, CI->func
-			|	mov LCL, TOP->value
-			|	mov BASE->value, LCL		// Sufficient to copy func->value.
-			for (i = 0; i < nargs; i++) {
-	|	copyslot BASE[i+1], TOP[i+1], eax, edx
-			}
-			|	lea TOP, BASE[1+nargs]
-			|	mov LCL, BASE->value		// Need to reload LCL = eax.
-		}
-	} else {  /* Previous op was open and set TOP. */
-		|// Relocate [BASE+func, TOP) -> [ci->func, *).
-		|	mov CI, L->ci
-		|	addidx BASE, func
-		|	mov edx, CI->func
-		|1:
-		|	mov eax, [BASE]
-		|	add BASE, aword*1
-		|	mov [edx], eax
-		|	add edx, aword*1
-		|	cmp BASE, TOP
-		|	jb <1
-		|	mov BASE, CI->func
-		|	mov TOP, edx			// Relocated TOP.
-		|	mov LCL, BASE->value
-	}
-	|	sub CI, #CI
-	|	add esp, FRAME_OFFSET
-	|	jmp aword LCL->jit_gate		// Chain to JIT function.
-
-finish:
-	J->combine++;  /* Combine with following return instruction. */
-#endif
 }
 
 /* ------------------------------------------------------------------------ */
@@ -821,13 +524,13 @@ static void jit_op_move(jit_State *J, int dest, int src)
 static void jit_op_loadk(jit_State *J, int dest, int kidx)
 {
 	const TValue *kk = &J->pt->k[kidx];
-	int rk = jit_return_k(J);
-	if (rk) dest = 0;
+/*	int rk = jit_return_k(J);
+	if (rk) dest = 0;*/
 	|	movewi r1, kk
 	|	copyslot BASE[dest], TVALUE:r1[0]
-	if (rk) {
+/*	if (rk) {
 		|	jrp lr
-	}
+	}*/
 }
 
 static void jit_op_loadnil(jit_State *J, int first, int last)
@@ -873,265 +576,6 @@ static void jit_op_setupval(jit_State *J, int src, int uvidx)
 	|	move r0, L
 	|	jal &luaC_barrierf
 	|5:
-}
-
-/* ------------------------------------------------------------------------ */
-
-/* Optimized table lookup routines. Enter via jsub, fallback to C. */
-
-/* Fallback for GETTABLE_*. Temporary key is in L->env. */
-static void jit_gettable_fb(lua_State *L, Table *t, StkId dest)
-{
-#if 0
-	Table *mt = t->metatable;
-	const TValue *tm = luaH_getstr(mt, G(L)->tmname[TM_INDEX]);
-	if (ttisnil(tm)) {  /* No __index method? */
-		mt->flags |= 1<<TM_INDEX;  /* Cache this fact. */
-		setnilvalue(dest);
-	} else if (ttisfunction(tm)) {  /* __index function? */
-		ptrdiff_t destr = savestack(L, dest);
-		setobj2s(L, L->top, tm);
-		sethvalue(L, L->top+1, t);
-		setobj2s(L, L->top+2, &L->env);
-		luaD_checkstack(L, 3);
-		L->top += 3;
-		luaD_call(L, L->top - 3, 1);
-		dest = restorestack(L, destr);
-		L->top--;
-		setobjs2s(L, dest, L->top);
-	} else {  /* Let luaV_gettable() continue with the __index object. */
-		luaV_gettable(L, tm, &L->env, dest);
-	}
-
-	|//-----------------------------------------------------------------------
-	|.jsub GETGLOBAL			// Lookup global variable.
-	|// Call with: TSTRING:edx (key), BASE (dest)
-	|	mov CI, L->ci
-	|	mov TOP, CI->func
-	|	mov LCL, TOP->value
-	|	mov TABLE:edi, LCL->env
-	|	jmp >9
-	|.endjsub
-	|
-	|//-----------------------------------------------------------------------
-	|.jsub GETTABLE_KSTR			// Lookup constant string in table.
-	|// Call with: TOP (tab), TSTRING:edx (key), BASE (dest)
-	|	cmp dword TOP->tt, LUA_TTABLE
-	|	 mov TABLE:edi, TOP->value
-	|	jne ->DEOPTIMIZE_CALLER		// Not a table? Deoptimize.
-	|
-	|// Common entry: TABLE:edi (tab), TSTRING:edx (key), BASE (dest)
-	|// Restores BASE, destroys eax, ecx, edx, edi (TOP).
-	|9:
-	|	movzx ecx, byte TABLE:edi->lsizenode	// hashstr(t, key).
-	|	mov eax, 1
-	|	shl eax, cl
-	|	dec eax
-	|	and eax, TSTRING:edx->tsv.hash
-	|	Nodemul NODE:eax
-	|	add NODE:eax, TABLE:edi->node
-	|
-	|1:  // Start of inner loop. Check node key.
-	|	cmp dword NODE:eax->i_key.nk.tt, LUA_TSTRING
-	|	jne >2
-	|	cmp aword NODE:eax->i_key.nk.value, TSTRING:edx
-	|	jne >2
-	|	// Note: swapping the two checks is faster, but valgrind complains.
-	|// Assumes: (int)&(((Node *)0)->i_val) == (int)&(((StkId)0)->value)
-	|
-	|// Ok, key found. Copy node value to destination (stack) slot.
-	|	mov ecx, NODE:eax->i_val.tt
-	|	test ecx, ecx; je >3			// Node has nil value?
-	||if (J->flags & JIT_F_CPU_SSE2) {
-	|	movq xmm0, qword NODE:eax->i_val.value
-	|	movq qword BASE->value, xmm0
-	||} else {
-	|	mov edx, NODE:eax->i_val.value
-	|	mov edi, NODE:eax->i_val.value.na[1]
-	|	mov BASE->value, edx
-	|	mov BASE->value.na[1], edi
-	||}
-	|	mov BASE->tt, ecx
-	|	mov BASE, L->base
-	|	ret
-	|2:
-	|	mov NODE:eax, NODE:eax->i_key.nk.next	// Get next key in chain.
-	|	test NODE:eax, NODE:eax
-	|	jnz <1					// Loop if non-NULL.
-	|
-	|	xor ecx, ecx
-	|3:
-	|	mov TABLE:eax, TABLE:edi->metatable
-	|	test TABLE:eax, TABLE:eax
-	|	jz >4					// No metatable?
-	|	test byte TABLE:eax->flags, 1<<TM_INDEX
-	|	jz >5					// Or 'no __index' flag set?
-	|4:
-	|	settt BASE[0], ecx				// Yes, set to nil.
-	|	mov BASE, L->base
-	|	ret
-	|
-	|5:  // Otherwise chain to C code which eventually calls luaV_gettable.
-	|	setsvalue L->env, TSTRING:edx		// Use L->env as temp key.
-	|	mov ecx, [esp]
-	|	sub esp, FRAME_OFFSET
-	|	mov L->savedpc, ecx
-	|	call &jit_gettable_fb, L, TABLE:edi, BASE
-	|	add esp, FRAME_OFFSET
-	|	mov BASE, L->base
-	|	ret
-	|.endjsub
-	|
-	|//-----------------------------------------------------------------------
-	|.jsub GETTABLE_STR			// Lookup string in table.
-	|// Call with: TOP (tab), TVALUE:ecx (key), BASE (dest)
-	|	mov eax, TOP->tt; shl eax, 4; or eax, TVALUE:ecx->tt
-	|	cmp eax, LUA_TTABLE_STR
-	|	 mov TABLE:edi, TOP->value
-	|	 mov TSTRING:edx, TVALUE:ecx->value
-	|	je <9					// Types ok? Continue above.
-	|	jmp ->DEOPTIMIZE_CALLER		// Otherwise deoptimize.
-	|.endjsub
-#endif
-}
-
-/* Fallback for SETTABLE_*STR. Temporary (string) key is in L->env. */
-static void jit_settable_fb(lua_State *L, Table *t, StkId val)
-{
-#if 0
-	Table *mt = t->metatable;
-	const TValue *tm = luaH_getstr(mt, G(L)->tmname[TM_NEWINDEX]);
-	if (ttisnil(tm)) {  /* No __newindex method? */
-		mt->flags |= 1<<TM_NEWINDEX;  /* Cache this fact. */
-		t->flags = 0;  /* But need to clear the cache for the table itself. */
-		setobj2t(L, luaH_setstr(L, t, rawtsvalue(&L->env)), val);
-		luaC_barriert(L, t, val);
-	} else if (ttisfunction(tm)) {  /* __newindex function? */
-		setobj2s(L, L->top, tm);
-		sethvalue(L, L->top+1, t);
-		setobj2s(L, L->top+2, &L->env);
-		setobj2s(L, L->top+3, val);
-		luaD_checkstack(L, 4);
-		L->top += 4;
-		luaD_call(L, L->top - 4, 0);
-	} else {  /* Let luaV_settable() continue with the __newindex object. */
-		luaV_settable(L, tm, &L->env, val);
-	}
-
-	|//-----------------------------------------------------------------------
-	|.jsub BARRIERBACK			// luaC_barrierback() with regparms.
-	|// Call with: TABLE:edi (table). Destroys ecx, edx.
-	|	mov GL:ecx, L->l_G
-	|	 and byte TABLE:edi->marked, (~bitmask(BLACKBIT))&0xff
-	|	mov edx, GL:ecx->grayagain
-	|	 mov GL:ecx->grayagain, TABLE:edi
-	|	mov TABLE:edi->gclist, edx
-	|	ret
-	|.endjsub
-	|
-	|//-----------------------------------------------------------------------
-	|.jsub SETGLOBAL			// Set global variable.
-	|// Call with: TSTRING:edx (key), BASE (val)
-	|	mov CI, L->ci
-	|	mov TOP, CI->func
-	|	mov LCL, TOP->value
-	|	mov TABLE:edi, LCL->env
-	|	jmp >9
-	|.endjsub
-	|
-	|//-----------------------------------------------------------------------
-	|.jsub SETTABLE_KSTR			// Set constant string entry in table.
-	|// Call with: TOP (tab), TSTRING:edx (key), BASE (val)
-	|	cmp dword TOP->tt, LUA_TTABLE
-	|	 mov TABLE:edi, TOP->value
-	|	jne ->DEOPTIMIZE_CALLER		// Not a table? Deoptimize.
-	|
-	|// Common entry: TABLE:edi (tab), TSTRING:edx (key), BASE (val)
-	|// Restores BASE, destroys eax, ecx, edx, edi (TOP).
-	|9:
-	|	movzx ecx, byte TABLE:edi->lsizenode	// hashstr(t, key).
-	|	mov eax, 1
-	|	shl eax, cl
-	|	dec eax
-	|	and eax, TSTRING:edx->tsv.hash
-	|	Nodemul NODE:eax
-	|	add NODE:eax, TABLE:edi->node
-	|
-	|1:  // Start of inner loop. Check node key.
-	|	cmp dword NODE:eax->i_key.nk.tt, LUA_TSTRING
-	|	jne >4
-	|	cmp aword NODE:eax->i_key.nk.value, TSTRING:edx
-	|	jne >4
-	|	// Note: swapping the two checks is faster, but valgrind complains.
-	|
-	|// Ok, key found. Copy new value to node value.
-	|	cmp dword NODE:eax->i_val.tt, LUA_TNIL	// Previous value is nil?
-	|	je >6
-	|	// Assumes: (int)&(((Node *)0)->i_val) == (int)&(((StkId)0)->value)
-	|2:
-	|	mov byte TABLE:edi->flags, 0		// Clear metamethod cache.
-	|3:  // Target for SETTABLE_NUM below.
-	|	test byte TABLE:edi->marked, bitmask(BLACKBIT)  // isblack(table)
-	|	jnz >8				// Unlikely, but set barrier back.
-	|7:  // Caveat: recycled label.
-	|	copyslot TVALUE:eax[0], BASE[0], ecx, edx, TOP
-	|	mov BASE, L->base
-	|	ret
-	|
-	|8:  // Avoid valiswhite() check -- black2gray(table) is ok.
-	|	call ->BARRIERBACK
-	|	jmp <7
-	|
-	|4:
-	|	mov NODE:eax, NODE:eax->i_key.nk.next	// Get next key in chain.
-	|	test NODE:eax, NODE:eax
-	|	jnz <1					// Loop if non-NULL.
-	|
-	|// Key not found. Add a new one, but check metatable first.
-	|	mov TABLE:ecx, TABLE:edi->metatable
-	|	test TABLE:ecx, TABLE:ecx
-	|	jz >5					// No metatable?
-	|	test byte TABLE:ecx->flags, 1<<TM_NEWINDEX
-	|	jz >7					// Or 'no __newindex' flag set?
-	|
-	|5:  // Add new key.
-	|	// No need for setting L->savedpc since only LUA_ERRMEM may be thrown.
-	|	lea TVALUE:eax, L->env
-	|	setsvalue TVALUE:eax[0], TSTRING:edx
-	|	sub esp, FRAME_OFFSET
-	|	call &luaH_newkey, L, TABLE:edi, TVALUE:eax
-	|	add esp, FRAME_OFFSET
-	|	jmp <2  // Copy to the returned value. See Node/TValue assumption above.
-	|
-	|6:  // Key found, but previous value is nil.
-	|	mov TABLE:ecx, TABLE:edi->metatable
-	|	test TABLE:ecx, TABLE:ecx
-	|	jz <2					// No metatable?
-	|	test byte TABLE:ecx->flags, 1<<TM_NEWINDEX
-	|	jnz <2					// Or 'no __newindex' flag set?
-	|
-	|7:  // Otherwise chain to C code which eventually calls luaV_settable.
-	|	setsvalue L->env, TSTRING:edx		// Use L->env as temp key.
-	|	mov ecx, [esp]
-	|	sub esp, FRAME_OFFSET
-	|	mov L->savedpc, ecx
-	|	call &jit_settable_fb, L, TABLE:edi, BASE
-	|	add esp, FRAME_OFFSET
-	|	mov BASE, L->base
-	|	ret
-	|.endjsub
-	|
-	|//-----------------------------------------------------------------------
-	|.jsub SETTABLE_STR			// Set string entry in table.
-	|// Call with: TOP (tab), TVALUE:ecx (key), BASE (val)
-	|	mov eax, TOP->tt; shl eax, 4; or eax, TVALUE:ecx->tt
-	|	cmp eax, LUA_TTABLE_STR
-	|	 mov TABLE:edi, TOP->value
-	|	 mov TSTRING:edx, TVALUE:ecx->value
-	|	je <9					// Types ok? Continue above.
-	|	jmp ->DEOPTIMIZE_CALLER		// Otherwise deoptimize.
-	|.endjsub
-#endif
 }
 
 /* ------------------------------------------------------------------------ */
@@ -1187,71 +631,6 @@ static void jit_op_setglobal(jit_State *J, int rval, int kidx)
 
 enum { TKEY_KSTR = -2, TKEY_STR = -1, TKEY_ANY = 0 };
 
-/* Optimize key lookup depending on consts or hints type. */
-static int jit_keylookup(jit_State *J, int tab, int rkey)
-{
-#if 0
-	const TValue *tabt = hint_get(J, TYPE);
-	const TValue *key;
-	if (!ttistable(tabt)) return TKEY_ANY;  /* Not a table? Use fallback. */
-	key = ISK(rkey) ? &J->pt->k[INDEXK(rkey)] : hint_get(J, TYPEKEY);
-	if (ttisstring(key)) {  /* String key? */
-		if (ISK(rkey)) {
-			|	lea TOP, BASE[tab]
-			|	mov TSTRING:edx, &&key->value.gc->ts
-			return TKEY_KSTR;  /* Const string key. */
-		} else {
-			|	lea TOP, BASE[tab]
-			|	lea TVALUE:ecx, BASE[rkey]
-			return TKEY_STR;  /* Var string key. */
-		}
-	} else if (ttisnumber(key)) {  /* Number key? */
-		lua_Number n = nvalue(key);
-		int k;
-		lua_number2int(k, n);
-		if (!(k >= 1 && k < (1 << 26) && (lua_Number)k == n))
-			return TKEY_ANY;  /* Not a proper array key? Use fallback. */
-		if (ISK(rkey)) {
-			|	istable tab
-			|	 mov TABLE:edi, BASE[tab].value
-			|	jne >9					// TYPE hint was wrong?
-			|	mov ecx, k				// Needed for hash fallback.
-			|	 mov TVALUE:eax, TABLE:edi->array
-			|	cmp ecx, TABLE:edi->sizearray; ja >5	// Not in array part?
-			return k;  /* Const array key (>= 1). */
-		} else {
-			|	mov eax, BASE[tab].tt; shl eax, 4; or eax, BASE[rkey].tt
-			|	cmp eax, LUA_TTABLE_NUM; jne >9	// TYPE/TYPEKEY hint was wrong?
-			if (J->flags & JIT_F_CPU_SSE2) {
-	|	movsd xmm0, qword BASE[rkey]
-	|	cvttsd2si eax, xmm0
-	|	cvtsi2sd xmm1, eax
-	|	dec eax
-	|	ucomisd xmm1, xmm0
-	|	mov TABLE:edi, BASE[tab].value
-	|	jne >9; jp >9			// Not an integer? Deoptimize.
-			} else {
-	|// Annoying x87 stuff: check whether a number is an integer.
-	|// The latency of fist/fild is the real problem here.
-	|	fld qword BASE[rkey].value
-	|	fist dword TMP1
-	|	fild dword TMP1
-	|	fcomparepp                           // eax may be modified.
-	|	jne >9; jp >9			// Not an integer? Deoptimize.
-	|	mov eax, TMP1
-	|	mov TABLE:edi, BASE[tab].value
-	|	dec eax
-			}
-			|	cmp eax, TABLE:edi->sizearray; jae >5	// Not in array part?
-			|	TValuemul eax
-			|	add eax, TABLE:edi->array
-			return 1;  /* Variable array key. */
-		}
-	}
-#endif
-	return TKEY_ANY;  /* Use fallback. */
-}
-
 static void jit_op_gettable(jit_State *J, int dest, int tab, int rkey)
 {
 	|	move r0, L
@@ -1266,89 +645,6 @@ static void jit_op_gettable(jit_State *J, int dest, int tab, int rkey)
 	}
 	|	addidx r3, BASE, dest
 	|	jal &luaV_gettable
-
-
-#if 0
-	int k = jit_keylookup(J, tab, rkey);
-	switch (k) {
-	case TKEY_KSTR:  /* Const string key. */
-		|	addidx BASE, dest
-		|	call ->GETTABLE_KSTR
-		break;
-	case TKEY_STR:  /* Variable string key. */
-		|	addidx BASE, dest
-		|	call ->GETTABLE_STR
-		break;
-	case TKEY_ANY:  /* Generic gettable fallback. */
-		if (ISK(rkey)) {
-			|	mov ecx, &&J->pt->k[INDEXK(rkey)]
-		} else {
-			|	lea ecx, BASE[rkey]
-		}
-		|	lea edx, BASE[tab]
-		|	addidx BASE, dest
-		|	mov L->savedpc, &J->nextins
-		|	call &luaV_gettable, L, edx, ecx, BASE
-		|	mov BASE, L->base
-		break;
-	default:  /* Array key. */
-		|// This is really copyslot BASE[dest], TVALUE:eax[k-1] mixed with compare.
-		|1:
-		|	mov edx, TVALUE:eax[k-1].tt
-		|	test edx, edx; je >6			// Array has nil value?
-		if (J->flags & JIT_F_CPU_SSE2) {
-			|	movq xmm0, qword TVALUE:eax[k-1].value
-			|	movq qword BASE[dest].value, xmm0
-		} else {
-			|	mov ecx, TVALUE:eax[k-1].value
-			|	mov eax, TVALUE:eax[k-1].value.na[1]
-			|	mov BASE[dest].value, ecx
-			|	mov BASE[dest].value.na[1], eax
-		}
-		|2:
-		|	mov BASE[dest].tt, edx
-		|.tail
-		|5:  // Fallback to hash part. TABLE:edi is callee-saved.
-		if (ISK(rkey)) {
-			|	call ->GETTABLE_KNUM
-		} else {
-			|	call ->GETTABLE_NUM
-		}
-		|	jmp <1					// Slot is at TVALUE:eax[k-1].
-		|
-		|6:  // Shortcut for tables without an __index metamethod.
-		|	mov TABLE:ecx, TABLE:edi->metatable
-		|	test TABLE:ecx, TABLE:ecx
-		|	jz <2					// No metatable?
-		|	test byte TABLE:ecx->flags, 1<<TM_INDEX
-		|	jnz <2					// Or 'no __index' flag set?
-		|
-		|9:  // Otherwise deoptimize.
-		|	mov edx, &J->nextins
-		|	jmp ->DEOPTIMIZE
-		|.code
-		break;
-	}
-
-	|.jsub GETTABLE_KNUM		// Gettable fallback for const numeric keys.
-	|	mov TMP2, ecx				// Save k.
-	|	sub esp, FRAME_OFFSET
-	|	call &luaH_getnum, TABLE:edi, ecx
-	|	add esp, FRAME_OFFSET
-	|	mov ecx, TMP2				// Restore k.
-	|	TValuemul ecx
-	|	sub TVALUE:eax, ecx		// Compensate for TVALUE:eax[k-1].
-	|	add TVALUE:eax, #TVALUE
-	|	ret
-	|.endjsub
-	|
-	|.jsub GETTABLE_NUM		// Gettable fallback for variable numeric keys.
-	|	inc eax
-	|	mov ARG2, TABLE:edi			// Really ARG1 and ARG2.
-	|	mov ARG3, eax
-	|	jmp &luaH_getnum				// Chain to C code.
-	|.endjsub
-#endif
 }
 
 static void jit_op_settable(jit_State *J, int tab, int rkey, int rval)
@@ -1372,101 +668,6 @@ static void jit_op_settable(jit_State *J, int tab, int rkey, int rval)
 		|	addidx r3, BASE, rval
 	}
 	|	jal &luaV_settable
-#if 0
-	const TValue *val = ISK(rval) ? &J->pt->k[INDEXK(rval)] : NULL;
-	int k = jit_keylookup(J, tab, rkey);
-	switch (k) {
-	case TKEY_KSTR:  /* Const string key. */
-	case TKEY_STR:  /* Variable string key. */
-		if (ISK(rval)) {
-			|	mov BASE, &val
-		} else {
-			|	addidx BASE, rval
-		}
-		if (k == TKEY_KSTR) {
-			|	call ->SETTABLE_KSTR
-		} else {
-			|	call ->SETTABLE_STR
-		}
-		break;
-	case TKEY_ANY:  /* Generic settable fallback. */
-		if (ISK(rkey)) {
-			|	mov ecx, &&J->pt->k[INDEXK(rkey)]
-		} else {
-			|	lea ecx, BASE[rkey]
-		}
-		if (ISK(rval)) {
-			|	mov edx, &val
-		} else {
-			|	lea edx, BASE[rval]
-		}
-		|	addidx BASE, tab
-		|	mov L->savedpc, &J->nextins
-		|	call &luaV_settable, L, BASE, ecx, edx
-		|	mov BASE, L->base
-		break;
-	default:  /* Array key. */
-		|1:
-		|	tvisnil TVALUE:eax[k-1]; je >6		// Previous value is nil?
-		|2:
-		|.tail
-		|5:  // Fallback to hash part. TABLE:edi is callee-saved.
-		if (ISK(rkey)) {
-			|	call ->SETTABLE_KNUM
-		} else {
-			|	call ->SETTABLE_NUM
-		}
-		|	jmp <1					// Slot is at TVALUE:eax[k-1].
-		|
-		|6:  // Shortcut for tables without a __newindex metamethod.
-		|	mov TABLE:ecx, TABLE:edi->metatable
-		|	test TABLE:ecx, TABLE:ecx
-		|	jz <2					// No metatable?
-		|	test byte TABLE:ecx->flags, 1<<TM_NEWINDEX
-		|	jnz <2					// Or 'no __newindex' flag set?
-		|
-		|9:  // Otherwise deoptimize.
-		|	mov edx, &J->nextins
-		|	jmp ->DEOPTIMIZE
-		|.code
-		if (!ISK(rval) || iscollectable(val)) {
-			|	test byte TABLE:edi->marked, bitmask(BLACKBIT)  // isblack(table)
-			|	jnz >7				// Unlikely, but set barrier back.
-			|3:
-			|.tail
-			|7:  // Avoid valiswhite() check -- black2gray(table) is ok.
-			|	call ->BARRIERBACK
-			|	jmp <3
-			|.code
-		}
-		if (ISK(rval)) {
-			|	copyconst TVALUE:eax[k-1], val
-		} else {
-			|	copyslot TVALUE:eax[k-1], BASE[rval], ecx, edx, TOP
-		}
-		break;
-	}
-
-	|.jsub SETTABLE_KNUM		// Settable fallback for const numeric keys.
-	|	mov TMP2, ecx				// Save k.
-	|	sub esp, FRAME_OFFSET
-	|	call &luaH_setnum, L, TABLE:edi, ecx
-	|	add esp, FRAME_OFFSET
-	|	mov ecx, TMP2				// Restore k.
-	|	TValuemul ecx
-	|	sub TVALUE:eax, ecx		// Compensate for TVALUE:eax[k-1].
-	|	add TVALUE:eax, #TVALUE
-	|	ret
-	|.endjsub
-	|
-	|.jsub SETTABLE_NUM		// Settable fallback for variable numeric keys.
-	|	inc eax
-	|	mov ARG2, L				// Really ARG1, ARG2 and ARG3.
-	|	mov ARG3, TABLE:edi
-	|	mov ARG4, eax
-	|	jmp &luaH_setnum				// Chain to C code.
-	|.endjsub
-#endif
 }
 
 static void jit_op_self(jit_State *J, int dest, int tab, int rkey)
@@ -1537,70 +738,6 @@ static void jit_op_setlist(jit_State *J, int ra, int num, int batch)
 		|	pop r31
 		|	pop r30
 	}
-#if 0
-	if (num == 0) {  /* Previous op was open and set TOP: {f()} or {...}. */
-		|	mov L->env.value, TOP		// Need to save TOP (edi).
-		|	lea eax, BASE[ra+1]
-		|	sub eax, TOP
-		|	neg eax
-		|	TValuediv eax			// num = (TOP-ra-1)/sizeof(TValue).
-		|	mov TABLE:edi, BASE[ra].value
-		|	jz >4				// Nothing to set?
-		if (batch > 0) {
-			|	add eax, batch
-		}
-		|	cmp dword TABLE:edi->sizearray, eax
-		|	jae >1				// Skip resize if not needed.
-		|	// A resize is likely, so inline it.
-		|	call &luaH_resizearray, L, TABLE:edi, eax
-		|1:
-		|	test byte TABLE:edi->marked, bitmask(BLACKBIT)  // isblack(table)
-		|	mov edx, TABLE:edi->array
-		|	jnz >6				// Unlikely, but set barrier back.
-		|	mov TOP, L->env.value
-		|
-		|.tail
-		|6:  // Avoid lots of valiswhite() checks -- black2gray(table) is ok.
-		|	call ->BARRIERBACK
-		|	jmp <1  // Need to reload edx.
-		|.code
-	} else {  /* Set fixed number of args. */
-		|	mov TABLE:edi, BASE[ra].value	// edi is callee-save.
-		|	cmp dword TABLE:edi->sizearray, batch+num
-		|	jb >5				// Need to resize array?
-		|1:
-		|	test byte TABLE:edi->marked, bitmask(BLACKBIT)  // isblack(table)
-		|	mov edx, TABLE:edi->array
-		|	jnz >6				// Unlikely, but set barrier back.
-		|	lea TOP, BASE[ra+1+num]		// Careful: TOP is edi.
-		|
-		|.tail
-		|5:  // A resize is unlikely (impossible?). NEWTABLE should've done it.
-		|	call &luaH_resizearray, L, TABLE:edi, batch+num
-		|	jmp <1
-		|6:  // Avoid lots of valiswhite() checks -- black2gray(table) is ok.
-		|	call ->BARRIERBACK
-		|	jmp <1  // Need to reload edx.
-		|.code
-	}
-	if (batch > 0) {
-		|	add edx, batch*#TVALUE		// edx = &t->array[(batch+1)-1]
-	}
-	|	lea ecx, BASE[ra+1]
-	|3:					// Copy stack slots to array.
-	|	mov eax, [ecx]
-	|	add ecx, aword*1
-	|	mov [edx], eax
-	|	add edx, aword*1
-	|	cmp ecx, TOP
-	|	jb <3
-	|
-	|4:
-	if (num == 0) {  /* Previous op was open. Restore L->top. */
-		|	lea TOP, BASE[J->pt->maxstacksize]  // Faster than getting L->ci->top.
-		|	mov L->top, TOP
-	}
-#endif
 }
 
 /* ------------------------------------------------------------------------ */
@@ -1612,24 +749,13 @@ static void jit_op_arith(jit_State *J, int dest, int rkb, int rkc, int ev)
 	const Value *kval;
 	int idx, rev;
 	int target = (ev == TM_LT || ev == TM_LE) ? jit_jmp_target(J) : 0;
-#if 0
-	int hastail = 0;
-#endif
+
 	/* The bytecode compiler already folds constants except for: k/0, k%0, */
 	/* NaN results, k1<k2, k1<=k2. No point in optimizing these cases. */
 	if (ISK(rkb&rkc)) goto fallback;
 
 	/* Avoid optimization when non-numeric constants are present. */
 	if (kkb ? !ttisnumber(kkb) : (kkc && !ttisnumber(kkc))) goto fallback;
-
-#if 0
-	/* The TYPE hint selects numeric inlining and/or fallback encoding. */
-	switch (ttype(hint_get(J, TYPE))) {
-	case LUA_TNIL: hastail = 1; break;  /* No hint: numeric + fallback. */
-	case LUA_TNUMBER: break;	      /* Numbers: numeric + deoptimization. */
-	default: goto fallback;	      /* Mixed/other types: fallback only. */
-	}
-#endif
 
 	/* Load operands */
 	if(kkb)
@@ -1788,44 +914,10 @@ static void jit_op_len(jit_State *J, int dest, int rb)
 	|	addidx r2, BASE, rb
 	|	jal &jit_fallback_len
 	|	globals_LJ L->base
-#if 0
-	switch (ttype(hint_get(J, TYPE))) {
-	case LUA_TTABLE:
-		jit_deopt_target(J, 0);
-		|	 istable rb
-		|	mov TABLE:ecx, BASE[rb].value
-		|	 jne L_DEOPTIMIZE		// TYPE hint was wrong?
-		|	call &luaH_getn, TABLE:ecx
-		|	mov TMP1, eax
-		|	fild dword TMP1
-		|	fstp qword BASE[dest].value
-		|	settt BASE[dest], LUA_TNUMBER
-		break;
-	case LUA_TSTRING:
-		jit_deopt_target(J, 0);
-		|	 isstring rb
-		|	mov TSTRING:ecx, BASE[rb].value
-		|	 jne L_DEOPTIMIZE		// TYPE hint was wrong?
-		|	fild aword TSTRING:ecx->tsv.len	// size_t
-		|	fstp qword BASE[dest].value
-		|	settt BASE[dest], LUA_TNUMBER
-		break;
-	default:
-		|	lea TVALUE:ecx, BASE[rb]
-		|	addidx BASE, dest
-		|	mov L->savedpc, &J->nextins
-		|	call &jit_fallback_len, L, BASE, TVALUE:ecx
-		|	mov BASE, L->base
-		break;
-	}
-#endif
 }
 
 static void jit_op_not(jit_State *J, int dest, int rb)
 {
-	/* l_isfalse() without a branch -- truly devious. */
-	/* ((value & tt) | (tt>>1)) is only zero for nil/false. */
-	/* Assumes: LUA_TNIL == 0, LUA_TBOOLEAN == 1, bvalue() == 0/1 */
 	|	move r0, BASE[rb].tt
 	|	move r4, BASE[rb].value
 	|	and r4, r4, r0
@@ -1851,82 +943,6 @@ static void jit_op_concat(jit_State *J, int dest, int first, int last)
 		|	copyslot BASE[dest], BASE[first]
 	}
 	/* TODO: jit_checkGC(J); */
-#if 0
-	int num = last-first+1;
-	if (num == 2 && ttisstring(hint_get(J, TYPE))) {  /* Optimize common case. */
-		|	addidx BASE, first
-		|	call ->CONCAT_STR2
-		|	setsvalue BASE[dest], eax
-	} else {  /* Generic fallback. */
-		|	mov L->savedpc, &J->nextins
-		|	call &luaV_concat, L, num, last
-		|	mov BASE, L->base
-		if (dest != first) {
-			|	copyslot BASE[dest], BASE[first]
-		}
-	}
-	jit_checkGC(J);  /* Always do this, even for the optimized variant. */
-
-	|.jsub CONCAT_STR2			// Concatenate two strings.
-	|// Call with: BASE (first). Destroys all regs. L and BASE restored.
-	|	mov ARG2, L			// Save L (esi).
-	|	mov eax, BASE[0].tt; shl eax, 4; or eax, BASE[1].tt
-	|	sub eax, LUA_TSTR_STR		// eax = 0 on success.
-	|	jne ->DEOPTIMIZE_CALLER	// Wrong types? Deoptimize.
-	|
-	|1:
-	|	 mov GL:edi, L->l_G
-	|	mov TSTRING:esi, BASE[0].value	// Caveat: L (esi) is gone now!
-	|	mov TSTRING:edx, BASE[1].value
-	|	mov ecx, TSTRING:esi->tsv.len	// size_t
-	|	test ecx, ecx
-	|	jz >2				// 1st string is empty?
-	|	or eax, TSTRING:edx->tsv.len	// eax is known to be zero.
-	|	jz >4				// 2nd string is empty?
-	|	add eax, ecx
-	|	jc >9				// Length overflow?
-	|	cmp eax, GL:edi->buff.buffsize	// size_t
-	|	ja >5				// Temp buffer overflow?
-	|	mov edi, GL:edi->buff.buffer
-	|	add esi, #TSTRING
-	|	rep; movsb				// Copy first string.
-	|	mov ecx, TSTRING:edx->tsv.len
-	|	lea esi, TSTRING:edx[1]
-	|	rep; movsb				// Copy second string.
-	|
-	|	sub edi, eax			// start = end - total.
-	|	 mov L, ARG2			// Restore L (esi). Reuse as 1st arg.
-	|	mov ARG3, edi
-	|	mov ARG4, eax
-	|	 mov BASE, L->base			// Restore BASE.
-	|	jmp &luaS_newlstr
-	|
-	|2:  // 1st string is empty.
-	|	mov eax, TSTRING:edx		// Return 2nd string.
-	|3:
-	|	mov L, ARG2			// Restore L (esi) and BASE.
-	|	mov BASE, L->base
-	|	ret
-	|
-	|4:  // 2nd string is empty.
-	|	mov eax, TSTRING:esi		// Return 1st string.
-	|	jmp <3
-	|
-	|5:  // Resize temp buffer.
-	|	// No need for setting L->savedpc since only LUA_ERRMEM may be thrown.
-	|	mov L, ARG2			// Restore L.
-	|	lea ecx, GL:edi->buff
-	|	sub esp, FRAME_OFFSET
-	|	call &luaZ_openspace, L, ecx, eax
-	|	add esp, FRAME_OFFSET
-	|	xor eax, eax			// BASE (first) and L saved. eax = 0.
-	|	jmp <1				// Just restart.
-	|
-	|9:  // Length overflow errors are rare (> 2 GB string required).
-	|	mov L, ARG2			// Need L for deoptimization.
-	|	jmp ->DEOPTIMIZE_CALLER
-	|.endjsub
-#endif
 }
 
 /* ------------------------------------------------------------------------ */
@@ -1936,91 +952,6 @@ static void jit_op_eq(jit_State *J, int cond, int rkb, int rkc)
 	const TValue *kkb = ISK(rkb) ? &J->pt->k[INDEXK(rkb)] : NULL;
 	const TValue *kkc = ISK(rkc) ? &J->pt->k[INDEXK(rkc)] : NULL;
 	int target = jit_jmp_target(J);
-#if 0
-	int condtarget = cond ? (J->nextpc+1) : target;
-	jit_assert(cond == 0 || cond == 1);
-
-	/* Comparison of two constants. Evaluate at compile time. */
-	if (ISK(rkb&rkc)) {
-		if ((rkb == rkc) == cond) {  /* Constants are already unique. */
-			|	j =>target
-		}
-		return;
-	}
-
-	if (ISK(rkb|rkc)) {  /* Compare a variable and a constant. */
-		const TValue *kk;
-		if (ISK(rkb)) { int t = rkc; rkc = rkb; rkb = t; }  /* rkc holds const. */
-		kk = &J->pt->k[INDEXK(rkc)];
-		switch (ttype(kk)) {
-		case LUA_TNIL:
-			|	isnil r0, rkb
-			break;
-		case LUA_TBOOLEAN:
-			if (bvalue(kk)) {
-				|	move r2, BASE[rkb].tt
-				|	move r3, BASE[rkb].value
-				|	addi r2, r2, -1
-				|	addi r3, r3, -1
-				|	or r0, r2, r3
-			} else {
-				|	mov r2, BASE[rkb].tt
-				|	addi r2, r2, -1
-				|	or r0, r2, BASE[rkb].value
-			}
-			break;
-		case LUA_TNUMBER:
-			|	isnumber r1, rkb
-			|	jne =>condtarget
-			|	fld qword BASE[rkb].value
-			|	fld qword [&kk->value]
-			|	fcomparepp
-			|	jp =>condtarget  // Unordered means not equal.
-			break;
-		case LUA_TSTRING:
-			|	isstring rkb
-			|	jne =>condtarget
-			|	cmp aword BASE[rkb].value, &rawtsvalue(kk)
-			break;
-		default: jit_assert(0); break;
-		}
-	} else {  /* Compare two variables. */
-		|	mov eax, BASE[rkb].tt
-		|	cmp eax, BASE[rkc].tt
-		|	jne =>condtarget
-		switch (ttype(hint_get(J, TYPE))) {
-		case LUA_TNUMBER:
-			jit_deopt_target(J, 0);
-			|// Note: bitwise comparison is not an option (-0 == 0, NaN ~= NaN).
-			|	cmp eax, LUA_TNUMBER; jne L_DEOPTIMIZE
-			|	fld qword BASE[rkb].value
-			|	fld qword BASE[rkc].value
-			|	fcomparepp
-			|	jp =>condtarget  // Unordered means not equal.
-			break;
-		case LUA_TSTRING:
-			jit_deopt_target(J, 0);
-			|	cmp eax, LUA_TSTRING; jne L_DEOPTIMIZE
-			|	mov ecx, BASE[rkb].value
-			|	cmp ecx, BASE[rkc].value
-			break;
-		default:
-			|// Generic equality comparison fallback.
-			|	lea edx, BASE[rkc]
-			|	lea ecx, BASE[rkb]
-			|	mov L->savedpc, &J->nextins
-			|	call &luaV_equalval, L, ecx, edx
-			|	dec eax
-			|	mov BASE, L->base
-			break;
-		}
-	}
-	if (cond) {
-		|	je =>target
-	} else {
-		|	jne =>target
-	}
-#endif
 	if (kkb) {
 		|	movewi r1, kkb
 	} else {
@@ -2098,21 +1029,6 @@ static const char *const jit_for_coerce_error[] = {
 	LUA_QL("for") " step must be a number",
 };
 
-/* Try to coerce for slots with strings to numbers in place or complain. */
-static void jit_for_coerce(lua_State *L, TValue *o)
-{
-	int i;
-	for (i = FOR_IDX; i <= FOR_STP; i++, o++) {
-		lua_Number num;
-		if (ttisnumber(o)) continue;
-		if (ttisstring(o) && luaO_str2d(svalue(o), &num)) {
-			setnvalue(o, num);
-		} else {
-			luaG_runerror(L, jit_for_coerce_error[i]);
-		}
-	}
-}
-
 static void jit_op_forprep(jit_State *J, int ra, int target)
 {
 	|	loadnumber r0, r1, BASE[ra+FOR_IDX]
@@ -2120,50 +1036,6 @@ static void jit_op_forprep(jit_State *J, int ra, int target)
 	|	jal &__float64_sub
 	|	storenumber BASE[ra+FOR_IDX], r0, r1
 	|	j =>target
-#if 0
-	const TValue *step = hint_get(J, FOR_STEP_K);
-	if (ttisnumber(step)) {
-		|	isnumber2 ra+FOR_IDX, ra+FOR_LIM; jne L_DEOPTIMIZEF
-		|4:
-		|	fld qword BASE[ra+FOR_LIM].value // [lim]
-		|	fld qword BASE[ra+FOR_IDX].value // [idx lim]
-		|	fst qword BASE[ra+FOR_EXT].value	// extidx = idx
-		|	fcomparepp			// idx >< lim ?
-		|	settt BASE[ra+FOR_EXT], LUA_TNUMBER
-		if (nvalue(step) < (lua_Number)0) {
-			|	jb =>target+1			// step < 0 && idx < lim: skip loop.
-		} else {
-			|	ja =>target+1			// step >= 0 && idx > lim: skip loop.
-		}
-	} else {
-		|4:
-		|	isnumber3 ra+FOR_IDX, ra+FOR_LIM, ra+FOR_STP
-		|	 mov eax, BASE[ra+FOR_STP].value.na[1]	// Sign bit is in hi dword.
-		|	jne L_DEOPTIMIZEF
-		|	fld qword BASE[ra+FOR_LIM].value	// [lim]        (FP stack notation)
-		|	fld qword BASE[ra+FOR_IDX].value	// [idx lim]
-		|	test eax, eax			// step >< 0 ?
-		|	fst qword BASE[ra+FOR_EXT].value	// extidx = idx
-		|	js >1
-		|	fxch				// if (step > 0) [lim idx]
-		|1:
-		|	fcomparepp			// step > 0 ? lim < idx : idx < lim
-		|	settt BASE[ra+FOR_EXT], LUA_TNUMBER
-		|	jb =>target+1			// Skip loop.
-	}
-	if (ttisnumber(hint_get(J, TYPE))) {
-		jit_deopt_target(J, 0);
-	} else {
-		|.tail
-		|L_DEOPTLABEL:  // Recycle as fallback label.
-		|	// Fallback for strings as loop vars. No need to make this fast.
-		|	lea eax, BASE[ra]
-		|	mov L->savedpc, &J->nextins
-		|	call &jit_for_coerce, L, eax	// Coerce strings or throw error.
-		|	jmp <4				// Easier than reloading eax.
-		|.code
-	}
-#endif
 }
 
 static void jit_op_forloop(jit_State *J, int ra, int target)
@@ -2203,8 +1075,6 @@ static void jit_op_forloop(jit_State *J, int ra, int target)
 		|	blez r0, =>target
 		|4:
 	}
-	
-	|//	bnz r0, =>target	// if(result) goto =>target
 }
 
 /* ------------------------------------------------------------------------ */
@@ -2213,9 +1083,6 @@ static void jit_op_tforloop(jit_State *J, int ra, int nresults)
 {
 	int target = jit_jmp_target(J);
 	int i;
-#if 0
-	if (jit_inline_tforloop(J, ra, nresults, target)) return;  /* Inlined? */
-#endif
 	for (i = 2; i >= 0; i--) {
 		|	copyslot BASE[ra+i+3], BASE[ra+i]  // Copy ctlvar/state/callable.
 	}
@@ -2267,43 +1134,6 @@ static void jit_op_closure(jit_State *J, int dest, int ptidx)
 	}
 	|	pop r30
 	J->combine += nup;
-#if 0
-	/* Process pseudo-instructions for upvalues. */
-	if (nup > 0) {
-		const Instruction *uvcode = J->nextins;
-		int i, uvuv;
-		/* Check which of the two types we need. */
-		for (i = 0, uvuv = 0; i < nup; i++)
-			if (GET_OPCODE(uvcode[i]) == OP_GETUPVAL) uvuv++;
-		/* Copy upvalues from parent first. */
-		if (uvuv) {
-			/* LCL:eax->upvals (new closure) <-- LCL:edi->upvals (own closure). */
-			for (i = 0; i < nup; i++)
-				if (GET_OPCODE(uvcode[i]) == OP_GETUPVAL) {
-					|	mov UPVAL:edx, LCL:edi->upvals[GETARG_B(uvcode[i])]
-					|	mov LCL->upvals[i], UPVAL:edx
-				}
-		}
-		/* Next find or create upvalues for our own stack slots. */
-		if (nup > uvuv) {
-			|	mov LCL:edi, LCL  // Move new closure to callee-save register. */
-			/* LCL:edi->upvals (new closure) <-- upvalue for stack slot. */
-			for (i = 0; i < nup; i++)
-				if (GET_OPCODE(uvcode[i]) == OP_MOVE) {
-					int rb = GETARG_B(uvcode[i]);
-					if (rb) {
-						|	lea eax, BASE[rb]
-						|	mov ARG2, eax
-					} else {
-						|	mov ARG2, BASE
-					}
-					|	call &luaF_findupval, L  // , StkId level (ARG2)
-					|	mov LCL:edi->upvals[i], UPVAL:eax
-				}
-		}
-		J->combine += nup;  /* Skip pseudo-instructions. */
-	}
-#endif
 	/* TODO jit_checkGC(J); */
 }
 
@@ -2311,73 +1141,6 @@ static void jit_op_closure(jit_State *J, int dest, int ptidx)
 
 static void jit_op_vararg(jit_State *J, int dest, int num)
 {
-#if 0
-	if (num < 0) {  /* Copy all varargs. */
-		|// Copy [ci->func+1+pt->numparams, BASE) -> [BASE+dest, *).
-		|1:
-		|	mov CI, L->ci
-		|	mov edx, CI->func
-		|	add edx, (1+J->pt->numparams)*#TVALUE  // Start of varargs.
-		|
-		|	// luaD_checkstack(L, nvararg) with nvararg = L->base - vastart.
-		|	// This is a slight overallocation (BASE[dest+nvararg] would be enough).
-		|	// We duplicate OP_VARARG behaviour so we can use luaD_growstack().
-		|	lea eax, [BASE+BASE+J->pt->maxstacksize*#TVALUE]  // L->base + L->top
-		|	sub eax, edx			// L->top + (L->base - vastart)
-		|	cmp eax, L->stack_last
-		|	jae >5				// Need to grow stack?
-		|
-		|	lea TOP, BASE[dest]
-		|	cmp edx, BASE
-		|	jnb >3
-		|2:  // Copy loop.
-		|	mov eax, [edx]
-		|	add edx, aword*1
-		|	mov [TOP], eax
-		|	add TOP, aword*1
-		|	cmp edx, BASE
-		|	jb <2
-		|3:
-		|// This is an open ins. Must keep TOP for next instruction.
-		|
-		|.tail
-		|5:  // Grow stack for varargs.
-		|	sub eax, L->top
-		|	TValuediv eax
-		|	call &luaD_growstack, L, eax
-		|	mov BASE, L->base
-		|	jmp <1  // Just restart op to avoid saving/restoring regs.
-		|.code
-	} else if (num > 0) {  /* Copy limited number of varargs. */
-		|// Copy [ci->func+1+pt->numparams, BASE) -> [BASE+dest, BASE+dest+num).
-		|	mov CI, L->ci
-		|	mov edx, CI->func
-		|	add edx, (1+J->pt->numparams)*#TVALUE
-		|	lea TOP, BASE[dest]
-		|	lea ecx, BASE[dest+num]
-		|	cmp edx, BASE			// No varargs present: only fill.
-		|	jnb >2
-		|
-		|1:  // Copy loop.
-		|	mov eax, [edx]
-		|	add edx, aword*1
-		|	mov [TOP], eax
-		|	add TOP, aword*1
-		|	cmp TOP, ecx			// Stop if all dest slots got a vararg.
-		|	jnb >4
-		|	cmp edx, BASE			// Continue if more varargs present.
-		|	jb <1
-		|
-		|2:					// Fill remaining slots with nils.
-		|	xor eax, eax			// Assumes: LUA_TNIL == 0
-		|3:  // Fill loop.
-		|	settt TOP[0], eax
-		|	add TOP, #TVALUE
-		|	cmp TOP, ecx
-		|	jb <3
-		|4:
-	}
-#endif
 }
 
 /* ------------------------------------------------------------------------ */
