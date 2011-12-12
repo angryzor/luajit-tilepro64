@@ -255,13 +255,8 @@ int dasm_link( Dst_DECL, size_t *szp) {
 	{ /* Handle globals not defined in this translation unit. */
 		int idx;
 		for (idx = 0; idx * sizeof(unsigned long) < D->gsize; idx++) {
-			int n = D->glabels[idx];
-			/* Undefined label: Collapse rel chain and replace with marker (< 0). */
-			while (n > 0) {
-				int *pb = D->buf + n;
-				n = *pb;
-				*pb = -idx;
-			}
+			if(D->glabels[idx] >= 0)
+				collapse_chain(D,-idx,&D->glabels[idx]);
 		}
 	}
 
@@ -360,9 +355,14 @@ int dasm_encode( Dst_DECL, void *buffer) {
 				encode_refactoring(cp - 2, mode, param);
 				break;
 			case DASM_L:
-			case DASM_G:
 			case DASM_PC:
 				encode_refactoring(cp - 2, mode, (unsigned long)base + (param << 2));
+				break;
+			case DASM_G:
+				if(param >= 0)
+					encode_refactoring(cp - 2, mode, (unsigned long)base + (param << 2));
+				else
+					encode_refactoring(cp - 2, mode, (unsigned long)D->globals[-param]);
 				break;
 			case DASM_LABEL_L:
 			case DASM_LABEL_PC:

@@ -1,0 +1,9 @@
+e
+--This line, and those below, will be ignored--
+
+M    src/luajit
+M    src/ljit_tilepro64.h
+M    src/ljit_tilepro64.dasc
+M    src/ljit_tilepro64.dash
+M    src/liblua.a
+M    src/in
