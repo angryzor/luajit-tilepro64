@@ -321,3 +321,14 @@
 |	move GL:r26->grayagain, TABLE:t
 |8:
 |.endmacro
+|
+|.macro wipe, start, end
+|	slt_u r0, TVALUE:start, TVALUE:end
+|	bz r0, >8
+|7:
+|	setnilvalue TVALUE:start[0]
+|	addidx TVALUE:start, TVALUE:start, 1
+|	slt_u r0, TVALUE:start, TVALUE:end
+|	bnzt r0, <7
+|8:
+|.endmacro

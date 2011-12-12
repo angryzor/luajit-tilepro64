@@ -7,7 +7,7 @@
 |.immencmodes
 |.actionlist jit_actionlist
 |.globals JSUB_
-
+|
 /* ------------------------------------------------------------------------ */
 #define DASM_MAXSECTION 1
 
@@ -144,7 +144,7 @@ static int jit_std_prologue(jit_State *J, int stacksize)
 {
 	|	prologue LUAFUNC_STACK_SIZE
 	|
-	//jit_emit_stackdump(J,"Prologue");
+	//jit_emit_custom_stackdump(J,"Prologue");
 	|
 	|	addidx r9, BASE, stacksize+1
 	|	movei r1, stacksize+1
@@ -165,19 +165,6 @@ static int jit_std_prologue(jit_State *J, int stacksize)
 	return 0;
 }
 
-static int jit_wipe_r8_to_TOP(jit_State *J)
-{
-	|	slt_u r0, TVALUE:r8, TOP
-	|	bz r0, >8
-	|7:
-	|	setnilvalue TVALUE:r8[0]		// the new TOP is always set to NIL at this point. i don't care. it don't hurt.
-	|	addi r8, r8, #TVALUE
-	|	slt_u r0, TVALUE:r8, TOP
-	|	bnzt r0, <7
-	|8:
-	return 0;
-}
-
 /* Compile JIT subroutines (once). */
 static int jit_compile_jsub(jit_State *J)
 {
@@ -191,12 +178,15 @@ static int jit_compile_jsub(jit_State *J)
 	|.capture JSUB			// Add the entry point.
 	||//-----------------------------------------------------------------------
 	||//->name:
-	|	.align 16
+	|	.align 64
 	|->name:
 	|.endmacro
 	|.macro .endjsub;  .endcapture; .endmacro
 	|.macro .dumpjsub;  .dumpcapture JSUB; .endmacro
 	|
+	|// Little trick to avoid a small bug in the assembler (global label at address 0)
+	|.align 64
+	|.space 0x10
 	||//-----------------------------------------------------------------------
 	||// Procedure: GATE_LJ(lua_State* L, TValue* func, int nresults)
 	||// L contains the Lua state
@@ -239,7 +229,7 @@ static int jit_compile_jsub(jit_State *J)
 	|	// Get index right above the last nresults. All
 	|	add r8, BASE, r4
 	|
-	jit_wipe_r8_to_TOP(J);
+	|	wipe r8, TOP
 	|
 	|	move TOP, CI->top
 	|
@@ -341,17 +331,20 @@ static int jit_compile_jsub(jit_State *J)
 	|.align 64
 	|->GROW_STACK:
 	|	prologue 8
-	|	globals_JL_TOP
+	|	globals_JL
 	|	move r0, L
 	|	jal &luaD_growstack
+	|	globals_LJ L->base
 	|	epilogue 8
 	|	jrp lr
 	|.align 64
 	|->GROW_CI:
 	|	prologue 8
-	|	globals_JL_TOP
+	|	globals_JL
 	|	move r0, L
 	|	jal &luaD_growCI
+	|	globals_LJ L->base
+	|	subidx CI, CI, 1
 	|	epilogue 8
 	|	jrp lr
 	|.align 64
@@ -391,7 +384,7 @@ static void jit_ins_start(jit_State *J)
 {
 	const Instruction thisins = *(J->nextins-1);
 	|=>J->nextpc:
-	jit_emit_stackdump(J, luaP_opnames[GET_OPCODE(thisins)], GETARG_A(thisins), GETARG_B(thisins), GETARG_C(thisins), GETARG_Bx(thisins));
+	//jit_emit_stackdump(J, luaP_opnames[GET_OPCODE(thisins)], GETARG_A(thisins), GETARG_B(thisins), GETARG_C(thisins), GETARG_Bx(thisins));
 }
 
 /* Called after the last instruction has been encoded. */
@@ -419,13 +412,14 @@ static void jit_prologue(jit_State *J)
 	|	move CI->func, BASE // Used to be removed
 	|	addidx BASE, BASE, 1
 	|	move CI->base, BASE // Used to be removed
-	|	move TOP, r9
 
 	if(!pt->is_vararg)
 	{
-		|	addidx TVALUE:r8, BASE, numparams
-		jit_wipe_r8_to_TOP(J);
+		|//	addidx TVALUE:r8, BASE, numparams
+		|	wipe TOP, r9
 	}
+
+	|	move TOP, r9
 
 #if 0
 #ifdef LUA_COMPAT_VARARG
@@ -474,7 +468,7 @@ static void jit_op_return(jit_State *J, int rbase, int nresults)
 			|	copyslot BASE[i], BASE[rbase+i+1]
 		}
 		|//	addidx TVALUE:r8, BASE, nresults
-		//jit_wipe_r8_to_TOP(J);
+		|//	wipe r8, TOP
 		|	addidx TOP, BASE, nresults
 	}
 
@@ -501,7 +495,7 @@ static void jit_op_call(jit_State *J, int func, int nargs, int nresults)
 	if (nresults >= 0) {
 		|	move r8, TOP
 		|	addidx TOP, BASE, nresults
-		jit_wipe_r8_to_TOP(J);
+		|	wipe r8, TOP
 		|	move TOP, CI->top
 	}
 	|//	subidx BASE, BASE, func
