@@ -220,7 +220,7 @@ int luaJIT_run(lua_State *L, StkId func, int nresults)
   if (status == JIT_S_OK)
     return G(L)->jit_gateLJ(L, func, nresults);
   else
-    return luaD_precall(L, func, nresults);
+    return luaD_precall(L, func, nresults, JIT_S_OK);
   /* Note: We are called from luaD_precall and we call it again. */
   /* So jit_compile makes sure pt->jit_status != JIT_S_NONE. */
 }

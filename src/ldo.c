@@ -262,7 +262,7 @@ StkId luaD_tryfuncTM (lua_State *L, StkId func) {
    (condhardstacktests(luaD_reallocCI(L, L->size_ci)), ++L->ci))
 
 
-int luaD_precall (lua_State *L, StkId func, int nresults) {
+int luaD_precall (lua_State *L, StkId func, int nresults, int jit_status_override) {
   LClosure *cl;
   ptrdiff_t funcr;
   if (!ttisfunction(func)) /* `func' is not a function? */
@@ -274,7 +274,7 @@ int luaD_precall (lua_State *L, StkId func, int nresults) {
     CallInfo *ci;
     StkId st, base;
     Proto *p = cl->p;
-    if (p->jit_status <= JIT_S_NONE) { /* JIT compiler enabled? */
+    if (p->jit_status <= ((jit_status_override > JIT_S_NONE)?jit_status_override:JIT_S_NONE)) { /* JIT compiler enabled? */
       if (p->jit_status == JIT_S_OK)
         return G(L)->jit_gateLJ(L, func, nresults);  /* Run compiled code. */
       else
@@ -372,7 +372,7 @@ int luaD_poscall (lua_State *L, StkId firstResult) {
 ** The arguments are on the stack, right after the function.
 ** When returns, all the results are on the stack, starting at the original
 ** function position.
-*/ 
+*/
 void luaD_call (lua_State *L, StkId func, int nResults) {
   if (++L->nCcalls >= LUAI_MAXCCALLS) {
     if (L->nCcalls == LUAI_MAXCCALLS)
@@ -380,7 +380,7 @@ void luaD_call (lua_State *L, StkId func, int nResults) {
     else if (L->nCcalls >= (LUAI_MAXCCALLS + (LUAI_MAXCCALLS>>3)))
       luaD_throw(L, LUA_ERRERR);  /* error while handing stack error */
   }
-  if (luaD_precall(L, func, nResults) == PCRLUA)  /* is a Lua function? */
+  if (luaD_precall(L, func, nResults, JIT_S_ENGINE_OFF) == PCRLUA)  /* is a Lua function? */
     luaV_execute(L, 1);  /* call it */
   L->nCcalls--;
   luaC_checkGC(L);
@@ -392,7 +392,7 @@ static void resume (lua_State *L, void *ud) {
   CallInfo *ci = L->ci;
   if (L->status == 0) {  /* start coroutine? */
     lua_assert(ci == L->base_ci && firstArg > L->base);
-    if (luaD_precall(L, firstArg - 1, LUA_MULTRET) != PCRLUA)
+    if (luaD_precall(L, firstArg - 1, LUA_MULTRET, JIT_S_ENGINE_OFF) != PCRLUA)
       return;
   }
   else {  /* resuming from previous yield */

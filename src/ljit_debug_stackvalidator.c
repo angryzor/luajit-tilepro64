@@ -99,7 +99,7 @@ static statedump(lua_State* L, const Instruction* thisins, const char* errmsg)
 }
 }
 
-void ljit_debug_stackvalidator_init(lua_State* L)
+void jit_debug_stackvalidator_init(lua_State* L)
 {
 	memcpy(i_L,L,sizeof(lua_State));
 	i_L->stack = luaM_newvector(i_L,L->stacksize,TValue);
@@ -113,7 +113,7 @@ void ljit_debug_stackvalidator_init(lua_State* L)
 	memcpy(i_L->ci_base,L->ci_base,L->size_ci);
 }
 
-int ljit_debug_stackvalidator_check(lua_State* L, const Instruction* curins)
+int jit_debug_stackvalidator_check(lua_State* L, const Instruction* curins)
 {
 	StkId i,j;
 	CallInfo* k,l;
@@ -172,7 +172,7 @@ int ljit_debug_stackvalidator_check(lua_State* L, const Instruction* curins)
 	return 1;
 }
 
-void ljit_debug_stackvalidator_step()
+void jit_debug_stackvalidator_step()
 {
 
 }
