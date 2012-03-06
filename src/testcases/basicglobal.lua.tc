@@ -1,0 +1,30 @@
+name basic-globals
+%%
+
+foo = 4
+bar = 5
+function what(alice)
+	return foo + alice - bar
+end
+
+print(foo)
+print(bar)
+print(foo)
+print(bar)
+print(bar)
+print(foo)
+print(what(3))
+print(what(5))
+print(what(what(6)))
+print(what(foo+bar))
+%%
+4
+5
+4
+5
+5
+4
+2
+4
+4
+8

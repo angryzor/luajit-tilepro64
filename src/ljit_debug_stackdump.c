@@ -72,4 +72,5 @@ void ljit_debug_dumpstack(TValue* base, TValue* top, CallInfo* ci, lua_State* L,
 		}
 	}
 	fprintf(f,"------------------------------------------------------------------------\n");
+	fflush(f);
 }

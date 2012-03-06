@@ -2,8 +2,8 @@
 -- http://shootout.alioth.debian.org/
 -- contributed by Mike Pall
 
-local f = io.open("myout")
-
+--local f = io.open("myout")
+print('foo')
 local function BottomUpTree(item, depth)
   if depth > 0 then
     local i = item + item
@@ -15,8 +15,9 @@ local function BottomUpTree(item, depth)
   end
 end
 
-local function ItemCheck(tree)
-  f:write(unpack(tree))
+function ItemCheck(tree)
+  print('entered...')
+  print(unpack(tree))
   if tree[2] then
     return tree[1] + ItemCheck(tree[2]) - ItemCheck(tree[3])
   else
@@ -32,10 +33,11 @@ if maxdepth < N then maxdepth = N end
 do
   local stretchdepth = maxdepth + 1
   local stretchtree = BottomUpTree(0, stretchdepth)
-  io.write(string.format("stretch tree of depth %d\t check: %d\n",
-    stretchdepth, ItemCheck(stretchtree)))
+  ItemCheck(stretchtree)
+--  io.write(string.format("stretch tree of depth %d\t check: %d\n",
+--    stretchdepth, ItemCheck(stretchtree)))
 end
-
+--[[
 local longlivedtree = BottomUpTree(0, maxdepth)
 
 for depth=mindepth,maxdepth,2 do
@@ -51,5 +53,5 @@ end
 
 io.write(string.format("long lived tree of depth %d\t check: %d\n",
   maxdepth, ItemCheck(longlivedtree)))
-
-f:close()
+]]
+--f:close()

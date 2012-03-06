@@ -3,7 +3,7 @@
 # CONFIG
 tests_folder="testcases"
 monitor="tile-monitor"
-monitor_params="--functional --image 1x1"
+monitor_params="--pci --resume --rtc"
 
 # ERROR CODES
 err_unknown_command=1
