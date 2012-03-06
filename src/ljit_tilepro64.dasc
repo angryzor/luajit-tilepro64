@@ -559,8 +559,8 @@ static void jit_op_setglobal(jit_State *J, int rval, int kidx)
 	|	moveli r1, -10002	// LUA_GLOBALSINDEX
 	|	move r0, L
 	|
-	|	addidx TOP, TOP, 1
 	|	copyslot TOP[0], BASE[rval]
+	|	addidx TOP, TOP, 1
 	|
 	|	// lua_setfield gets something from the stack top, so set L->top
 	|	globals_JL_TOP
