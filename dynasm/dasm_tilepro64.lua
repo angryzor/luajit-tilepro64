@@ -207,9 +207,6 @@ local function writeglobals(out, prefix)
   out:write("  ", prefix, "_MAX\n};\n")
 end
 
--- BugStop block. get rid of it later
-local bugstop = map_global["BUGSTOP"]
-
 ------------------------------------------------------------------------------
 local map_archdef = {}
 local map_op = {}
@@ -333,9 +330,7 @@ local function parsetype(str, isdst)
 		werror("not a valid type: " .. typename)
 	end
 
-	if map_type[reg_override] and map_type[reg_override].reg then
-		reg = map_type[reg_override].reg
-	elseif reg_override then
+	if reg_override then
 		reg = reg_override
 	elseif t.reg then
 		reg = t.reg
@@ -406,9 +401,7 @@ local imm_enc_modes = {
 
 -- Parse immediate expression.
 local function parseimm(expr, immtype)
-	for n,t in pairs(map_type) do
-		expr = expr:gsub("#" .. n .. "[A-Za-z0-9_:]*","sizeof(" .. t.ctype .. ")")
-	end
+
 
 	local prefix = sub(expr, 1, 2)
 	-- =>expr (pc label reference)
@@ -921,7 +914,7 @@ map_op[".type_3"] = function(params, nparams)
     werror("bad base register `"..reg.."'")
   end
   -- Add #type to defines. A bit unclean to put it in map_archdef.
-  -- map_archdef["#"..name] = "sizeof("..ctype..")"
+  map_archdef["#"..name] = "sizeof("..ctype..")"
   -- Add new type and emit shortcut define.
   local num = ctypenum + 1
   map_type[name] = {

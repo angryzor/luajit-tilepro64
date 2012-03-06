@@ -384,16 +384,6 @@ static void jit_ins_start(jit_State *J)
 {
 	const Instruction thisins = *(J->nextins-1);
 	|=>J->nextpc:
-	|	globals_JL
-	|	move r0, L
-	|	jit_debug_stackvalidator_check
-	|	bnzt r0, >2
-	|	// Force crash
-	|	movei r2, 0
-	|	sw r2, r2
-	|2:
-	|	move r0, L
-	|	jit_debug_stackvalidator_step
 	//jit_emit_stackdump(J, luaP_opnames[GET_OPCODE(thisins)], GETARG_A(thisins), GETARG_B(thisins), GETARG_C(thisins), GETARG_Bx(thisins));
 }
 

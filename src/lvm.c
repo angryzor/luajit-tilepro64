@@ -125,7 +125,7 @@ void luaV_gettable (lua_State *L, const TValue *t, TValue *key, StkId val) {
       callTMres(L, val, tm, t, key);
       return;
     }
-    t = tm;  /* else repeat with `tm' */
+    t = tm;  /* else repeat with `tm' */ 
   }
   luaG_runerror(L, "loop in gettable");
 }
@@ -372,18 +372,12 @@ void luaV_arith (lua_State *L, StkId ra, const TValue *rb,
       }
 
 
-static LClosure *cl = 0;
-static StkId base = 0;
-static TValue *k = 0;
-static const Instruction *pc = 0;
-Instruction i = 0;
-static int jumpedout = 0;
-static int nsavedexeccalls = 1;
-#include "ljit.h"
 
 void luaV_execute (lua_State *L, int nexeccalls) {
-  if(jumpedout)
-	  goto steppoint;
+  LClosure *cl;
+  StkId base;
+  TValue *k;
+  const Instruction *pc;
  reentry:  /* entry point */
   lua_assert(isLua(L->ci));
   pc = L->savedpc;
@@ -392,14 +386,8 @@ void luaV_execute (lua_State *L, int nexeccalls) {
   k = cl->p->k;
   /* main loop of interpreter */
   for (;;) {
-    i = *pc++;
+    const Instruction i = *pc++;
     StkId ra;
-    jumpedout = 1;
-    nsavedexeccalls = nexeccalls;
-    return;
-  steppoint:
-    nexeccalls = nsavedexeccalls;
-    jumpedout = 0;
     if ((L->hookmask & (LUA_MASKLINE | LUA_MASKCOUNT)) &&
         (--L->hookcount == 0 || L->hookmask & LUA_MASKLINE)) {
       traceexec(L, pc);
@@ -599,7 +587,7 @@ void luaV_execute (lua_State *L, int nexeccalls) {
         int nresults = GETARG_C(i) - 1;
         if (b != 0) L->top = ra+b;  /* else previous instruction set top */
         L->savedpc = pc;
-        switch (luaD_precall(L, ra, nresults, JIT_S_ENGINE_OFF)) {
+        switch (luaD_precall(L, ra, nresults)) {
           case PCRLUA: {
             nexeccalls++;
             goto reentry;  /* restart luaV_execute over new Lua function */
@@ -620,7 +608,7 @@ void luaV_execute (lua_State *L, int nexeccalls) {
         if (b != 0) L->top = ra+b;  /* else previous instruction set top */
         L->savedpc = pc;
         lua_assert(GETARG_C(i) - 1 == LUA_MULTRET);
-        switch (luaD_precall(L, ra, LUA_MULTRET, JIT_S_ENGINE_OFF)) {
+        switch (luaD_precall(L, ra, LUA_MULTRET)) {
           case PCRLUA: {
             /* tail call: put new frame in place of previous one */
             CallInfo *ci = L->ci - 1;  /* previous frame */

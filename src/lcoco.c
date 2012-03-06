@@ -304,7 +304,7 @@ static inline void coco_switch(coco_ctx from, coco_ctx to)
 static inline void coco_switch(coco_ctx from, coco_ctx to)
 {
   void *__tmp_stack[16] __attribute__((aligned (16)));
-  __asm__ __volatile__
+  __asm__ __volatile__ 
     ("ta 3\n\t"
      "st %%sp,[%0+4]\n\t"
      "mov %2,%%sp\n\t"
@@ -592,7 +592,7 @@ static int defaultcstacksize = COCO_DEFAULT_CSTACKSIZE;
 /* Start the Lua or C function. */
 static void coco_start(lua_State *L, void *ud)
 {
-  if (luaD_precall(L, (StkId)ud, LUA_MULTRET) == PCRLUA, JIT_S_OK)
+  if (luaD_precall(L, (StkId)ud, LUA_MULTRET) == PCRLUA)
     luaV_execute(L, L->ci - L->base_ci);
 }
 
