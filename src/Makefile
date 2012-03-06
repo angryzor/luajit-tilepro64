@@ -50,7 +50,7 @@ DASMDISTFLAGS= -LN
 DASM= lua $(DASMDIR)/dynasm.lua
 
 JITCFLAGS= -I$(DASMDIR)
-JIT_O= ljit_core.o ljit_mem.o ljit_dasm.o ljit_backend.o ljit_debug_elfwriter.o ljit_debug_gdb_jit_binding.o
+JIT_O= ljit_core.o ljit_mem.o ljit_dasm.o ljit_backend.o ljit_debug_elfwriter.o ljit_debug_gdb_jit_binding.o ljit_debug_stackdump.o
 JITLIB_O=  ljitlib.o
 
 ALL_DH = ljit_tilepro64.h
