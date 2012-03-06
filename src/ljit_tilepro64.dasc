@@ -565,7 +565,7 @@ static void jit_op_setglobal(jit_State *J, int rval, int kidx)
 	|	// lua_setfield gets something from the stack top, so set L->top
 	|	globals_JL_TOP
 	|	jal &lua_setfield
-	|
+	|	subidx TOP, TOP, 1
 }
 
 enum { TKEY_KSTR = -2, TKEY_STR = -1, TKEY_ANY = 0 };
