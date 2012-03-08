@@ -60,6 +60,16 @@ static void jit_emit_custom_stackdump(jit_State *J, const char* curop_name)
 	jit_emit_stackdump(J,curop_name,0,0,0,0);
 }
 
+static void jit_break()
+{
+	// Set a breakpoint on entry of this func.
+	return 0;
+}
+
+static void jit_emit_break(jit_State *J)
+{
+	|	jal &jit_break
+}
 
 /* Detect CPU features and set JIT flags. */
 static int jit_cpudetect(jit_State *J)
@@ -622,6 +632,8 @@ static void jit_op_setlist(jit_State *J, int ra, int num, int batch)
 	if (batch == 0) { batch = (int)(*J->nextins); J->combine++; }
 	batch = (batch-1)*LFIELDS_PER_FLUSH;
 	if(num == 0) {
+		jit_emit_break(J);
+
 		|	push r30
 		|	push r31
 		|	push r32
