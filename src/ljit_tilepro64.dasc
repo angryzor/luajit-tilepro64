@@ -631,64 +631,64 @@ static void jit_op_setlist(jit_State *J, int ra, int num, int batch)
 {
 	if (batch == 0) { batch = (int)(*J->nextins); J->combine++; }
 	batch = (batch-1)*LFIELDS_PER_FLUSH;
-	if(num == 0) {
-		jit_emit_break(J);
-
-		|	push r30
-		|	push r31
-		|	push r32
-		|	push r33
-
-		// TValue* r7 = start of new table values
-		|	addidx TVALUE:r30, BASE, ra+1
-
-		// Table* r1 = our table
-		|	move TABLE:r31, BASE[ra].value.gc
-		|//	move TABLE:r31, GCOBJECT:r31->h
-
-		// r9 = our batch
-		|	movewi r32, batch
-
-		// Check if size is sufficient
-		|	sub TVALUE:r3, TOP, TVALUE:r30
-		|.if not TVALUE_SIZE == 16
-		|	.fatal Unsupported TVALUE size
-		|.endif
-		|	shri TVALUE:r3, TVALUE:r3, 4
-		|	add r33, r32, r3
-		|	slte_u r0, r33, TABLE:r31->sizearray
-		|	bnzt r0, >3
-		
-		// Otherwise, increase table size
-		|	move r2, r33
-		|	move r1, r31
-		|	move r0, L
-		|	jal &luaH_resizearray
-
-		// Size is ok. now do the rest
-		|3:
-		|	slt_u r0, TVALUE:r30, TOP
-		|	bz r0, >5
-		|4:
-		|	subidx TOP, TOP, 1
-		|	move r2, r33
-		|	move r1, r31
-		|	move r0, L
-		|	jal &luaH_setnum
-		|	copyslot TVALUE:r0[0], TOP[0]
-		|	barriert TABLE:r31, TOP
-		|	addi r33, r33, -1
-		|	slt_u r0, TVALUE:r30, TOP
-		|	bnzt r0, <4
-		|5:
-		|	move TOP, CI->top
-
-		// Popping
-		|	pop r33
-		|	pop r32
-		|	pop r31
-		|	pop r30
+	if(num > 0) {
+		|	addidx TOP, BASE, ra+1+num
 	}
+
+	|	push r30
+	|	push r31
+	|	push r32
+	|	push r33
+
+	// TValue* r7 = start of new table values
+	|	addidx TVALUE:r30, BASE, ra+1
+
+	// Table* r1 = our table
+	|	move TABLE:r31, BASE[ra].value.gc
+	|//	move TABLE:r31, GCOBJECT:r31->h
+
+	// r9 = our batch
+	|	movewi r32, batch
+
+	// Check if size is sufficient
+	|	sub TVALUE:r3, TOP, TVALUE:r30
+	|.if not TVALUE_SIZE == 16
+	|	.fatal Unsupported TVALUE size
+	|.endif
+	|	shri TVALUE:r3, TVALUE:r3, 4
+	|	add r33, r32, r3
+	|	slte_u r0, r33, TABLE:r31->sizearray
+	|	bnzt r0, >3
+	
+	// Otherwise, increase table size
+	|	move r2, r33
+	|	move r1, r31
+	|	move r0, L
+	|	jal &luaH_resizearray
+
+	// Size is ok. now do the rest
+	|3:
+	|	slt_u r0, TVALUE:r30, TOP
+	|	bz r0, >5
+	|4:
+	|	subidx TOP, TOP, 1
+	|	move r2, r33
+	|	move r1, r31
+	|	move r0, L
+	|	jal &luaH_setnum
+	|	copyslot TVALUE:r0[0], TOP[0]
+	|	barriert TABLE:r31, TOP
+	|	addi r33, r33, -1
+	|	slt_u r0, TVALUE:r30, TOP
+	|	bnzt r0, <4
+	|5:
+	|	move TOP, CI->top
+
+	// Popping
+	|	pop r33
+	|	pop r32
+	|	pop r31
+	|	pop r30
 }
 
 /* ------------------------------------------------------------------------ */

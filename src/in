@@ -3,7 +3,7 @@
 -- contributed by Mike Pall
 
 --local f = io.open("myout")
-print('foo')
+--print('foo')
 local function BottomUpTree(item, depth)
   if depth > 0 then
     local i = item + item
@@ -16,8 +16,8 @@ local function BottomUpTree(item, depth)
 end
 
 function ItemCheck(tree)
-  print('entered...')
-  print(unpack(tree))
+  --print('entered...')
+  --print(unpack(tree))
   if tree[2] then
     return tree[1] + ItemCheck(tree[2]) - ItemCheck(tree[3])
   else
@@ -34,10 +34,10 @@ do
   local stretchdepth = maxdepth + 1
   local stretchtree = BottomUpTree(0, stretchdepth)
   ItemCheck(stretchtree)
---  io.write(string.format("stretch tree of depth %d\t check: %d\n",
---    stretchdepth, ItemCheck(stretchtree)))
+  io.write(string.format("stretch tree of depth %d\t check: %d\n",
+    stretchdepth, ItemCheck(stretchtree)))
 end
---[[
+
 local longlivedtree = BottomUpTree(0, maxdepth)
 
 for depth=mindepth,maxdepth,2 do
@@ -53,5 +53,5 @@ end
 
 io.write(string.format("long lived tree of depth %d\t check: %d\n",
   maxdepth, ItemCheck(longlivedtree)))
-]]
+
 --f:close()

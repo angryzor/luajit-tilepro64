@@ -1,6 +1,0 @@
-#!/bin/bash
-for file in `ls testcases`
-do
-	tile-monitor --functional --image 1x1 --here --run --- ./luajit "testcases/$file" --- --quit
-done
-
