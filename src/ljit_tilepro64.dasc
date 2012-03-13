@@ -406,15 +406,10 @@ static void jit_op_return(jit_State *J, int rbase, int nresults)
 	/* Previous op was open: 'return f()' or 'return ...' */
 	if (nresults < 0) {
 		|	subidx TOP, TOP, 1
-		|	move SCRATCHTV, BASE
-		|	slt_u r0, SCRATCHTV, TOP
-		|	bz r0, >2
-		|1:
-		|	copyslot SCRATCHTV[0], SCRATCHTV[1]
-		|	addidx SCRATCHTV, SCRATCHTV, 1
-		|	slt_u r0, SCRATCHTV, TOP
-		|	bnzt r0, <1
-		|2:
+		|	move TVALUE:r5, BASE
+		|	loopstart TVALUE:r5, TOP
+		|		copyslot TVALUE:r5[0], TVALUE:r5[1]
+		|	loopendidxup TVALUE:r5, TOP
 		|	setnilvalue TOP[0]
 	}
 	else
@@ -670,20 +665,15 @@ static void jit_op_setlist(jit_State *J, int ra, int num, int batch)
 
 	// Size is ok. now do the rest
 	|3:
-	|	slt_u r0, TVALUE:r30, TOP
-	|	bz r0, >5
-	|4:
-	|	subidx TOP, TOP, 1
-	|	move r2, r33
-	|	move r1, r31
-	|	move r0, L
-	|	jal &luaH_setnum
-	|	copyslot TVALUE:r0[0], TOP[0]
-	|	barriert TABLE:r31, TOP
-	|	addi r33, r33, -1
-	|	slt_u r0, TVALUE:r30, TOP
-	|	bnzt r0, <4
-	|5:
+	|	loopstartidxdown TVALUE:r30, TOP
+	|		move r2, r33
+	|		move r1, r31
+	|		move r0, L
+	|		jal &luaH_setnum
+	|		copyslot TVALUE:r0[0], TOP[0]
+	|		barriert TABLE:r31, TOP
+	|		addi r33, r33, -1
+	|	loopend TVALUE:r30, TOP
 	|	move TOP, CI->top
 
 	// Popping

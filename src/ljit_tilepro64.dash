@@ -7,7 +7,6 @@
 |.type CI,		CallInfo,	r45
 |.type LCL,		LClosure,	r46
 |.type CTOP,	TValue,		r47
-|.type SCRATCHTV,	TValue,		r5
 |
 |// Types
 |.type GL,			global_State
@@ -309,21 +308,20 @@
 |// Very specific helper macros
 |.macro barriert, t, v
 |	addi r25, v->tt, -LUA_TSTRING
-|	blz r25, >8
+|	blz r25, >7
 |	move GCOBJECT:r26, v->value.gc
 |	andi r25, GCOBJECT:r26->gch.marked, WHITEBITS
-|	bz r25, >8
+|	bz r25, >7
 |	andi r25, TABLE:t->marked, bitmask(BLACKBIT)
-|	bz r25, >8
+|	bz r25, >7
 |	andi TABLE:t->marked, TABLE:t->marked, ~bitmask(BLACKBIT)&0xff //cast(lu_byte, ~bitmask(BLACKBIT))
 |	move GL:r26, L->l_G
 |	move TABLE:t->gclist, GL:r26->grayagain
 |	move GL:r26->grayagain, TABLE:t
-|8:
+|7:
 |.endmacro
 |
 |.macro loopstart, rl, rh
-|7:
 |	slt_u r0, rl, rh
 |	bz r0, >9
 |8:
@@ -357,6 +355,6 @@
 |//.endmacro
 |.macro wipe, start, end
 |	loopstart TVALUE:start, TVALUE:end
-|	setnilvalue TVALUE:start[0]
+|		setnilvalue TVALUE:start[0]
 |	loopendidxup TVALUE:start, TVALUE:end
 |.endmacro
