@@ -322,13 +322,41 @@
 |8:
 |.endmacro
 |
-|.macro wipe, start, end
-|	slt_u r0, TVALUE:start, TVALUE:end
-|	bz r0, >8
+|.macro loopstart, rl, rh
 |7:
-|	setnilvalue TVALUE:start[0]
-|	addidx TVALUE:start, TVALUE:start, 1
-|	slt_u r0, TVALUE:start, TVALUE:end
-|	bnzt r0, <7
+|	slt_u r0, rl, rh
+|	bz r0, >9
 |8:
+|.endmacro
+|
+|.macro loopend, rl, rh
+|	slt_u r0, rl, rh
+|	bnzt r0, <8
+|9:
+|.endmacro
+|
+|.macro loopstartidxdown, rl, rh
+|	loopstart rl, rh
+|	subidx rh, rh, 1
+|.endmacro
+|
+|.macro loopendidxup, rl, rh
+|	addidx rl, rl, 1
+|	loopend rl, rh
+|.endmacro
+|
+|//.macro wipe, start, end
+|//	slt_u r0, TVALUE:start, TVALUE:end
+|//	bz r0, >8
+|//7:
+|//	setnilvalue TVALUE:start[0]
+|//	addidx TVALUE:start, TVALUE:start, 1
+|//	slt_u r0, TVALUE:start, TVALUE:end
+|//	bnzt r0, <7
+|//8:
+|//.endmacro
+|.macro wipe, start, end
+|	loopstart TVALUE:start, TVALUE:end
+|	setnilvalue TVALUE:start[0]
+|	loopendidxup TVALUE:start, TVALUE:end
 |.endmacro

@@ -1,0 +1,13 @@
+name basic-tailcall
+%%
+local function a()
+	return 2,3,4,5
+end
+
+local function b()
+	return a()
+end
+
+print(b())
+%%
+2	3	4	5

@@ -1,0 +1,56 @@
+name basic-calls
+%%
+
+---- RETURN
+-- From MULTRET to MULTRET
+local a = {2,3,4,5}
+print(unpack(a))
+
+-- From FIXED to MULTRET
+local function foo1()
+	return 2,3,4,5
+end
+print(foo1())
+
+-- From MULTRET to > FIXED 
+local function bar1(a,b)
+	print(a,b)
+end
+local function bar2(a,b,c,d,e,f)
+	print(a,b,c,d,e,f)
+end
+local function bar3(a,b,c,d)
+	print(a,b,c,d)
+end
+bar1(unpack(a))
+
+-- From MULTRET to < FIXED
+bar2(unpack(a))
+
+-- From MULTRET to == FIXED
+bar3(unpack(a))
+
+-- From FIXED to > FIXED
+local m,n = foo1()
+print(m,n)
+
+-- From FIXED to < FIXED
+local o,p,q,r,s,t = foo1()
+print(o,p,q,r,s,t)
+
+-- From FIXED to == FIXED
+local u,v,w,x = foo1()
+print(u,v,w,x)
+
+----------------------------------------
+---- CALL
+-- From MULTRET to MULTRET
+%%
+2	3	4	5
+2	3	4	5
+2	3
+2	3	4	5	nil	nil
+2	3	4	5
+2	3
+2	3	4	5	nil	nil
+2	3	4	5

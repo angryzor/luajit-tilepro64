@@ -1094,6 +1094,19 @@ static void jit_op_closure(jit_State *J, int dest, int ptidx)
 
 static void jit_op_vararg(jit_State *J, int dest, int num)
 {
+	if(num >= 0)
+	{
+		|	movewi r6, num
+	}
+	else
+	{
+		|	move r6, TOP
+	}
+
+	|	move r5, BASE
+	|	loopstart r5, TOP
+		|	
+	
 }
 
 /* ------------------------------------------------------------------------ */
