@@ -339,15 +339,17 @@ static void jit_ins_start(jit_State *J)
 {
 	const Instruction thisins = *(J->nextins-1);
 	|=>J->nextpc:
-	jit_emit_stackdump(J, luaP_opnames[GET_OPCODE(thisins)], GETARG_A(thisins), GETARG_B(thisins), GETARG_C(thisins), GETARG_Bx(thisins));
+	//jit_emit_stackdump(J, luaP_opnames[GET_OPCODE(thisins)], GETARG_A(thisins), GETARG_B(thisins), GETARG_C(thisins), GETARG_Bx(thisins));
 }
 
 /* Called after the last instruction has been encoded. */
 static void jit_ins_last(jit_State *J, int lastpc, int sizemfm)
 {
+	|=>lastpc+1:
 	|	.align 64			// Keep next section word aligned.
-	|	.space 0x16
+	|//	.space 0x16
 	|	.word 0x0000ffff			// Terminate mfm with JIT_MFM_STOP.
+	|	.space sizemfm
 	|	.space 5 // Next mcode block pointer and size.
 	|	// The previous two awords are only word, but not aword aligned.
 	|	// Copying them is easier than aligning them and adjusting mfm handling.

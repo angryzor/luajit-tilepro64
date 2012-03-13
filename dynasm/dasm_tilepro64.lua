@@ -42,6 +42,7 @@ local action_names = {
   "L","G", "PC",
   -- action arg (1 byte) or int arg, 1 buffer pos (offset):
   "LABEL_L","LABEL_G", "LABEL_PC",
+  "SPACE",
   -- action arg (1 byte), 1 buffer pos (offset):
   "ALIGN",
   -- no action arg, no buffer pos.
@@ -980,8 +981,13 @@ map_op[".space_1"] = function(params)
 	local siz = params[1]
 	-- can only place multiples of 4 bytes (32 bit)
 	local i
-	for i=1,siz do
-		wputw(0)
+	if tonumber(siz) then
+		for i=1,siz do
+			wputw(0)
+		end
+	else
+		waction("SPACE")
+		waparam(siz)
 	end
 end
 

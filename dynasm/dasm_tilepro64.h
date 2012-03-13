@@ -7,13 +7,14 @@
 #define DASM_ARCH "tilepro64"
 
 enum {
-	DASM_IMM = 2147483637,
+	DASM_IMM = 2147483636,
 	DASM_L,
 	DASM_G,
 	DASM_PC,
 	DASM_LABEL_L,
 	DASM_LABEL_G,
 	DASM_LABEL_PC,
+	DASM_SPACE,
 	DASM_ALIGN,
 	DASM_SECTION,
 	DASM_ESC,
@@ -199,10 +200,24 @@ void dasm_put( Dst_DECL, int start, ...) {
 				D->pclabels[n] = pos++;
 			}
 		} else if(action == DASM_LABEL_PC) {
-			unsigned long n = va_arg(ap,unsigned long);	/* Semiconstant label ID */
-			if (D->pclabels[n] >= 0)
-				collapse_chain(D, ofs, &D->pclabels[n]);
-			D->pclabels[n] = -ofs;
+			unsigned long n = va_arg(ap,unsigned long);	/* Semiconstant space amount / label ID */
+
+//			switch (action) {
+//			case DASM_LABEL_PC:
+				if (D->pclabels[n] >= 0)
+					collapse_chain(D, ofs, &D->pclabels[n]);
+				D->pclabels[n] = -ofs;
+/*				break;
+			case DASM_SPACE:
+				b[pos++] = n;
+				ofs += n;
+				break;
+			}*/
+		} else if (action == DASM_SPACE) {
+			unsigned long n = va_arg(ap,unsigned long);
+
+			b[pos++] = n;
+			ofs += n;
 		} else if (action <= DASM_SECTION) {
 			unsigned long n = *p++;						/* Constant alignment value / label ID */
 
@@ -346,9 +361,9 @@ int dasm_encode( Dst_DECL, void *buffer) {
 		dasm_ActList p = D->actionlist + *b++;
 		while (1) {
 			int action = *p++;
-			int param = (action >= DASM_IMM && action <= DASM_PC) ? *b++ : 0;
+			int param = ((action >= DASM_IMM && action <= DASM_PC) || action == DASM_SPACE) ? *b++ : 0;
 			jit_encmodes mode =	(action >= DASM_IMM && action <= DASM_PC) ? *p++ : 0;
-			int cparam = (action >= DASM_L && action <= DASM_ALIGN && action != DASM_PC && action != DASM_LABEL_PC) ? *p++ : 0;
+			int cparam = (action >= DASM_L && action <= DASM_ALIGN && action != DASM_PC && action != DASM_LABEL_PC && action != DASM_SPACE) ? *p++ : 0;
 
 			switch (action) {
 			case DASM_IMM:
@@ -369,6 +384,9 @@ int dasm_encode( Dst_DECL, void *buffer) {
 				break;
 			case DASM_LABEL_G:
 				D->globals[cparam] = cp;
+				break;
+			case DASM_SPACE:
+				cp += param;
 				break;
 			case DASM_ALIGN:
 				while ((int) cp & cparam)
