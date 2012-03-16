@@ -4,13 +4,13 @@ name basic-calls
 ---- RETURN
 -- From MULTRET to MULTRET
 local a = {2,3,4,5}
-print("MULTRET to MULTRET:",unpack(a))
+print(unpack(a))
 
 -- From FIXED to MULTRET
 local function foo1()
 	return 2,3,4,5
 end
-print("FIXED to MULTRET:",foo1())
+print(foo1())
 
 -- From MULTRET to > FIXED 
 local function bar1(a,b)
@@ -22,35 +22,35 @@ end
 local function bar3(a,b,c,d)
 	print(a,b,c,d)
 end
-bar1("MULTRET to > FIXED:",unpack(a))
+bar1(unpack(a))
 
 -- From MULTRET to < FIXED
-bar2("MULTRET to < FIXED:",unpack(a))
+bar2(unpack(a))
 
 -- From MULTRET to == FIXED
-bar3("MULTRET to == FIXED:",unpack(a))
+bar3(unpack(a))
 
 -- From FIXED to > FIXED
 local m,n = foo1()
-print("FIXED to > FIXED:",m,n)
+print(m,n)
 
 -- From FIXED to < FIXED
 local o,p,q,r,s,t = foo1()
-print("FIXED to < FIXED:",o,p,q,r,s,t)
+print(o,p,q,r,s,t)
 
 -- From FIXED to == FIXED
 local u,v,w,x = foo1()
-print("FIXED to == FIXED:",u,v,w,x)
+print(u,v,w,x)
 
 ----------------------------------------
 ---- CALL
 -- From MULTRET to MULTRET
 %%
-MULTRET to MULTRET:	2	3	4	5
-FIXED to MULTRET:	2	3	4	5
-MULTRET to > FIXED:	2	3
-MULTRET to < FIXED:	2	3	4	5	nil	nil
-MULTRET to == FIXED:	2	3	4	5
-FIXED to > FIXED:	2	3
-FIXED to < FIXED:	2	3	4	5	nil	nil
-FIXED to == FIXED:	2	3	4	5
+2	3	4	5
+2	3	4	5
+2	3
+2	3	4	5	nil	nil
+2	3	4	5
+2	3
+2	3	4	5	nil	nil
+2	3	4	5

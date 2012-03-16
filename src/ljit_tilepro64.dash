@@ -358,3 +358,9 @@
 |		setnilvalue TVALUE:start[0]
 |	loopendidxup TVALUE:start, TVALUE:end
 |.endmacro
+|
+|.macro wipedown, start, end
+|	loopstartidxdown TVALUE:start, TVALUE:end
+|		setnilvalue TVALUE:end[0]
+|	loopend TVALUE:start, TVALUE:end
+|.endmacro

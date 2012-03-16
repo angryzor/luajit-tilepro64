@@ -95,28 +95,54 @@ static int jit_consistency_check(jit_State *J)
 /*	return JIT_S_COMPILER_ERROR;*/
 }
 
-static int jit_std_prologue(jit_State *J, int stacksize)
+static int jit_std_prologue(jit_State *J, int stacksize, lu_byte is_vararg)
 {
 	|	prologue LUAFUNC_STACK_SIZE
-	|
-	//jit_emit_custom_stackdump(J,"Prologue");
-	|
+	
 	|	addidx r9, BASE, stacksize+1
-	|	movei r1, stacksize+1
+
+	if(is_vararg)
+	{
+		|	addidx r1, BASE, 1
+		|	sub r2, TOP, r1
+		|	add r9, r9, r2
+	}
+
 	|	slt_u r0, r9, L->stack_last
 	|	bnz r0, >1
+	|	push r9
+	|	movei r1, stacksize+1
 	|	jal ->GROW_STACK
-	|	addidx r9, BASE, stacksize+1 // this may get overwritten by the above function call.
+	|	pop r9
 	|1:
 	|	// This is a slight overallocation (BASE[1+stacksize] would be enough).
 	|	// We duplicate luaD_precall() behaviour so we can use luaD_growstack().
 	|	seq r0, CI, L->end_ci
 	|	bz r0, >2
+	|	push r9
 	|	jal ->GROW_CI			// CI overflow?
-	|	addidx r9, BASE, stacksize+1
+	|	pop r9
 	|2:
 	|	addidx CI, CI, 1
 	|	move CI->top, r9
+	|	move CI->func, BASE
+
+	|	addidx BASE, BASE, 1
+	
+	if(is_vararg)
+	{
+		|	addidx TVALUE:r1, BASE, J->pt->numparams
+		|	addidx TVALUE:r2, TOP, J->pt->numparams
+		|	loopstartidxdown BASE, TVALUE:r1
+		|		subidx TVALUE:r2, TVALUE:r2, 1
+		|		copyslot TVALUE:r2[0], TVALUE:r1[0]
+		|		setnilvalue TVALUE:r1[0]
+		|	loopend BASE, TVALUE:r1
+		|	move BASE, TOP
+	}
+
+	|	move CI->base, BASE
+
 	return 0;
 }
 
@@ -245,17 +271,13 @@ static int jit_compile_jsub(jit_State *J)
 	|.align 64
 	|->GATE_JC:
 
-	jit_std_prologue(J, LUA_MINSTACK);
+	jit_std_prologue(J, LUA_MINSTACK, 0);
 
 	//jit_emit_custom_stackdump(J,"Entering JC gate");
-	|	move CI->func, BASE
-	|	move CCLOSURE:r7, BASE->value
-	|	addidx BASE, BASE, 1
-	|	move CI->base, BASE
 	|	globals_JL
 	|
 	|	move r0, L
-	|	jalr CCLOSURE:r7->f
+	|	jalr CCLOSURE:LCL->f
 	|
 	|	globals_LJ L->base
 	|
@@ -339,7 +361,7 @@ static void jit_ins_start(jit_State *J)
 {
 	const Instruction thisins = *(J->nextins-1);
 	|=>J->nextpc:
-	//jit_emit_stackdump(J, luaP_opnames[GET_OPCODE(thisins)], GETARG_A(thisins), GETARG_B(thisins), GETARG_C(thisins), GETARG_Bx(thisins));
+	jit_emit_stackdump(J, luaP_opnames[GET_OPCODE(thisins)], GETARG_A(thisins), GETARG_B(thisins), GETARG_C(thisins), GETARG_Bx(thisins));
 }
 
 /* Called after the last instruction has been encoded. */
@@ -363,19 +385,15 @@ static void jit_prologue(jit_State *J)
 	int numparams = pt->numparams;
 	int stacksize = pt->maxstacksize;
 
-	jit_std_prologue(J, stacksize);
-
-	// Slower
-	|	move CI->func, BASE // Used to be removed
-	|	addidx BASE, BASE, 1
-	|	move CI->base, BASE // Used to be removed
+	jit_std_prologue(J, stacksize, J->pt->is_vararg);
 
 	if(!pt->is_vararg)
 	{
-		|//	addidx TVALUE:r8, BASE, numparams
+		|//	addidx r4, BASE, numparams
+		|//	wipe r4, r9
 		|	wipe TOP, r9
 	}
-
+	
 	|	move TOP, r9
 
 #if 0
@@ -399,17 +417,21 @@ static void jit_op_return(jit_State *J, int rbase, int nresults)
 	}
 
 	/* Go to the previous CallInfo, load the current into r7 */
-	|//	move CINFO:r7, CI
+	|//	subidx BASE, BASE, 1 // This is the old pre-vararg way
+	
+	|	move TVALUE:r5, BASE
+	|	move BASE, CI->func
+	
 	|	subidx CI, CI, 1
-	|	subidx BASE, BASE, 1
 
 	/* Previous op was open: 'return f()' or 'return ...' */
 	if (nresults < 0) {
 		|	subidx TOP, TOP, 1
-		|	move TVALUE:r5, BASE
-		|	loopstart TVALUE:r5, TOP
-		|		copyslot TVALUE:r5[0], TVALUE:r5[1]
-		|	loopendidxup TVALUE:r5, TOP
+		|	move TVALUE:r6, BASE
+		|	loopstart TVALUE:r6, TOP
+		|		copyslot TVALUE:r6[0], TVALUE:r5[0]
+		|		addidx TVALUE:r5, TVALUE:r5, 1
+		|	loopendidxup TVALUE:r6, TOP
 		|	setnilvalue TOP[0]
 	}
 	else
@@ -417,7 +439,7 @@ static void jit_op_return(jit_State *J, int rbase, int nresults)
 		int i;
 		for(i = 0; i < nresults; i++)
 		{
-			|	copyslot BASE[i], BASE[rbase+i+1]
+			|	copyslot BASE[i], TVALUE:r5[rbase+i]
 		}
 		|//	addidx TVALUE:r8, BASE, nresults
 		|//	wipe r8, TOP
@@ -1086,14 +1108,14 @@ static void jit_op_vararg(jit_State *J, int dest, int num)
 {
 	if(num >= 0)
 	{
-		|	movewi r6, num
+		|	addidx r6, BASE, num
 	}
 	else
 	{
 		|	move r6, TOP
 	}
 
-	|	move r5, BASE
+	|	addidx r5, BASE, J->pt->numparams
 	|	loopstart r5, TOP
 		|	
 	
