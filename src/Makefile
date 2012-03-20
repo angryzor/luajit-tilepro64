@@ -8,7 +8,7 @@
 PLAT= none
 
 CC= tile-gcc -m32 
-CFLAGS= -g -O0 -fomit-frame-pointer -Wall $(MYCFLAGS) $(COCOCFLAGS) $(JITCFLAGS)
+CFLAGS= -O2 -fomit-frame-pointer -Wall $(MYCFLAGS) $(COCOCFLAGS) $(JITCFLAGS)
 AR= tile-ar rcu
 RANLIB= tile-ranlib
 RM= rm -f

@@ -1,56 +1,76 @@
 name basic-calls
 %%
-
----- RETURN
--- From MULTRET to MULTRET
-local a = {2,3,4,5}
-print("MULTRET to MULTRET:",unpack(a))
-
--- From FIXED to MULTRET
 local function foo1()
 	return 2,3,4,5
 end
-print("FIXED to MULTRET:",foo1())
+local function bar1(M,a,b)
+	local c,d
+	print(M,a,b,c,d)
+end
+local function bar2(M,a,b,c,d,e,f)
+	print(M,a,b,c,d,e,f)
+end
+local function bar3(M,a,b,c,d)
+	print(M,a,b,c,d)
+end
+local function bar4(M,a,b,...)
+	local c,d
+	print(M,a,b,c,d)
+end
+local function bar5(M,a,b,c,d,e,f,...)
+	print(M,a,b,c,d,e,f)
+end
+local function bar6(M,a,b,c,d,...)
+	print(M,a,b,c,d)
+end
+local a = {2,3,4,5}
 
--- From MULTRET to > FIXED 
-local function bar1(a,b)
-	print(a,b)
-end
-local function bar2(a,b,c,d,e,f)
-	print(a,b,c,d,e,f)
-end
-local function bar3(a,b,c,d)
-	print(a,b,c,d)
-end
+
+print("MULTRET to MULTRET C:",unpack(a))
+print("FIXED to MULTRET C:",foo1())
 bar1("MULTRET to > FIXED:",unpack(a))
-
--- From MULTRET to < FIXED
 bar2("MULTRET to < FIXED:",unpack(a))
-
--- From MULTRET to == FIXED
 bar3("MULTRET to == FIXED:",unpack(a))
+bar1("FIXED to > FIXED:",2,3,4,5)
+bar2("FIXED to < FIXED:",2,3,4,5)
+bar3("FIXED to == FIXED:",2,3,4,5)
+bar1("FIXED to > FIXED call:",foo1())
+bar2("FIXED to < FIXED call:",foo1())
+bar3("FIXED to == FIXED call:",foo1())
+bar4("MULTRET to > FIXED VA:",unpack(a))
+bar5("MULTRET to < FIXED VA:",unpack(a))
+bar6("MULTRET to == FIXED VA:",unpack(a))
+bar4("FIXED to > FIXED VA:",2,3,4,5)
+bar5("FIXED to < FIXED VA:",2,3,4,5)
+bar6("FIXED to == FIXED VA:",2,3,4,5)
+bar4("FIXED to > FIXED call VA:",foo1())
+bar5("FIXED to < FIXED call VA:",foo1())
+bar6("FIXED to == FIXED call VA:",foo1())
 
--- From FIXED to > FIXED
-local m,n = foo1()
-print("FIXED to > FIXED:",m,n)
 
--- From FIXED to < FIXED
-local o,p,q,r,s,t = foo1()
-print("FIXED to < FIXED:",o,p,q,r,s,t)
 
--- From FIXED to == FIXED
-local u,v,w,x = foo1()
-print("FIXED to == FIXED:",u,v,w,x)
 
 ----------------------------------------
 ---- CALL
 -- From MULTRET to MULTRET
 %%
-MULTRET to MULTRET:	2	3	4	5
-FIXED to MULTRET:	2	3	4	5
-MULTRET to > FIXED:	2	3
+MULTRET to MULTRET C:	2	3	4	5
+FIXED to MULTRET C:	2	3	4	5
+MULTRET to > FIXED:	2	3	nil	nil
 MULTRET to < FIXED:	2	3	4	5	nil	nil
 MULTRET to == FIXED:	2	3	4	5
-FIXED to > FIXED:	2	3
+FIXED to > FIXED:	2	3	nil	nil
 FIXED to < FIXED:	2	3	4	5	nil	nil
 FIXED to == FIXED:	2	3	4	5
+FIXED to > FIXED call:	2	3	nil	nil
+FIXED to < FIXED call:	2	3	4	5	nil	nil
+FIXED to == FIXED call:	2	3	4	5
+MULTRET to > FIXED VA:	2	3	nil	nil
+MULTRET to < FIXED VA:	2	3	4	5	nil	nil
+MULTRET to == FIXED VA:	2	3	4	5
+FIXED to > FIXED VA:	2	3	nil	nil
+FIXED to < FIXED VA:	2	3	4	5	nil	nil
+FIXED to == FIXED VA:	2	3	4	5
+FIXED to > FIXED call VA:	2	3	nil	nil
+FIXED to < FIXED call VA:	2	3	4	5	nil	nil
+FIXED to == FIXED call VA:	2	3	4	5
