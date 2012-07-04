@@ -1,0 +1,5 @@
+bench;vm;suite;extra_args;cores;input_sizes;variable_values;;;arithmetic mean;geometric mean;median;stdDev;#samples;min;max;Conf. Interval Low;Conf. Interval High;Conf. Interval Size Abs.;Conf.IntervalSize/Mean
+benchmarks/binarytrees.lua-3.lua;lua;tilera;12;1;1;None;;total;21306,666667;21305,969235;21280,000000;172,497987;3,000000;21110,000000;21530,000000;21015,860166;21597,473168;581,613002;0,027297
+benchmarks/binarytrees.lua-3.lua;luajit;tilera;12;1;1;None;;total;0,000000;0,000000;0,000000;0,000000;0,000000;0,000000;0,000000;0,000000;0,000000;0,000000;0,000000
+benchmarks/binarytrees.lua-3.lua;lua;tilera;12;1;1;None;sys;total;23,333333;22,894285;20,000000;4,714045;3,000000;20,000000;30,000000;15,386139;31,280527;15,894388;0,681188
+benchmarks/binarytrees.lua-3.lua;lua;tilera;12;1;1;None;user;total;21250,000000;21249,368413;21230,000000;163,910545;3,000000;21060,000000;21460,000000;20973,670677;21526,329323;552,658646;0,026007

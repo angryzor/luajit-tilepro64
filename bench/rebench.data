@@ -1,0 +1,10 @@
+#!/usr/local/bin/rebench -d -n rebench.conf
+[2012-07-03 13:24:43.410060]	benchmarks/binarytrees.lua-3.lua, vm:lua, suite:tilera, args:'12'	1	1	None	sys	total = 20.000000
+[2012-07-03 13:24:43.410206]	benchmarks/binarytrees.lua-3.lua, vm:lua, suite:tilera, args:'12'	1	1	None	total = 21110.000000
+[2012-07-03 13:24:43.410273]	benchmarks/binarytrees.lua-3.lua, vm:lua, suite:tilera, args:'12'	1	1	None	user	total = 21060.000000
+[2012-07-03 13:25:05.090135]	benchmarks/binarytrees.lua-3.lua, vm:lua, suite:tilera, args:'12'	1	1	None	sys	total = 20.000000
+[2012-07-03 13:25:05.090243]	benchmarks/binarytrees.lua-3.lua, vm:lua, suite:tilera, args:'12'	1	1	None	total = 21280.000000
+[2012-07-03 13:25:05.090306]	benchmarks/binarytrees.lua-3.lua, vm:lua, suite:tilera, args:'12'	1	1	None	user	total = 21230.000000
+[2012-07-03 13:25:27.020300]	benchmarks/binarytrees.lua-3.lua, vm:lua, suite:tilera, args:'12'	1	1	None	sys	total = 30.000000
+[2012-07-03 13:25:27.020414]	benchmarks/binarytrees.lua-3.lua, vm:lua, suite:tilera, args:'12'	1	1	None	total = 21530.000000
+[2012-07-03 13:25:27.020475]	benchmarks/binarytrees.lua-3.lua, vm:lua, suite:tilera, args:'12'	1	1	None	user	total = 21460.000000

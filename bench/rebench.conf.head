@@ -1,0 +1,40 @@
+# Config file for ReBench
+# Config format is YAML (see http://yaml.org/ for detailed spec)
+
+# this run definition will be choosen if no parameters are given to rebench
+standard_run: tilera
+standard_dataFile: 'rebench.data'
+
+# reporting should enable the configuration of the format of the out put
+# REM: not implement yet (STEFAN: 2011-01-19)
+reporting:
+    csv_file: rebench.csv
+    csv_locale: de_DE.UTF-8
+    csv_raw: rebench.data.csv
+
+# settings and requirements for statistic evaluation
+statistics:
+    min_runs: 1
+    max_runs: 3
+    confidence_level: 0.90
+    error_margin: 0.005
+    stop_criterium: percentage
+    stop_threshold: 5
+ 
+# settings for quick runs, useful for fast feedback during experiments
+quick_runs:
+    min_runs: 3
+    max_runs: 10
+    max_time: 60   # time in seconds
+
+# definition of benchmark suites
+benchmark_suites:
+    tilera:
+        performance_reader: TimeManualPerformance
+        command: "%(benchmark)s " # %(input)s "
+        input_sizes: [1]
+        ulimit: 600
+        benchmarks:
+            # Computer Language Benchmarks Game
+#            - BenchmarkGameSuite.benchFasta:
+#                extra_args: "2000"

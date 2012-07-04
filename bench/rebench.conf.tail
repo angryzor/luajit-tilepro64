@@ -1,0 +1,52 @@
+ 
+# VMs have a name and are specified by a path and the binary to be executed
+virtual_machines:
+    luajit:
+        path: .
+        binary: run-luajit
+        args: ""
+        cores: [1]
+    lua:
+        path: .
+        binary: run-lua
+        args: ""
+        cores: [1]
+    cog-vm:
+        path: /home/smarr-local/tmp/coglinux
+        binary: squeak
+        args: "-headless /home/smarr-local/Projects/images/benchmarks-smark/SMark.image ReBenchHarness "
+        cores: [1, 2, 4, 8, 12, 16]
+    rvm-tilera:
+        path: .
+        binary: tile-runner ./rvm
+        cores: [1, 2, 4, 6, 8, 9, 10, 12, 14, 16, 18, 20, 22, 24, 25, 26, 28, 30, 32, 34, 36, 38, 40, 42, 44, 46, 48, 50, 52, 54, 56, 58, 59]
+        args: "-min_heap_MB 256 -num_cores %(cores)s -headless benchmarking.image ReBenchHarness "
+    rvm-intel:
+        path: .
+        binary: rvm
+        cores: [1, 2, 4, 8, 12, 16]
+        args: "-min_heap_MB 1024 -num_cores %(cores)s -headless benchmarking.image ReBenchHarness "
+    rvm-intel-8u:
+        path: /usr/local/bin
+        binary: rvm
+        cores: [1, 2, 4, 8, 12, 16]
+        args: "-min_heap_MB 1024 -num_cores %(cores)s -headless /home/smarr-local/Projects/images/benchmarks-smark/benchmarking.image ReBenchHarness "
+    rvm-intel-8u-tl:
+        path: .
+        binary: rvm-tl
+        cores: [1, 2, 4, 8, 12, 16]
+        args: "-min_heap_MB 1024 -num_cores %(cores)s -headless /home/smarr-local/Projects/images/benchmarks-smark/benchmarking.image ReBenchHarness "
+
+
+
+# define the benchmarks to be executed for a re-executable benchmark run
+run_definitions:
+    tilera:
+        description: >
+            Standard tests to check for performance regressions
+        actions: benchmark
+        benchmark: tilera
+        executions:
+            - luajit
+            - lua
+

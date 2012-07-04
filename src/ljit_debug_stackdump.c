@@ -12,7 +12,8 @@ static FILE* f;
 
 void ljit_debug_initstackdump()
 {
-	f = fopen("/home/rtytgat/.tilera/workspace/ljt64/src/log.log","a");
+//	f = fopen("/home/rtytgat/.tilera/workspace/ljt64/src/log.log","a");
+	f = fopen("./log.log","a");
 }
 
 void ljit_debug_releasestackdump()

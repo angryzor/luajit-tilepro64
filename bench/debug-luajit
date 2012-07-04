@@ -1,0 +1,4 @@
+#!/bin/bash
+
+tile-monitor --pci --rtc --resume --debug-on-crash --here --mount-same ../src --mount-tile /usr/lib --run --- ../src/luajit "$@" --- --quit
+

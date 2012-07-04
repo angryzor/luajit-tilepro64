@@ -380,19 +380,6 @@ local function parseregortype(str, isdst)
 	end
 end
 
---[[
-local function parseglobal(expr)
-	return make_operand(map_global[expr], {})
-end
-
-local function parselocal(dir,num)
-	return make_operand(num + (dir == ">" and 246 or 0))
-end
-
-local function parsepc(expr)
-	return make_operand(
-]]
-
 ----------------------------------------------------
 
 local imm_enc_modes = {
@@ -467,6 +454,31 @@ end
 
 -----------------------------------------------------------------
 -- Instruction builders
+
+local function bit_filter(x,size)
+	return bit.band(x, 2 ^ size - 1)
+end
+
+local function bit_get(x,hi,lo)
+	return bit.rshift(bit_filter(x, hi + 1), lo)
+end
+
+--[[
+local function bit_get(x,offset,size)
+	return bit.rshift(bit_filter(x, lo + size), lo)
+end
+]]
+
+local function bit_set(bitvector,x,hi,lo)
+	return bit.bor(bitvector,bit.lshift(bit.filter(x,hi - lo + 1),lo))
+end
+
+--[[
+local function bit_set(in,offset,size)
+	return bit.bor(in,bit.lshift(bit.filter(x,size),offset))
+end
+]]
+
 local instr_builders = {}
 function instr_builders.X0_RRR(opcode, s, opcodeextension, Dst, A, B)
 	local instr = Dst.val
@@ -496,7 +508,40 @@ function instr_builders.X0_Imm16(opcode, Dst, A, Imm16)
 	return make_instr(0, instr, table_append(Dst.posts, A.posts, Imm16.posts))
 end
 
+function instr_builders.X0_Unary(opcode, s, shopcodeex, opcodeex, Dst, A)
+	local instr = Dst.val
+	instr = bit.bor(instr, bit.lshift(A.val, 6))
+	instr = bit.bor(instr, bit.lshift(opcodeex, 12))
+	instr = bit.bor(instr, bit.lshift(shopcodeex, 17))
+	instr = bit.bor(instr, bit.lshift(s, 27))
+	instr = bit.bor(instr, bit.lshift(opcode, 28))
+	return make_instr(0, instr, table_append(Dst.posts, A.posts))
+end
+
+function instr_builders.X0_Shift(opcode, s, opcodeex, Dst, A, ShAmt)
+	local instr = Dst.val
+	instr = bit.bor(instr, bit.lshift(A.val, 6))
+	instr = bit.bor(instr, bit.lshift(ShAmt.val, 12))
+	instr = bit.bor(instr, bit.lshift(shopcodeex, 17))
+	instr = bit.bor(instr, bit.lshift(s, 27))
+	instr = bit.bor(instr, bit.lshift(opcode, 28))
+	return make_instr(0, instr, table_append(Dst.posts, A.posts, ShAmt.posts))
+end
+
+function instr_builders.X0_MM(opcode, Dst, A, B, MMStart, MMEnd)
+	local instr = Dst.val
+	instr = bit.bor(instr, bit.lshift(A.val, 6))
+	instr = bit.bor(instr, bit.lshift(B.val, 12))
+	instr = bit.bor(instr, bit.lshift(MMEnd.val, 18))
+	instr = bit.bor(instr, bit.lshift(MMStart.val, 23))
+	instr = bit.bor(instr, bit.lshift(opcode, 28))
+	return make_instr(0, instr, table_append(Dst.posts, A.posts, B.posts, MMStart.posts, MMEnd.posts))
+end
+
 ---
+--------
+---
+
 function instr_builders.X1_RRR(opcode, s, opcodeex, Dst, A, B)
 	local lo = bit.lshift(Dst.val, 31)
 	local hi = bit.rshift(Dst.val, 1)
@@ -508,6 +553,27 @@ function instr_builders.X1_RRR(opcode, s, opcodeex, Dst, A, B)
 	return make_instr(hi, lo, table_append(Dst.posts, A.posts, B.posts))
 end
 
+function instr_builders.X1_Imm8(opcode, s, opcodeex, Dst, A, Imm8)
+	local lo = bit.lshift(Dst.val, 31)
+	local hi = bit.rshift(Dst.val, 1)
+	hi = bit.bor(hi, bit.lshift(A.val, 5))
+	hi = bit.bor(hi, bit.lshift(Imm8.val, 11))
+	hi = bit.bor(hi, bit.lshift(opcodeex, 19))
+	hi = bit.bor(hi, bit.lshift(s, 26))
+	hi = bit.bor(hi, bit.lshift(opcode, 27))
+	return make_instr(hi, lo, table_append(Dst.posts, A.posts, Imm8.posts))
+end
+
+-- function instr_builders.X1_MT_Imm15(opcode, opcodeex, 
+
+function instr_builders.X1_Imm16(opcode, Dst, A, Imm16)
+	local lo = bit.lshift(Dst.val, 31)
+	local hi = bit.rshift(Dst.val, 1)
+	hi = bit.bor(hi, bit.lshift(A.val, 5))
+	hi = bit.bor(hi, bit.lshift(Imm16.val, 11))
+	hi = bit.bor(hi, bit.lshift(opcode, 27))
+	return make_instr(hi, lo, table_append(Dst.posts, A.posts, Imm16.posts))
+end
 
 function instr_builders.X1_Unary(opcode, s, shopcodeex, opcodeex, Dst, A)
 	local lo = bit.lshift(Dst.val, 31)
@@ -520,11 +586,33 @@ function instr_builders.X1_Unary(opcode, s, shopcodeex, opcodeex, Dst, A)
 	return make_instr(hi, lo, table_append(Dst.posts, A.posts))
 end
 
+function instr_builders.X1_Shift(opcode, s, shopcodeex, Dst, A, ShAmt)
+	local lo = bit.lshift(Dst.val, 31)
+	local hi = bit.rshift(Dst.val, 1)
+	hi = bit.bor(hi, bit.lshift(A.val, 5))
+	hi = bit.bor(hi, bit.lshift(bit.band(ShAmt.val,0x1F), 11))
+	hi = bit.bor(hi, bit.lshift(shopcodeex, 16))
+	hi = bit.bor(hi, bit.lshift(s, 26))
+	hi = bit.bor(hi, bit.lshift(opcode, 27))
+	return make_instr(hi, lo, table_append(Dst.posts, A.posts, ShAmt.posts))
+end
+
+function instr_builders.X1_MM(opcode, Dst, A, B, MMStart, MMEnd)
+	local lo = bit.lshift(Dst.val, 31)
+	local hi = bit.rshift(Dst.val, 1)
+	hi = bit.bor(hi, bit.lshift(A.val, 5))
+	hi = bit.bor(hi, bit.lshift(B.val, 11))
+	hi = bit.bor(hi, bit.lshift(MMEnd.val, 17))
+	hi = bit.bor(hi, bit.lshift(MMStart.val, 22))
+	hi = bit.bor(hi, bit.lshift(opcode, 27))
+	return make_instr(hi, lo, table_append(Dst.posts, A.posts, B.posts, MMStart.posts, MMEnd.posts))
+end
+
 function instr_builders.X1_Br(opcode, s, brtype, A, Off)
 	local lo = bit.lshift(brtype, 31)
 	local hi = bit.rshift(brtype, 1)
-	local off1400 = bit.band(Off.val, 0x7FFF)
-	local off1615 = bit.band(bit.rshift(Off.val, 15), 3)
+	local off1400 = bit_get(Off.val, 14, 0)
+	local off1615 = bit_get(Off.val, 16, 15)
 	hi = bit.bor(hi, bit.lshift(A.val, 5))
 	hi = bit.bor(hi, bit.lshift(off1615, 3))
 	hi = bit.bor(hi, bit.lshift(off1400, 11))
@@ -533,23 +621,12 @@ function instr_builders.X1_Br(opcode, s, brtype, A, Off)
 	return make_instr(hi, lo, table_append(A.posts, Off.posts))
 end
 
-function instr_builders.X1_Shift(opcode, s, shopcodeextension, Dst, A, ShAmt)
-	local lo = bit.lshift(Dst.val, 31)
-	local hi = bit.rshift(Dst.val, 1)
-	hi = bit.bor(hi, bit.lshift(A.val, 5))
-	hi = bit.bor(hi, bit.lshift(bit.band(ShAmt.val,0x1F), 11))
-	hi = bit.bor(hi, bit.lshift(shopcodeextension, 16))
-	hi = bit.bor(hi, bit.lshift(s, 26))
-	hi = bit.bor(hi, bit.lshift(opcode, 27))
-	return make_instr(hi, lo, table_append(Dst.posts, A.posts, ShAmt.posts))
-end
-
 function instr_builders.X1_J(opcode, off)
-	local off1400 = bit.band(off.val, 0x7FFF)
-	local off1615 = bit.band(bit.rshift(off.val, 15), 0x3)
-	local off2017 = bit.band(bit.rshift(off.val, 17), 0xF)
-	local off2621 = bit.band(bit.rshift(off.val, 21), 0x3F)
-	local off2727 = bit.band(bit.rshift(off.val, 27), 0x1)
+	local off1400 = bit_get(off.val, 14,  0)
+	local off1615 = bit_get(off.val, 16, 15)
+	local off2017 = bit_get(off.val, 20, 17)
+	local off2621 = bit_get(off.val, 26, 21)
+	local off2727 = bit_get(off.val, 27, 27)
 	local lo = bit.lshift(off2017, 31)
 	local hi = bit.rshift(off2017, 1)
 	hi = bit.bor(hi, bit.lshift(off1615, 3))
@@ -558,6 +635,59 @@ function instr_builders.X1_J(opcode, off)
 	hi = bit.bor(hi, bit.lshift(off2727, 26))
 	hi = bit.bor(hi, bit.lshift(opcode, 27))
 	return make_instr(hi, lo, table_append(off.posts))
+end
+
+---------------------------
+---------------------------
+---------------------------
+
+function instr_builders.Y1_RRR(opcode, opcodeex, Dst, A, B)
+	local lo = bit.lshift(Dst.val, 31)
+	local hi = bit.rshift(Dst.val, 1)
+	hi = bit.bor(hi, bit.lshift(A.val, 5))
+	hi = bit.bor(hi, bit.lshift(B.val, 11))
+	hi = bit.bor(hi, bit.lshift(opcodeex, 17))
+	hi = bit.bor(hi, bit.lshift(opcode, 27))
+	return make_instr(hi, lo, table_append(Dst.posts, A.posts, B.posts))
+end
+
+function instr_builders.Y1_Imm8(opcode, Dst, A, Imm8)
+	local lo = bit.lshift(Dst.val, 31)
+	local hi = bit.rshift(Dst.val, 1)
+	hi = bit.bor(hi, bit.lshift(A.val, 5))
+	hi = bit.bor(hi, bit.lshift(Imm8.val, 11))
+	hi = bit.bor(hi, bit.lshift(opcode, 27))
+	return make_instr(hi, lo, table_append(Dst.posts, A.posts, Imm8.posts))
+end
+
+function instr_builders.Y1_Unary(opcode, shopcodeex, opcodeex, Dst, A)
+	local lo = bit.lshift(Dst.val, 31)
+	local hi = bit.rshift(Dst.val, 1)
+	hi = bit.bor(hi, bit.lshift(A.val, 5))
+	hi = bit.bor(hi, bit.lshift(opcodeex, 11))
+	hi = bit.bor(hi, bit.lshift(shopcodeex, 16))
+	hi = bit.bor(hi, bit.lshift(opcode, 27))
+	return make_instr(hi, lo, table_append(Dst.posts, A.posts))
+end
+
+function instr_builders.Y1_Shift(opcode, shopcodeex, Dst, A, ShAmt)
+	local lo = bit.lshift(Dst.val, 31)
+	local hi = bit.lshift(Dst.val, 1)
+	hi = bit.bor(hi, bit.lshift(A.val, 5))
+	hi = bit.bor(hi, bit.lshift(ShAmt.val, 11))
+	hi = bit.bor(hi, bit.lshift(shopcodeex, 16))
+	hi = bit.bor(hi, bit.lshift(opcode, 27))
+	return make_instr(hi, lo, table_append(Dst.posts, A.posts, ShAmt.posts))
+end
+
+function instr_builders.Y2_LS(opcode, BDst, A)
+	local A0000 = bit_get(A.val, 0, 0)
+	local A0501 = bit_get(A.val, 5, 1)
+	local lo = bit.lshift(BDst.val, 20)
+	local hi = bit.lshift(A0501, 19)
+	lo = bit.lshift(A0000, 26)
+	hi = bit.lshift(opcode, 24)
+	return make_instr(hi, lo, table_append(BDst.posts, A.posts))
 end
 
 ------------------------------------------------------------------

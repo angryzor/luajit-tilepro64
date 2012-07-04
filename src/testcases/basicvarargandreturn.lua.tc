@@ -1,0 +1,19 @@
+name basic-vararg-and-return
+%%
+local function foo(a,b,...)
+	return ...
+end
+local function bar(a,b,...)
+	return a,b
+end
+local function bbar(a,b,...)
+	return a,b,...
+end
+
+print(foo(1,2,3,4,5,6,7))
+print(bar(1,2,3,4,5,6,7))
+print(bbar(1,2,3,4,5,6,7))
+%%
+3	4	5	6	7
+1	2
+1	2	3	4	5	6	7
