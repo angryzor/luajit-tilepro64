@@ -52,7 +52,7 @@ static void jit_emit_stackdump(jit_State *J, const char* curop_name, int ra, int
 	|	movewi r6, rb
 	|	movewi r7, rc
 	|	movewi r8, rbx
-	|	jal &ljit_debug_dumpstack
+	|	call &ljit_debug_dumpstack
 }
 
 static void jit_emit_custom_stackdump(jit_State *J, const char* curop_name)
@@ -67,7 +67,7 @@ static void jit_break()
 
 static void jit_emit_break(jit_State *J)
 {
-	|	jal &jit_break
+	|	call &jit_break
 }
 
 static void jit_emit_counter_break(jit_State *J, unsigned int* ctr, unsigned int count)
@@ -86,7 +86,7 @@ static void jit_emit_counter_break(jit_State *J, unsigned int* ctr, unsigned int
 static void jit_emit_printf(jit_State *J, const char* str)
 {
 	|	movewi r0, str
-	|	jal &printf
+	|	call &printf
 }
 
 /* Detect CPU features and set JIT flags. */
@@ -130,7 +130,7 @@ static int jit_std_prologue(jit_State *J, int stacksize, lu_byte is_vararg)
 	|	bnz r0, >1
 	|	push r9
 	|	movei r1, stacksize+1
-	|	jal ->GROW_STACK
+	|	call ->GROW_STACK
 	|	pop r9
 	|1:
 	|	// This is a slight overallocation (BASE[1+stacksize] would be enough).
@@ -138,7 +138,7 @@ static int jit_std_prologue(jit_State *J, int stacksize, lu_byte is_vararg)
 	|	seq r0, CI, L->end_ci
 	|	bz r0, >2
 	|	push r9
-	|	jal ->GROW_CI			// CI overflow?
+	|	call ->GROW_CI			// CI overflow?
 	|	pop r9
 	|2:
 	|	addidx CI, CI, 1
@@ -223,7 +223,7 @@ static int jit_compile_jsub(jit_State *J)
 	|
 	//jit_emit_printf(J,"Starting function C->L");
 	|	// Call the gate, probably not compiled yet, but may be compiled.
-	|	jalr LCL->jit_gate
+	|	callr LCL->jit_gate
 	|
 	|
 	|	// Check if arg 3 was LUA_MULTRET
@@ -281,12 +281,12 @@ static int jit_compile_jsub(jit_State *J)
 	|	move r1, BASE
 	|	movei r2, -1
 	|//	sub BASE, BASE, L->stack
-	|	jal &luaD_precall
+	|	call &luaD_precall
 	|	bnzt r0, >2
 	|
 	|	move r0, L
 	|	movei r1, 1
-	|	jal &luaV_execute
+	|	call &luaV_execute
 	//jit_emit_custom_stackdump(J,"After executing uncompiled function");
 	|
 	|2:
@@ -305,7 +305,7 @@ static int jit_compile_jsub(jit_State *J)
 	|	globals_JL
 	|
 	|	move r0, L
-	|	jalr CCLOSURE:LCL->f
+	|	callr CCLOSURE:LCL->f
 	|
 	|	globals_LJ L->base
 	|
@@ -338,7 +338,7 @@ static int jit_compile_jsub(jit_State *J)
 	|	prologue 8
 	|	globals_JL
 	|	move r0, L
-	|	jal &luaD_growstack
+	|	call &luaD_growstack
 	|	globals_LJ L->base
 	|	epilogue 8
 	|	jrp lr
@@ -347,7 +347,7 @@ static int jit_compile_jsub(jit_State *J)
 	|	prologue 8
 	|	globals_JL
 	|	move r0, L
-	|	jal &luaD_growCI
+	|	call &luaD_growCI
 	|	globals_LJ L->base
 	|	subidx CI, CI, 1
 	|	epilogue 8
@@ -375,7 +375,7 @@ static void jit_checkGC(jit_State *J)
 	|	bzt r0, >1
 	|	globals_JL
 	|	move r0, L
-	|	jal &luaC_step
+	|	call &luaC_step
 //	jit_emit_printf(J,"Collecting garbage");
 	|1:
 }
@@ -465,7 +465,7 @@ static void jit_op_return(jit_State *J, int rbase, int nresults)
 	if (!fhint_isset(J, NOCLOSE)) {
 		|	move r0, L
 		|	move r1, BASE
-		|	jal &luaF_close
+		|	call &luaF_close
 	}
 
 	/* Go to the previous CallInfo, load the current into r7 */
@@ -514,7 +514,7 @@ static void jit_op_call(jit_State *J, int func, int nargs, int nresults)
 
 	/* TODO: Call metamethod */
 
-	|	jalr LCL->jit_gate		// Call JIT func or GATE_JL/GATE_JC.
+	|	callr LCL->jit_gate		// Call JIT func or GATE_JL/GATE_JC.
 
 	//jit_emit_custom_stackdump(J,"Before return from call");
 	if (nresults >= 0) {
@@ -617,7 +617,7 @@ static void jit_op_setupval(jit_State *J, int src, int uvidx)
 	|	andi r4, UPVAL:r1->marked, bitmask(BLACKBIT)	// && isblack(uv)
 	|	bz r4, >5
 	|	move r0, L
-	|	jal &luaC_barrierf
+	|	call &luaC_barrierf
 	|5:
 }
 
@@ -629,7 +629,7 @@ static void jit_op_newtable(jit_State *J, int dest, int lnarray, int lnhash)
 	|	movewi r1, luaO_fb2int(lnarray)
 	|	movewi r2, luaO_fb2int(lnhash)
 	|	globals_JL
-	|	jal &luaH_new
+	|	call &luaH_new
 	|	globals_LJ L->base
 	|	sethvaluer BASE[dest], r0
 	jit_checkGC(J);
@@ -647,7 +647,7 @@ static void jit_op_getglobal(jit_State *J, int dest, int kidx)
 	|
 	|	// lua_getfield puts something on the stack top, so set L->top
 	|	globals_JL_TOP
-	|	jal &lua_getfield
+	|	call &lua_getfield
 	|
 	|	// Take the TValue that fell out of it and move to R(dest)
 	|	copyslot BASE[dest], TOP[0]
@@ -668,7 +668,7 @@ static void jit_op_setglobal(jit_State *J, int rval, int kidx)
 	|
 	|	// lua_setfield gets something from the stack top, so set L->top
 	|	globals_JL_TOP
-	|	jal &lua_setfield
+	|	call &lua_setfield
 	|	subidx TOP, TOP, 1
 }
 
@@ -687,7 +687,7 @@ static void jit_op_gettable(jit_State *J, int dest, int tab, int rkey)
 		|	addidx r2, BASE, rkey
 	}
 	|	addidx r3, BASE, dest
-	|	jal &luaV_gettable
+	|	call &luaV_gettable
 }
 
 static void jit_op_settable(jit_State *J, int tab, int rkey, int rval)
@@ -710,7 +710,7 @@ static void jit_op_settable(jit_State *J, int tab, int rkey, int rval)
 	{
 		|	addidx r3, BASE, rval
 	}
-	|	jal &luaV_settable
+	|	call &luaV_settable
 }
 
 static void jit_op_self(jit_State *J, int dest, int tab, int rkey)
@@ -758,7 +758,7 @@ static void jit_op_setlist(jit_State *J, int ra, int num, int batch)
 	|	move r2, r33
 	|	move r1, r31
 	|	move r0, L
-	|	jal &luaH_resizearray
+	|	call &luaH_resizearray
 
 	// Size is ok. now do the rest
 	|3:
@@ -766,7 +766,7 @@ static void jit_op_setlist(jit_State *J, int ra, int num, int batch)
 	|		move r2, r33
 	|		move r1, r31
 	|		move r0, L
-	|		jal &luaH_setnum
+	|		call &luaH_setnum
 	|		copyslot TVALUE:r0[0], TOP[0]
 	|		barriert TABLE:r31, TOP
 	|		addi r33, r33, -1
@@ -821,31 +821,31 @@ static void jit_op_arith(jit_State *J, int dest, int rkb, int rkc, int ev)
 	/* Encode arithmetic operation. */
 	switch (ev) {
 	case TM_ADD:
-		|	jal &__float64_add
+		|	call &__float64_add
 		break;
 	case TM_SUB:
-		|	jal &__float64_sub
+		|	call &__float64_sub
 		break;
 	case TM_MUL:
-		|	jal &__float64_mul
+		|	call &__float64_mul
 		break;
 	case TM_DIV:
-		|	jal &__float64_div
+		|	call &__float64_div
 		break;
 	case TM_MOD:
-		|	jal &__float64_rem
+		|	call &__float64_rem
 		break;
 	case TM_POW:
-		|	jal &pow
+		|	call &pow
 		break;
 	case TM_UNM:
-		|	jal &__float64_neg
+		|	call &__float64_neg
 		break;
 	case TM_LT:
-		|	jal &__float64_gcc_lt
+		|	call &__float64_gcc_lt
 		break;
 	case TM_LE:
-		|	jal &__float64_gcc_le
+		|	call &__float64_gcc_le
 		break;
 	default:
 		break;
@@ -890,7 +890,7 @@ fallback:
 		}
 		|	movemwi L->savedpc, J->nextins+1
 		|	move r0, L
-		|	jal ev==TM_LT?&luaV_lessthan:&luaV_lessequal
+		|	call ev==TM_LT?&luaV_lessthan:&luaV_lessequal
 		if (dest) {  /* cond */
 			|	bnz r0, =>target
 		} else {
@@ -911,7 +911,7 @@ fallback:
 		|	move r0, L
 		|	addidx r1, BASE, dest
 		|	movei r4, ev
-		|	jal &luaV_arith
+		|	call &luaV_arith
 	}
 }
 
@@ -952,7 +952,7 @@ static void jit_op_len(jit_State *J, int dest, int rb)
 	|	move r0, L
 	|	addidx r1, BASE, dest
 	|	addidx r2, BASE, rb
-	|	jal &jit_fallback_len
+	|	call &jit_fallback_len
 	|	globals_LJ L->base
 }
 
@@ -976,7 +976,7 @@ static void jit_op_concat(jit_State *J, int dest, int first, int last)
 	|	move r0, L
 	|	movei r1, last-first+1   // GRAY ASSUME: !(last > 255)
 	|	movei r2, last
-	|	jal &luaV_concat
+	|	call &luaV_concat
 	|	globals_LJ L->base
 	if(dest != first)
 	{
@@ -1004,7 +1004,7 @@ static void jit_op_eq(jit_State *J, int cond, int rkb, int rkc)
 	}
 
 	|	move r0, L
-	|	jal &luaV_equalval
+	|	call &luaV_equalval
 
 	if(cond) {
 		|	bnz r0, =>target
@@ -1073,7 +1073,7 @@ static void jit_op_forprep(jit_State *J, int ra, int target)
 {
 	|	loadnumber r0, r1, BASE[ra+FOR_IDX]
 	|	loadnumber r2, r3, BASE[ra+FOR_STP]
-	|	jal &__float64_sub
+	|	call &__float64_sub
 	|	storenumber BASE[ra+FOR_IDX], r0, r1
 	|	j =>target
 }
@@ -1082,18 +1082,18 @@ static void jit_op_forloop(jit_State *J, int ra, int target)
 {
 	|	loadnumber r0, r1, BASE[ra+FOR_IDX]
 	|	loadnumber r2, r3, BASE[ra+FOR_STP]
-	|	jal &__float64_add
+	|	call &__float64_add
 	|	storenumber BASE[ra+FOR_IDX], r0, r1
 	|	storenumber BASE[ra+FOR_EXT], r0, r1
 	const TValue *step = hint_getpc(J, FOR_STEP_K, target-1);
 	if (ttisnumber(step)) {
 		|	loadnumber r2, r3, BASE[ra+FOR_LIM]
 		if(nvalue(step) < (lua_Number)0) {
-			|	jal &__float64_gcc_ge
+			|	call &__float64_gcc_ge
 			|	bgez r0, =>target
 		}
 		else {
-			|	jal &__float64_gcc_le
+			|	call &__float64_gcc_le
 			|	blez r0, =>target
 		}
 	}
@@ -1101,17 +1101,17 @@ static void jit_op_forloop(jit_State *J, int ra, int target)
 		|	loadnumber r0, r1, BASE[ra+FOR_STP]
 		|	move r2, zero
 		|	move r3, zero
-		|	jal &__float64_gcc_lt	//
+		|	call &__float64_gcc_lt	//
 		|	bgez r0, >3				// if (FOR_STP >= 0) goto >3
 		|	loadnumber r0, r1, BASE[ra+FOR_IDX]
 		|	loadnumber r2, r3, BASE[ra+FOR_LIM]
-		|	jal &__float64_gcc_ge	// return FOR_IDX >= FOR_LIM
+		|	call &__float64_gcc_ge	// return FOR_IDX >= FOR_LIM
 		|	bgez r0, =>target
 		|	j >4
 		|3:
 		|	loadnumber r0, r1, BASE[ra+FOR_IDX]
 		|	loadnumber r2, r3, BASE[ra+FOR_LIM]
-		|	jal &__float64_gcc_le	// return FOR_IDX <= FOR_LIM
+		|	call &__float64_gcc_le	// return FOR_IDX <= FOR_LIM
 		|	blez r0, =>target
 		|4:
 	}
@@ -1140,7 +1140,7 @@ static void jit_op_close(jit_State *J, int ra)
 {
 	|	move r0, L
 	|	addidx r1, BASE, ra
-    |	jal &luaF_close
+    |	call &luaF_close
 }
 
 
@@ -1154,7 +1154,7 @@ static void jit_op_closure(jit_State *J, int dest, int ptidx)
 	|	move r0, L
 	|	movei r1, nup
 	|	move r2, LCL->env
-	|	jal &luaF_newLclosure
+	|	call &luaF_newLclosure
 	|	movemwi LCL:r0->p, npt			// Store new proto in returned closure.
 	|	setclvaluer BASE[dest], r0
 	|	push r30
@@ -1167,7 +1167,7 @@ static void jit_op_closure(jit_State *J, int dest, int ptidx)
 			|	globals_JL
 			|	move r0, L
 			|	addidx r1, BASE, GETARG_B(*pc)
-			|	jal &luaF_findupval
+			|	call &luaF_findupval
 			|	move LCL:r30->upvals[j], UPVAL:r0
 			|	globals_LJ L->base
 		}

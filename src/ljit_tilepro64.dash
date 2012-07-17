@@ -67,11 +67,13 @@
 |//==================================================================
 |// Pseudo instructions specific to this project
 |// Stack-related
+|
 |.macro prologue, size
-|//	move r10, sp
+|.if not LUAJIT_OMIT_FRAME_POINTER
+|	move r52, sp
+|.endif
 |	sw sp, lr
 |	addi sp, sp, -size
-|//	storeonstack r10, 4
 |.endmacro
 |
 |.macro epilogue, size
@@ -91,6 +93,7 @@
 |
 |// Push and pop, but ABI-compliant (that is, as long as you pop before you try to 
 |// load a certain stack slot
+|
 |.macro push, reg
 |	storeonstack reg, 4
 |	addi sp, sp, -4
@@ -99,6 +102,26 @@
 |.macro pop, reg
 |	addi sp, sp, 4
 |	loadfromstack reg, 4
+|.endmacro
+|
+|.macro call, t
+|.if not LUAJIT_OMIT_FRAME_POINTER
+|	storeonstack r52, 4
+|.endif
+|	jal t
+|.if not LUAJIT_OMIT_FRAME_POINTER
+|	loadfromstack r52, 4
+|.endif
+|.endmacro
+|
+|.macro callr, reg
+|.if not LUAJIT_OMIT_FRAME_POINTER
+|	storeonstack r52, 4
+|.endif
+|	jalr reg
+|.if not LUAJIT_OMIT_FRAME_POINTER
+|	loadfromstack r52, 4
+|.endif
 |.endmacro
 |
 |//==========================================================================

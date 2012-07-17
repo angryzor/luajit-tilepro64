@@ -43,7 +43,7 @@ PLATS= linux bsd macosx solaris mingw cygwin posix generic linux_rl bsd_rl macos
 
 # ++ LuaJIT =========
 DASMDIR= ../dynasm
-DASMFLAGS=
+DASMFLAGS= -D LUAJIT_OMIT_FRAME_POINTER
 DASMDISTFLAGS= -LN
 
 # This assumes you already have a copy of (plain) Lua 5.1 installed
