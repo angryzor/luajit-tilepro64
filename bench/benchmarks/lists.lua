@@ -2,6 +2,8 @@
 -- http://www.bagley.org/~doug/shootout/
 -- implemented by: Roberto Ierusalimschy
 
+require 'benchmarks/bench'
+
 --------------------------------------------------------------
 -- List module
 -- defines a prototipe for lists
@@ -11,7 +13,7 @@ List = {first = 0, last = -1}
 
 function List:new ()
   local n = {}
-  for k,v in self do n[k] = v end
+  for k,v in pairs(self) do n[k] = v end
   return n
 end
 
@@ -101,8 +103,16 @@ function test ()
   end
 end
 
+for pass = 1,2 do
+
 N = tonumber((arg and arg[1])) or 1
 for i=1, N do
   result = test()
 end
 print(result)
+
+logPass(pass)
+end
+logEnd()
+
+

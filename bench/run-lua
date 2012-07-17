@@ -1,4 +1,5 @@
 #!/bin/bash
 
-tile-monitor --pci --rtc --resume --here --mount-same ../reference --mount-tile /usr/lib --run --- time -p ../reference/lua "$@" --- --quit
+#tile-monitor --pci --rtc --resume --here --mount-same ../reference --mount-tile /usr/lib --run --- time -p ../reference/lua "$@" --- --quit
+tile-monitor --pci --rtc --resume --here --mount-same ../reference --mount-tile /usr/lib --run --- ../reference/lua "$@" --- --quit
 

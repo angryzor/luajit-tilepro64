@@ -2,6 +2,8 @@
 -- http://shootout.alioth.debian.org/
 -- contributed by Mike Pall
 
+require 'benchmarks/bench'
+
 local function A(i, j)
   local ij = i+j-1
   return 1.0 / (ij * (ij-1) * 0.5 + i)
@@ -28,6 +30,8 @@ local function AtAv(x, y, t, N)
   Atv(t, y, N)
 end
 
+for pass = 1,2 do
+
 local N = tonumber(arg and arg[1]) or 100
 local u, v, t = {}, {}, {}
 for i=1,N do u[i] = 1 end
@@ -41,3 +45,7 @@ for i=1,N do
   vv = vv + vi*vi
 end
 io.write(string.format("%0.9f\n", math.sqrt(vBv / vv)))
+
+logPass(pass)
+end
+logEnd()

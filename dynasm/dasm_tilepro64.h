@@ -7,7 +7,8 @@
 #define DASM_ARCH "tilepro64"
 
 enum {
-	DASM_IMM = 2147483636,
+	DASM_LINE = 2147483635,
+	DASM_IMM,
 	DASM_L,
 	DASM_G,
 	DASM_PC,
@@ -22,6 +23,7 @@ enum {
 };
 
 #include "dasm_tilepro64_encmodes.h"
+#include "../gdb-reader/luajit-reader-format.h"
 
 /* Maximum number of section buffer positions for a single dasm_put() call. */
 #define DASM_MAXSECPOS		25
@@ -56,6 +58,7 @@ struct dasm_State {
 	int buffer_pos;
 	int end_of_buffer_pos;
 	int code_offset;
+	unsigned long total_lines;
 };
 
 /* Initialize DynASM state. */
@@ -74,6 +77,7 @@ void dasm_init( Dst_DECL, int maxsection) {
 	D->buf = NULL; /* Need this for pass3. */
 	D->bsize = 0;
 	D->end_of_buffer_pos = 0; /* Wrong, but is recalculated after resize. */
+	D->total_lines = 0;
 }
 
 /* Free DynASM state. */
@@ -158,8 +162,12 @@ void dasm_put( Dst_DECL, int start, ...) {
 	va_start(ap, start);
 	while (1) {
 		int action = *p++;
-		if (action < DASM_IMM)
+		if (action < DASM_LINE)
 			ofs++;
+		else if (action == DASM_LINE) {
+			p++;										/* Constant line number */
+			D->total_lines++;
+		}
 		else if (action == DASM_IMM) {
 			p++;										/* Constant encoding mode */
 			unsigned long n = va_arg(ap,unsigned long);	/* Semiconstant immediate value */
@@ -348,8 +356,27 @@ static void encode_refactoring(unsigned long* tgt, jit_encmodes mode, unsigned l
 	}
 }
 
+struct ljit_reader_line_def* debug_get_lines_offset( void *debugdata ) {
+	return (struct ljit_reader_line_def*)((char*)debugdata + sizeof(struct ljit_reader_func_def));
+}
+
+void debug_write_func_def( dasm_State* D, void *debugdata , GDB_CORE_ADDR begin, GDB_CORE_ADDR end, const char* filename, const char* name ) {
+	struct ljit_reader_func_def* fdef = (struct ljit_reader_func_def*) debugdata;
+	memset(fdef,0,sizeof(struct ljit_reader_func_def));
+
+	fdef->begin = begin;
+	fdef->end = end;
+	fdef->num_lines = D->total_lines;
+	strcpy(fdef->filename, filename);
+	strcpy(fdef->name, name);
+}
+
+size_t get_debug_bufsize( dasm_State* D ) {
+	return sizeof(struct ljit_reader_func_def) + D->total_lines * sizeof(struct ljit_reader_line_def);
+}
+
 /* Pass 3: Encode sections. */
-int dasm_encode( Dst_DECL, void *buffer) {
+int dasm_encode( Dst_DECL, void *buffer, void** debugdata, size_t* ddatasize, const char* filename, const char* blockname) {
 	dasm_State *D = Dst_REF;
 	unsigned long *base = (unsigned long *) buffer;
 	unsigned long *cp = base;
@@ -357,15 +384,25 @@ int dasm_encode( Dst_DECL, void *buffer) {
 	int *b = D->buf;
 	int *endb = D->buf + D->buffer_pos;
 
+	size_t ddsize = get_debug_bufsize(D);
+	*ddatasize = ddsize;
+	void* dbgdata = malloc(ddsize);
+	struct ljit_reader_line_def *lines = debug_get_lines_offset(dbgdata);
+
 	while (b != endb) {
 		dasm_ActList p = D->actionlist + *b++;
 		while (1) {
 			int action = *p++;
 			int param = ((action >= DASM_IMM && action <= DASM_PC) || action == DASM_SPACE) ? *b++ : 0;
 			jit_encmodes mode =	(action >= DASM_IMM && action <= DASM_PC) ? *p++ : 0;
-			int cparam = (action >= DASM_L && action <= DASM_ALIGN && action != DASM_PC && action != DASM_LABEL_PC && action != DASM_SPACE) ? *p++ : 0;
+			int cparam = ((action >= DASM_L && action <= DASM_ALIGN && action != DASM_PC && action != DASM_LABEL_PC && action != DASM_SPACE) || action == DASM_LINE) ? *p++ : 0;
 
 			switch (action) {
+			case DASM_LINE:
+				lines->line = cparam;
+				lines->addr = cp;
+				lines++;
+				break;
 			case DASM_IMM:
 				encode_refactoring(cp - 2, mode, param);
 				break;
@@ -403,6 +440,9 @@ int dasm_encode( Dst_DECL, void *buffer) {
 		}
 		stop: (void) 0;
 	}
+
+	debug_write_func_def(D, dbgdata, (GDB_CORE_ADDR)base, (GDB_CORE_ADDR)(cp - 2), filename, blockname);
+	*debugdata = dbgdata;
 
 	if (base + D->codesize != cp) /* Check for phase errors. */
 		return DASM_S_PHASE;

@@ -32,7 +32,7 @@ void ljit_debug_dumpstack(TValue* base, TValue* top, CallInfo* ci, lua_State* L,
 	fprintf(f," CI->func = %08x\n CI->base = %08x\n CI->top = %08x\n\n", ci->func - L->stack, ci->base - L->stack, ci->top - L->stack);
 	//fprintf(f," (CI-1)->func = %08x\n (CI-1)->base = %08x\n (CI-1)->top = %08x\n\n", (ci-1)->func - L->stack, (ci-1)->base - L->stack, (ci-1)->top - L->stack);
 	fprintf(f," STACK:\n");
-	for(s = L->stack; s <= L->stack_last; s++)
+	for(s = L->stack; s < top /* <= L->stack_last*/; s++)
 	{
 		fprintf(f,"\t%08x | TYPE: ", s - L->stack);
 		switch(s->tt)

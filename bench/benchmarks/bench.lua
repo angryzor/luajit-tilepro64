@@ -7,12 +7,13 @@ end
 ]]
 
 function logPass(i)
-	local t = os.clock()
-	local delta = t - lastTimeStamp
-
-	lastTimeStamp = t
+	local delta = os.clock() - lastTimeStamp
 
 	print("bench pass" .. i .. ": iterations=1 runtime: " .. delta * 1000 .. "ms")
+
+	collectgarbage()
+
+	lastTimeStamp = os.clock()
 end
 
 function logEnd()

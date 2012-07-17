@@ -2,8 +2,12 @@
 -- http://shootout.alioth.debian.org/
 -- contributed by Mike Pall
 
+require 'benchmarks/bench'
+
 local co = coroutine
 local create, resume, yield = co.create, co.resume, co.yield
+
+for pass = 1,2 do
 
 local N = tonumber(arg and arg[1]) or 10
 local first, second
@@ -60,6 +64,7 @@ local function schedule(threads)
   until false
 end
 
+
 -- A bunch of colorful creatures.
 local threads = {
   creature("blue"),
@@ -69,3 +74,10 @@ local threads = {
 }
 
 io.write(schedule(threads), "\n")
+
+logPass(pass)
+
+end
+
+logEnd()
+

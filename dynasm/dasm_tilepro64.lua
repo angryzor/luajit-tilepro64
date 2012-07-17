@@ -36,6 +36,7 @@ local wline, werror, wfatal, wwarn
 -- Action name list.
 -- CHECK: Keep this in sync with the C code!
 local action_names = {
+  "LINE",
   -- int arg, 1 buffer pos:
   "IMM",
   -- action arg (1 byte) or int arg, 1 buffer pos (link):
@@ -76,6 +77,10 @@ local secpos = 1
 local ctypenum = 0
 local map_type = {}
 local map_op = {}
+
+------------------------------------------------------------------------------
+local current_line = -1
+local last_emitted_line = -1
 ------------------------------------------------------------------------------
 -- Compute action numbers for action names.
 for n,name in ipairs(action_names) do
@@ -143,25 +148,11 @@ local function wcall(func, args)
   wline(format("dasm_%s(Dst, %s);", func, concat(args, ", ")), true)
 end
 
--- Delete duplicate action list chunks. A tad slow, but so what.
-local function dedupechunk(offset)
-  local al, as = actlist, actstr
-  local chunk = char(unpack(al, offset+1, #al))
-  local orig = find(as, chunk, 1, true)
-  if orig then
-    actargs[1] = orig-1 -- Replace with original offset.
-    for i=offset+1,#al do al[i] = nil end -- Kill dupe.
-  else
-    actstr = as..chunk
-  end
-end
-
 -- Flush action list (intervening C code or buffer pos overflow).
 local function wflush(term)
   local offset = actargs[1]
   if #actlist == offset then return end -- Nothing to flush.
   if not term then waction("STOP") end -- Terminate action list.
-  -- dedupechunk(offset)
   wcall("put", actargs) -- Add call to dasm_put().
   actargs = { #actlist } -- Actionlist offset is 1st arg to next dasm_put().
   secpos = 1 -- The actionlist offset occupies a buffer position, too.
@@ -222,6 +213,11 @@ end
 
 ------------------------------------------------------------------------------
 
+local function wputline(num)
+	waction("LINE")
+	wputxw(num)
+end
+
 local function wputimm(immtype, expr)
 	waction("IMM")
 	wiem(immtype)
@@ -270,9 +266,18 @@ local patterns = {
 			}
 		},
 }
+
+local function emit_line()
+	if last_emitted_line < current_line then
+		wputline(current_line)
+		last_emitted_line = current_line
+	end
+end		
+
 local cur_scratch_reg = {}
 local function begin_instruction()
 	cur_scratch_reg[#cur_scratch_reg+1] = 26
+	emit_line()
 end
 
 local function end_instruction()
@@ -963,6 +968,9 @@ map_op[".globals_1"] = function(params)
   wline(function(out) writeglobals(out, prefix) end)
 end
 
+map_op[".line_1"] = function(params)
+  current_line = params[1]
+end
 
 ------------------------------------------------------------------------------
 

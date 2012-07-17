@@ -5,6 +5,8 @@
 -- uses `call' to catch errors; return the error message
 -- (or nil if there are no errors)
 
+require 'benchmarks/bench'
+
 function try (f, arg)
   local status, err = pcall(f, arg)
   if not status then return err end
@@ -41,6 +43,7 @@ function blowup (n)
   end
 end
 
+for pass = 1,2 do
 
 N = (arg and arg[1]) or 1
 for i=1,N do
@@ -48,3 +51,10 @@ for i=1,N do
 end
 
 print(string.format("Exceptions: HI=%d / LO=%d", HI, LO))
+
+logPass(pass)
+
+end
+
+logEnd()
+

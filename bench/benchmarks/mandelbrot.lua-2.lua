@@ -2,12 +2,16 @@
 -- http://shootout.alioth.debian.org/
 -- contributed by Mike Pall
 
+require 'benchmarks/bench'
+
 local width = tonumber(arg and arg[1]) or 100
 local height, wscale = width, 2/width
 local m, limit2 = 50, 4.0
 local write, char = io.write, string.char
 
 write("P4\n", width, " ", height, "\n")
+
+for pass = 1,2 do
 
 for y=0,height-1 do
   local Ci = 2*y / height - 1
@@ -33,6 +37,11 @@ for y=0,height-1 do
     if xbb >= width then
       for x=width,xbb do bits = bits + bits + 1 end
     end
-    write(char(255-bits))
+--    write(char(255-bits))
   end
 end
+
+logPass(pass)
+end
+
+logEnd()

@@ -1,6 +1,10 @@
 -- $Id: nestedloop.lua,v 1.1.1.1 2004-05-19 18:10:56 bfulgham Exp $
 -- http://www.bagley.org/~doug/shootout/
 
+require 'benchmarks/bench'
+
+for pass = 1,2 do
+
 local n = tonumber((arg and arg[1]) or 1)
 local x = 0
 for a=1,n do
@@ -17,3 +21,8 @@ for a=1,n do
     end
 end
 io.write(x,"\n")
+
+logPass(pass)
+end
+logEnd()
+

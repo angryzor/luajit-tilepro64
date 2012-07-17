@@ -2,6 +2,10 @@
 -- http://www.bagley.org/~doug/shootout/
 -- Author: Roberto Ierusalimschy
 
+require 'benchmarks/bench'
+
+for pass = 1,2 do
+
 local n = tonumber((arg and arg[1]) or 1)
 
 local X={}
@@ -16,3 +20,8 @@ for i=n,1,-1 do
 end
 
 print(c)
+
+logPass(pass)
+end
+logEnd()
+

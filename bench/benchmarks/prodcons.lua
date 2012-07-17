@@ -2,6 +2,10 @@
 -- http://shootout.alioth.debian.org
 -- contributed by Isaac Gouy (Lua novice)
 
+require 'benchmarks/bench'
+
+for pass = 1,2 do
+
 n = tonumber(arg[1]) or 1
 
 produced = 0
@@ -43,3 +47,8 @@ end
 
 coroutine.resume( consumer( producer() ))
 io.write(produced, " ", consumed, "\n")
+
+logPass(pass)
+end
+logEnd()
+

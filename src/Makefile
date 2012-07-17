@@ -51,7 +51,7 @@ DASMDISTFLAGS= -LN
 DASM= lua $(DASMDIR)/dynasm.lua
 
 JITCFLAGS= -I$(DASMDIR)
-JIT_O= ljit_core.o ljit_mem.o ljit_dasm.o ljit_backend.o ljit_debug_elfwriter.o ljit_debug_gdb_jit_binding.o ljit_debug_stackdump.o
+JIT_O= ljit_core.o ljit_mem.o ljit_dasm.o ljit_backend.o ljit_debug_gdb_jit_binding.o ljit_debug_stackdump.o
 JITLIB_O=  ljitlib.o
 
 ALL_DH = ljit_tilepro64.h
@@ -73,8 +73,8 @@ LUAC_O=	luac.o print.o
 
 ALL_O= $(CORE_O) $(LIB_O) $(LUA_O) $(LUAC_O)
 # Do not build luac by default
-#ALL_T= $(LUA_A) $(LUA_T) $(LUAC_T)
-ALL_T= $(LUA_A) $(LUA_T)
+ALL_T= $(LUA_A) $(LUA_T) $(LUAC_T)
+#ALL_T= $(LUA_A) $(LUA_T)
 ALL_A= $(LUA_A)
 
 default: $(PLAT)

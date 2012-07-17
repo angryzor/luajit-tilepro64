@@ -68,8 +68,10 @@
 |// Pseudo instructions specific to this project
 |// Stack-related
 |.macro prologue, size
+|//	move r10, sp
 |	sw sp, lr
 |	addi sp, sp, -size
+|//	storeonstack r10, 4
 |.endmacro
 |
 |.macro epilogue, size

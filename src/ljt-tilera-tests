@@ -32,7 +32,7 @@ function perform_single_test {
 		do
 			echo "$line"
 		done > .test_in
-		$monitor $monitor_params --here --mount-tile /usr/lib --run --- ./luajit .test_in --- --quit || return 1
+		$monitor $monitor_params --here --mount-tile /usr/lib --run --- ./luajit .test_in --- --quit > out || return 1
 		diff - out > /dev/stderr && return 0 || return 1
 	} < $1
 }

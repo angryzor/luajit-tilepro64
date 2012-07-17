@@ -3,6 +3,8 @@
 -- contributed by Mike Pall
 -- modified by Geoff Leyland
 
+require 'benchmarks/bench'
+
 local sqrt = math.sqrt
 
 local PI = 3.141592653589793
@@ -114,6 +116,8 @@ local function offsetMomentum(b, nbody)
   b[1].vz = -pz / SOLAR_MASS
 end
 
+for pass = 1,2 do
+
 local N = tonumber(arg and arg[1]) or 1000
 local nbody = #bodies
 
@@ -121,3 +125,10 @@ offsetMomentum(bodies, nbody)
 io.write( string.format("%0.9f",energy(bodies, nbody)), "\n")
 for i=1,N do advance(bodies, nbody, 0.01) end
 io.write( string.format("%0.9f",energy(bodies, nbody)), "\n")
+
+logPass(pass)
+
+end
+
+logEnd()
+

@@ -3,6 +3,9 @@
 --
 -- contributed by Isaac Gouy
 
+require 'benchmarks/bench'
+
+for pass = 1,2 do
 
 local function link(n)
    local message, next = 0
@@ -21,3 +24,7 @@ local chain = coroutine.create(link)
 
 _,message = coroutine.resume(chain,n)
 io.write(message, "\n")
+
+logPass(pass)
+end
+logEnd()

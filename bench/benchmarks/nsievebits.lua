@@ -2,6 +2,8 @@
 -- http://shootout.alioth.debian.org/
 -- contributed by Mike Pall
 
+require 'benchmarks/bench'
+
 local floor, ceil = math.floor, math.ceil
 
 local precision = 50 -- Maximum precision of lua_Number (minus safety margin).
@@ -30,6 +32,8 @@ local function nsieve(p, m)
   return count
 end
 
+for pass = 1,2 do
+
 local N = tonumber(arg and arg[1]) or 1
 if N < 2 then N = 2 end
 local primes = {}
@@ -38,3 +42,8 @@ for i=0,2 do
   local m = (2^(N-i))*10000
   io.write(string.format("Primes up to %8d %8d\n", m, nsieve(primes, m)))
 end
+
+logPass(pass)
+end
+logEnd()
+

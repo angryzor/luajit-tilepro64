@@ -15,6 +15,7 @@
 #include "ljit.h"
 #include "ljit_dasm.h"
 
+#include "ljit_debug_gdb_jit_binding.h"
 
 /*
 ** Define this if you want to run LuaJIT with valgrind. You will get random
@@ -379,10 +380,12 @@ void luaJIT_freeproto(lua_State *L, Proto *pt)
 }
 
 /* Link generated code. Return mcode address, size and status. */
-int luaJIT_link(jit_State *J, void **mcodep, size_t *szp)
+int luaJIT_link(jit_State *J, void **mcodep, size_t *szp, const char* srcfilename, const char* blockname)
 {
   size_t sz;
   void *mcode;
+  void* debugdata;
+  size_t ddatasize;
 
   /* Pass 2: link sections. */
   if ((J->dasmstatus = dasm_link(Dst, &sz))) return JIT_S_DASM_ERROR;
@@ -394,10 +397,14 @@ int luaJIT_link(jit_State *J, void **mcodep, size_t *szp)
   mcode = mcode_alloc(J, sz);
 
   /* Pass 3: encode sections. */
-  if ((J->dasmstatus = dasm_encode(Dst, mcode)) != 0) {
+  if ((J->dasmstatus = dasm_encode(Dst, mcode, &debugdata, &ddatasize, srcfilename, blockname)) != 0) {
+	//free(*debugdata);
     mcode_free(J->L, J, mcode, sz);
     return JIT_S_DASM_ERROR;
   }
+
+  debug_commit_debug_data(debugdata, ddatasize);
+
   *mcodep = mcode;
   *szp = sz;
   return JIT_S_OK;

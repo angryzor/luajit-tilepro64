@@ -4,6 +4,8 @@
 -- Roberto Ierusalimschy pointed out the for loop is much
 -- faster for our purposes here than using a while loop.
 
+require 'benchmarks/bench'
+
 function main(num)
     for num=num,1,-1 do
         local flags = {}
@@ -19,8 +21,14 @@ function main(num)
     end
 end
 
+for pass = 1,2 do
+
 NUM = tonumber((arg and arg[1])) or 1
 count = 0
 main(NUM)
 io.write("Count: ", count, "\n")
+
+logPass(pass)
+end
+logEnd()
 

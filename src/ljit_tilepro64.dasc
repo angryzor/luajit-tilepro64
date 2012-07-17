@@ -30,7 +30,7 @@ extern int __float64_gcc_le(double,double);
 extern int __float64_gcc_gt(double,double);
 extern int __float64_gcc_ge(double,double);
 #include <math.h>
-
+#include <stdio.h>
 #include "ljit_debug_stackdump.h"
 
 // apparently got removed. using modf of a div now
@@ -63,12 +63,24 @@ static void jit_emit_custom_stackdump(jit_State *J, const char* curop_name)
 static void jit_break()
 {
 	// Set a breakpoint on entry of this func.
-	return 0;
 }
 
 static void jit_emit_break(jit_State *J)
 {
 	|	jal &jit_break
+}
+
+static void jit_emit_counter_break(jit_State *J, unsigned int* ctr, unsigned int count)
+{
+	|	movewi r2, ctr
+	|	movewi r3, count
+	|	lw r1, r2
+	|	addi r1, r1, 1
+	|	sw r2, r1
+	|	slt_u r0, r1, r3
+	|	bnzt r0, >6
+	jit_emit_break(J);
+	|6:
 }
 
 static void jit_emit_printf(jit_State *J, const char* str)
@@ -343,7 +355,7 @@ static int jit_compile_jsub(jit_State *J)
 	|.align 64
 	|//-----------------------------------------------------------------------
 
-	status = luaJIT_link(J, &J->jsubmcode, &J->szjsubmcode);
+	status = luaJIT_link(J, &J->jsubmcode, &J->szjsubmcode, "ljit_tilepro64.dasc", "JSUB");
 	if (status != JIT_S_OK)
 		return status;
 
@@ -391,7 +403,7 @@ static void jit_ins_start(jit_State *J)
 {
 	const Instruction thisins = *(J->nextins-1);
 	|=>J->nextpc:
-	//jit_emit_stackdump(J, luaP_opnames[GET_OPCODE(thisins)], GETARG_A(thisins), GETARG_B(thisins), GETARG_C(thisins), GETARG_Bx(thisins));
+	jit_emit_stackdump(J, luaP_opnames[GET_OPCODE(thisins)], GETARG_A(thisins), GETARG_B(thisins), GETARG_C(thisins), GETARG_Bx(thisins));
 }
 
 /* Called after the last instruction has been encoded. */
@@ -428,7 +440,6 @@ static void jit_prologue(jit_State *J)
 	}
 	else
 	{
-		//jit_emit_break(J);
 		|	wipe r4, r9
 	}
 	
@@ -443,8 +454,11 @@ static void jit_prologue(jit_State *J)
 #endif
 }
 
+static unsigned int returnHitCount = 0;
 static void jit_op_return(jit_State *J, int rbase, int nresults)
 {
+	jit_emit_counter_break(J,&returnHitCount,6);
+
 	/* TODO: RETURN hook */
 
 	/* May need to close open upvalues. */
@@ -539,6 +553,7 @@ static void jit_op_tailcall(jit_State *J, int func, int nargs)
 
 	//jit_emit_custom_stackdump(J,"IN TAILCALL");
 
+	|	epilogue LUAFUNC_STACK_SIZE
 	|	jr LCL->jit_gate
 }
 
@@ -1139,7 +1154,6 @@ static void jit_op_closure(jit_State *J, int dest, int ptidx)
 	|	move r0, L
 	|	movei r1, nup
 	|	move r2, LCL->env
-	jit_emit_break(J);
 	|	jal &luaF_newLclosure
 	|	movemwi LCL:r0->p, npt			// Store new proto in returned closure.
 	|	setclvaluer BASE[dest], r0

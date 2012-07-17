@@ -1,4 +1,5 @@
 #!/bin/bash
 
-tile-monitor --pci --rtc --resume --here --mount-same ../src --mount-tile /usr/lib --run --- time -p ../src/luajit "$@" --- --quit
+#tile-monitor --pci --rtc --resume --here --mount-same ../src --mount-tile /usr/lib --run --- time -p ../src/luajit "$@" --- --quit
+tile-monitor --pci --rtc --resume --here --mount-same ../src --mount-tile /usr/lib --run --- ../src/luajit "$@" --- --quit
 

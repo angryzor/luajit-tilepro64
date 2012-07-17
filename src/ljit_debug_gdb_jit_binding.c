@@ -42,6 +42,22 @@ void __attribute__((noinline)) __jit_debug_register_code() { };
 debugger may check the version before we can set it.  */
 struct jit_descriptor __jit_debug_descriptor = { 1, 0, 0, 0 };
 
+void debug_commit_debug_data(void *debugdata, uint64_t size) {
+	struct jit_code_entry* jce = (struct jit_code_entry*)malloc(sizeof(struct jit_code_entry));
+	jce->prev_entry = NULL;
+	jce->next_entry = __jit_debug_descriptor.first_entry;
+	jce->symfile_addr = (const char*)debugdata;
+	jce->symfile_size = size;
+	if(__jit_debug_descriptor.first_entry)
+		__jit_debug_descriptor.first_entry->prev_entry = jce;
+
+	__jit_debug_descriptor.first_entry = jce;
+	__jit_debug_descriptor.action_flag = JIT_REGISTER_FN;
+	__jit_debug_register_code();
+
+}
+
+/*
 
 debug_module* debug_module_begin()
 {
@@ -73,3 +89,4 @@ void debug_module_commit(debug_module* dm)
 	//debug_elf_release(dm->de);
 	//free(dm);
 }
+*/

@@ -754,6 +754,13 @@ local function splitstmt(stmt)
   return op, params
 end
 
+local function notifyline()
+  -- Emit line marker
+  if map_op[".line_1"] then
+    map_op[".line_1"]({g_lineno})
+  end
+end
+
 -- Process a single statement.
 dostmt = function(stmt)
   -- Ignore empty statements.
@@ -815,6 +822,8 @@ local function doline(line)
   if inlargecomment ~= 0 then
     return
   end
+
+  notifyline()
 
   -- Assembler line?
   local indent, aline = match(line, "^(%s*)%|(.*)$")

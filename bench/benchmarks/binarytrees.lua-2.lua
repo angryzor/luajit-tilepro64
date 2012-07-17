@@ -53,8 +53,8 @@ for i = 1,2 do
 	io.write(string.format("long lived tree of depth %d\t check: %d\n",
 	  maxdepth, ItemCheck(longlivedtree)))
 
---	logPass(i)
+	logPass(i)
 end
 
---logEnd()
+logEnd()
 

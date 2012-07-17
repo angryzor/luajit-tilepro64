@@ -1,9 +1,747 @@
-20.000000	benchmarks/binarytrees.lua-3.lua	lua	tilera	"12"	1	1	None	sys	total
-21110.000000	benchmarks/binarytrees.lua-3.lua	lua	tilera	"12"	1	1	None	total
-21060.000000	benchmarks/binarytrees.lua-3.lua	lua	tilera	"12"	1	1	None	user	total
-20.000000	benchmarks/binarytrees.lua-3.lua	lua	tilera	"12"	1	1	None	sys	total
-21280.000000	benchmarks/binarytrees.lua-3.lua	lua	tilera	"12"	1	1	None	total
-21230.000000	benchmarks/binarytrees.lua-3.lua	lua	tilera	"12"	1	1	None	user	total
-30.000000	benchmarks/binarytrees.lua-3.lua	lua	tilera	"12"	1	1	None	sys	total
-21530.000000	benchmarks/binarytrees.lua-3.lua	lua	tilera	"12"	1	1	None	total
-21460.000000	benchmarks/binarytrees.lua-3.lua	lua	tilera	"12"	1	1	None	user	total
+27800.000000	benchmarks/ary.lua	luajit	tilera	"10000"	1	1	None	total
+13910.000000	benchmarks/ary.lua	luajit	tilera	"10000"	1	1	None	pass1	total
+13890.000000	benchmarks/ary.lua	luajit	tilera	"10000"	1	1	None	pass2	total
+27800.000000	benchmarks/ary.lua	luajit	tilera	"10000"	1	1	None	total
+13880.000000	benchmarks/ary.lua	luajit	tilera	"10000"	1	1	None	pass1	total
+13910.000000	benchmarks/ary.lua	luajit	tilera	"10000"	1	1	None	pass2	total
+5920.000000	benchmarks/binarytrees.lua-2.lua	luajit	tilera	"10"	1	1	None	total
+2920.000000	benchmarks/binarytrees.lua-2.lua	luajit	tilera	"10"	1	1	None	pass1	total
+2960.000000	benchmarks/binarytrees.lua-2.lua	luajit	tilera	"10"	1	1	None	pass2	total
+6100.000000	benchmarks/binarytrees.lua-2.lua	luajit	tilera	"10"	1	1	None	total
+3000.000000	benchmarks/binarytrees.lua-2.lua	luajit	tilera	"10"	1	1	None	pass1	total
+3060.000000	benchmarks/binarytrees.lua-2.lua	luajit	tilera	"10"	1	1	None	pass2	total
+6090.000000	benchmarks/binarytrees.lua-2.lua	luajit	tilera	"10"	1	1	None	total
+3000.000000	benchmarks/binarytrees.lua-2.lua	luajit	tilera	"10"	1	1	None	pass1	total
+3050.000000	benchmarks/binarytrees.lua-2.lua	luajit	tilera	"10"	1	1	None	pass2	total
+5890.000000	benchmarks/binarytrees.lua-3.lua	luajit	tilera	"10"	1	1	None	total
+2930.000000	benchmarks/binarytrees.lua-3.lua	luajit	tilera	"10"	1	1	None	pass1	total
+2930.000000	benchmarks/binarytrees.lua-3.lua	luajit	tilera	"10"	1	1	None	pass2	total
+6020.000000	benchmarks/binarytrees.lua-3.lua	luajit	tilera	"10"	1	1	None	total
+3000.000000	benchmarks/binarytrees.lua-3.lua	luajit	tilera	"10"	1	1	None	pass1	total
+3010.000000	benchmarks/binarytrees.lua-3.lua	luajit	tilera	"10"	1	1	None	pass2	total
+5970.000000	benchmarks/binarytrees.lua-3.lua	luajit	tilera	"10"	1	1	None	total
+2970.000000	benchmarks/binarytrees.lua-3.lua	luajit	tilera	"10"	1	1	None	pass1	total
+2980.000000	benchmarks/binarytrees.lua-3.lua	luajit	tilera	"10"	1	1	None	pass2	total
+20.000000	benchmarks/except.lua	luajit	tilera	"250000"	1	1	None	total
+20.000000	benchmarks/except.lua	luajit	tilera	"250000"	1	1	None	pass1	total
+0.000000	benchmarks/except.lua	luajit	tilera	"250000"	1	1	None	pass2	total
+20.000000	benchmarks/except.lua	luajit	tilera	"250000"	1	1	None	total
+20.000000	benchmarks/except.lua	luajit	tilera	"250000"	1	1	None	pass1	total
+0.000000	benchmarks/except.lua	luajit	tilera	"250000"	1	1	None	pass2	total
+17660.000000	benchmarks/fannkuch.lua	luajit	tilera	"9"	1	1	None	total
+8820.000000	benchmarks/fannkuch.lua	luajit	tilera	"9"	1	1	None	pass1	total
+8840.000000	benchmarks/fannkuch.lua	luajit	tilera	"9"	1	1	None	pass2	total
+17700.000000	benchmarks/fannkuch.lua	luajit	tilera	"9"	1	1	None	total
+8820.000000	benchmarks/fannkuch.lua	luajit	tilera	"9"	1	1	None	pass1	total
+8880.000000	benchmarks/fannkuch.lua	luajit	tilera	"9"	1	1	None	pass2	total
+17690.000000	benchmarks/fannkuch.lua	luajit	tilera	"9"	1	1	None	total
+8840.000000	benchmarks/fannkuch.lua	luajit	tilera	"9"	1	1	None	pass1	total
+8850.000000	benchmarks/fannkuch.lua	luajit	tilera	"9"	1	1	None	pass2	total
+16410.000000	benchmarks/fannkuch.lua-2.lua	luajit	tilera	"9"	1	1	None	total
+8220.000000	benchmarks/fannkuch.lua-2.lua	luajit	tilera	"9"	1	1	None	pass1	total
+8190.000000	benchmarks/fannkuch.lua-2.lua	luajit	tilera	"9"	1	1	None	pass2	total
+16400.000000	benchmarks/fannkuch.lua-2.lua	luajit	tilera	"9"	1	1	None	total
+8220.000000	benchmarks/fannkuch.lua-2.lua	luajit	tilera	"9"	1	1	None	pass1	total
+8180.000000	benchmarks/fannkuch.lua-2.lua	luajit	tilera	"9"	1	1	None	pass2	total
+18180.000000	benchmarks/fannkuchredux.lua	luajit	tilera	"9"	1	1	None	total
+9130.000000	benchmarks/fannkuchredux.lua	luajit	tilera	"9"	1	1	None	pass1	total
+9050.000000	benchmarks/fannkuchredux.lua	luajit	tilera	"9"	1	1	None	pass2	total
+18150.000000	benchmarks/fannkuchredux.lua	luajit	tilera	"9"	1	1	None	total
+9130.000000	benchmarks/fannkuchredux.lua	luajit	tilera	"9"	1	1	None	pass1	total
+9020.000000	benchmarks/fannkuchredux.lua	luajit	tilera	"9"	1	1	None	pass2	total
+18160.000000	benchmarks/fannkuchredux.lua	luajit	tilera	"9"	1	1	None	total
+9140.000000	benchmarks/fannkuchredux.lua	luajit	tilera	"9"	1	1	None	pass1	total
+9020.000000	benchmarks/fannkuchredux.lua	luajit	tilera	"9"	1	1	None	pass2	total
+21250.000000	benchmarks/fasta.lua	luajit	tilera	"200000"	1	1	None	total
+10720.000000	benchmarks/fasta.lua	luajit	tilera	"200000"	1	1	None	pass1	total
+10530.000000	benchmarks/fasta.lua	luajit	tilera	"200000"	1	1	None	pass2	total
+21250.000000	benchmarks/fasta.lua	luajit	tilera	"200000"	1	1	None	total
+10730.000000	benchmarks/fasta.lua	luajit	tilera	"200000"	1	1	None	pass1	total
+10520.000000	benchmarks/fasta.lua	luajit	tilera	"200000"	1	1	None	pass2	total
+6880.000000	benchmarks/fibo.lua	luajit	tilera	"30"	1	1	None	total
+3450.000000	benchmarks/fibo.lua	luajit	tilera	"30"	1	1	None	pass1	total
+3430.000000	benchmarks/fibo.lua	luajit	tilera	"30"	1	1	None	pass2	total
+6870.000000	benchmarks/fibo.lua	luajit	tilera	"30"	1	1	None	total
+3450.000000	benchmarks/fibo.lua	luajit	tilera	"30"	1	1	None	pass1	total
+3420.000000	benchmarks/fibo.lua	luajit	tilera	"30"	1	1	None	pass2	total
+6870.000000	benchmarks/fibo.lua	luajit	tilera	"30"	1	1	None	total
+3450.000000	benchmarks/fibo.lua	luajit	tilera	"30"	1	1	None	pass1	total
+3420.000000	benchmarks/fibo.lua	luajit	tilera	"30"	1	1	None	pass2	total
+78620.000000	benchmarks/harmonic.lua	luajit	tilera	"20000000"	1	1	None	total
+39320.000000	benchmarks/harmonic.lua	luajit	tilera	"20000000"	1	1	None	pass1	total
+39300.000000	benchmarks/harmonic.lua	luajit	tilera	"20000000"	1	1	None	pass2	total
+78620.000000	benchmarks/harmonic.lua	luajit	tilera	"20000000"	1	1	None	total
+39320.000000	benchmarks/harmonic.lua	luajit	tilera	"20000000"	1	1	None	pass1	total
+39300.000000	benchmarks/harmonic.lua	luajit	tilera	"20000000"	1	1	None	pass2	total
+8260.000000	benchmarks/hash2.lua	luajit	tilera	"200"	1	1	None	total
+4110.000000	benchmarks/hash2.lua	luajit	tilera	"200"	1	1	None	pass1	total
+4110.000000	benchmarks/hash2.lua	luajit	tilera	"200"	1	1	None	pass2	total
+8280.000000	benchmarks/hash2.lua	luajit	tilera	"200"	1	1	None	total
+4110.000000	benchmarks/hash2.lua	luajit	tilera	"200"	1	1	None	pass1	total
+4120.000000	benchmarks/hash2.lua	luajit	tilera	"200"	1	1	None	pass2	total
+8250.000000	benchmarks/hash2.lua	luajit	tilera	"200"	1	1	None	total
+4090.000000	benchmarks/hash2.lua	luajit	tilera	"200"	1	1	None	pass1	total
+4120.000000	benchmarks/hash2.lua	luajit	tilera	"200"	1	1	None	pass2	total
+10520.000000	benchmarks/hash.lua	luajit	tilera	"150000"	1	1	None	total
+5250.000000	benchmarks/hash.lua	luajit	tilera	"150000"	1	1	None	pass1	total
+4250.000000	benchmarks/hash.lua	luajit	tilera	"150000"	1	1	None	pass2	total
+10480.000000	benchmarks/hash.lua	luajit	tilera	"150000"	1	1	None	total
+5240.000000	benchmarks/hash.lua	luajit	tilera	"150000"	1	1	None	pass1	total
+4230.000000	benchmarks/hash.lua	luajit	tilera	"150000"	1	1	None	pass2	total
+10550.000000	benchmarks/hash.lua	luajit	tilera	"150000"	1	1	None	total
+5280.000000	benchmarks/hash.lua	luajit	tilera	"150000"	1	1	None	pass1	total
+4250.000000	benchmarks/hash.lua	luajit	tilera	"150000"	1	1	None	pass2	total
+20.000000	benchmarks/hello.lua	luajit	tilera	"None"	1	1	None	total
+20.000000	benchmarks/hello.lua	luajit	tilera	"None"	1	1	None	pass1	total
+0.000000	benchmarks/hello.lua	luajit	tilera	"None"	1	1	None	pass2	total
+20.000000	benchmarks/hello.lua	luajit	tilera	"None"	1	1	None	total
+20.000000	benchmarks/hello.lua	luajit	tilera	"None"	1	1	None	pass1	total
+0.000000	benchmarks/hello.lua	luajit	tilera	"None"	1	1	None	pass2	total
+8620.000000	benchmarks/lists.lua	luajit	tilera	"25"	1	1	None	total
+4330.000000	benchmarks/lists.lua	luajit	tilera	"25"	1	1	None	pass1	total
+4290.000000	benchmarks/lists.lua	luajit	tilera	"25"	1	1	None	pass2	total
+8620.000000	benchmarks/lists.lua	luajit	tilera	"25"	1	1	None	total
+4330.000000	benchmarks/lists.lua	luajit	tilera	"25"	1	1	None	pass1	total
+4290.000000	benchmarks/lists.lua	luajit	tilera	"25"	1	1	None	pass2	total
+15230.000000	benchmarks/mandelbrot.lua	luajit	tilera	"400"	1	1	None	total
+7620.000000	benchmarks/mandelbrot.lua	luajit	tilera	"400"	1	1	None	pass1	total
+7600.000000	benchmarks/mandelbrot.lua	luajit	tilera	"400"	1	1	None	pass2	total
+15230.000000	benchmarks/mandelbrot.lua	luajit	tilera	"400"	1	1	None	total
+7620.000000	benchmarks/mandelbrot.lua	luajit	tilera	"400"	1	1	None	pass1	total
+7600.000000	benchmarks/mandelbrot.lua	luajit	tilera	"400"	1	1	None	pass2	total
+11500.000000	benchmarks/mandelbrot.lua-2.lua	luajit	tilera	"350"	1	1	None	total
+5750.000000	benchmarks/mandelbrot.lua-2.lua	luajit	tilera	"350"	1	1	None	pass1	total
+5740.000000	benchmarks/mandelbrot.lua-2.lua	luajit	tilera	"350"	1	1	None	pass2	total
+11510.000000	benchmarks/mandelbrot.lua-2.lua	luajit	tilera	"350"	1	1	None	total
+5760.000000	benchmarks/mandelbrot.lua-2.lua	luajit	tilera	"350"	1	1	None	pass1	total
+5740.000000	benchmarks/mandelbrot.lua-2.lua	luajit	tilera	"350"	1	1	None	pass2	total
+10180.000000	benchmarks/nbody.lua	luajit	tilera	"30000"	1	1	None	total
+5100.000000	benchmarks/nbody.lua	luajit	tilera	"30000"	1	1	None	pass1	total
+5080.000000	benchmarks/nbody.lua	luajit	tilera	"30000"	1	1	None	pass2	total
+10180.000000	benchmarks/nbody.lua	luajit	tilera	"30000"	1	1	None	total
+5100.000000	benchmarks/nbody.lua	luajit	tilera	"30000"	1	1	None	pass1	total
+5080.000000	benchmarks/nbody.lua	luajit	tilera	"30000"	1	1	None	pass2	total
+9730.000000	benchmarks/nbody.lua-2.lua	luajit	tilera	"30000"	1	1	None	total
+4880.000000	benchmarks/nbody.lua-2.lua	luajit	tilera	"30000"	1	1	None	pass1	total
+4850.000000	benchmarks/nbody.lua-2.lua	luajit	tilera	"30000"	1	1	None	pass2	total
+9730.000000	benchmarks/nbody.lua-2.lua	luajit	tilera	"30000"	1	1	None	total
+4880.000000	benchmarks/nbody.lua-2.lua	luajit	tilera	"30000"	1	1	None	pass1	total
+4850.000000	benchmarks/nbody.lua-2.lua	luajit	tilera	"30000"	1	1	None	pass2	total
+9910.000000	benchmarks/nbody.lua-4.lua	luajit	tilera	"30000"	1	1	None	total
+4970.000000	benchmarks/nbody.lua-4.lua	luajit	tilera	"30000"	1	1	None	pass1	total
+4940.000000	benchmarks/nbody.lua-4.lua	luajit	tilera	"30000"	1	1	None	pass2	total
+9910.000000	benchmarks/nbody.lua-4.lua	luajit	tilera	"30000"	1	1	None	total
+4970.000000	benchmarks/nbody.lua-4.lua	luajit	tilera	"30000"	1	1	None	pass1	total
+4940.000000	benchmarks/nbody.lua-4.lua	luajit	tilera	"30000"	1	1	None	pass2	total
+7240.000000	benchmarks/nestedloop.lua	luajit	tilera	"14"	1	1	None	total
+3630.000000	benchmarks/nestedloop.lua	luajit	tilera	"14"	1	1	None	pass1	total
+3610.000000	benchmarks/nestedloop.lua	luajit	tilera	"14"	1	1	None	pass2	total
+7240.000000	benchmarks/nestedloop.lua	luajit	tilera	"14"	1	1	None	total
+3630.000000	benchmarks/nestedloop.lua	luajit	tilera	"14"	1	1	None	pass1	total
+3610.000000	benchmarks/nestedloop.lua	luajit	tilera	"14"	1	1	None	pass2	total
+7910.000000	benchmarks/nsieve.lua-3.lua	luajit	tilera	"6"	1	1	None	total
+3860.000000	benchmarks/nsieve.lua-3.lua	luajit	tilera	"6"	1	1	None	pass1	total
+3850.000000	benchmarks/nsieve.lua-3.lua	luajit	tilera	"6"	1	1	None	pass2	total
+7920.000000	benchmarks/nsieve.lua-3.lua	luajit	tilera	"6"	1	1	None	total
+3860.000000	benchmarks/nsieve.lua-3.lua	luajit	tilera	"6"	1	1	None	pass1	total
+3860.000000	benchmarks/nsieve.lua-3.lua	luajit	tilera	"6"	1	1	None	pass2	total
+7930.000000	benchmarks/nsieve.lua-3.lua	luajit	tilera	"6"	1	1	None	total
+3870.000000	benchmarks/nsieve.lua-3.lua	luajit	tilera	"6"	1	1	None	pass1	total
+3860.000000	benchmarks/nsieve.lua-3.lua	luajit	tilera	"6"	1	1	None	pass2	total
+30.000000	benchmarks/process.lua	luajit	tilera	"100"	1	1	None	total
+20.000000	benchmarks/process.lua	luajit	tilera	"100"	1	1	None	pass1	total
+10.000000	benchmarks/process.lua	luajit	tilera	"100"	1	1	None	pass2	total
+20.000000	benchmarks/process.lua	luajit	tilera	"100"	1	1	None	total
+20.000000	benchmarks/process.lua	luajit	tilera	"100"	1	1	None	pass1	total
+0.000000	benchmarks/process.lua	luajit	tilera	"100"	1	1	None	pass2	total
+40.000000	benchmarks/process.lua	luajit	tilera	"100"	1	1	None	total
+30.000000	benchmarks/process.lua	luajit	tilera	"100"	1	1	None	pass1	total
+10.000000	benchmarks/process.lua	luajit	tilera	"100"	1	1	None	pass2	total
+5260.000000	benchmarks/recursive.lua	luajit	tilera	"4"	1	1	None	total
+2640.000000	benchmarks/recursive.lua	luajit	tilera	"4"	1	1	None	pass1	total
+2620.000000	benchmarks/recursive.lua	luajit	tilera	"4"	1	1	None	pass2	total
+5260.000000	benchmarks/recursive.lua	luajit	tilera	"4"	1	1	None	total
+2640.000000	benchmarks/recursive.lua	luajit	tilera	"4"	1	1	None	pass1	total
+2620.000000	benchmarks/recursive.lua	luajit	tilera	"4"	1	1	None	pass2	total
+10640.000000	benchmarks/sieve.lua	luajit	tilera	"200"	1	1	None	total
+5330.000000	benchmarks/sieve.lua	luajit	tilera	"200"	1	1	None	pass1	total
+5310.000000	benchmarks/sieve.lua	luajit	tilera	"200"	1	1	None	pass2	total
+10600.000000	benchmarks/sieve.lua	luajit	tilera	"200"	1	1	None	total
+5310.000000	benchmarks/sieve.lua	luajit	tilera	"200"	1	1	None	pass1	total
+5290.000000	benchmarks/sieve.lua	luajit	tilera	"200"	1	1	None	pass2	total
+10630.000000	benchmarks/sieve.lua	luajit	tilera	"200"	1	1	None	total
+5330.000000	benchmarks/sieve.lua	luajit	tilera	"200"	1	1	None	pass1	total
+5300.000000	benchmarks/sieve.lua	luajit	tilera	"200"	1	1	None	pass2	total
+12170.000000	benchmarks/sieve.lua-2.lua	luajit	tilera	"200"	1	1	None	total
+6100.000000	benchmarks/sieve.lua-2.lua	luajit	tilera	"200"	1	1	None	pass1	total
+6060.000000	benchmarks/sieve.lua-2.lua	luajit	tilera	"200"	1	1	None	pass2	total
+12170.000000	benchmarks/sieve.lua-2.lua	luajit	tilera	"200"	1	1	None	total
+6110.000000	benchmarks/sieve.lua-2.lua	luajit	tilera	"200"	1	1	None	pass1	total
+6060.000000	benchmarks/sieve.lua-2.lua	luajit	tilera	"200"	1	1	None	pass2	total
+6910.000000	benchmarks/strcat.lua	luajit	tilera	"800000"	1	1	None	total
+3340.000000	benchmarks/strcat.lua	luajit	tilera	"800000"	1	1	None	pass1	total
+3360.000000	benchmarks/strcat.lua	luajit	tilera	"800000"	1	1	None	pass2	total
+6920.000000	benchmarks/strcat.lua	luajit	tilera	"800000"	1	1	None	total
+3360.000000	benchmarks/strcat.lua	luajit	tilera	"800000"	1	1	None	pass1	total
+3360.000000	benchmarks/strcat.lua	luajit	tilera	"800000"	1	1	None	pass2	total
+6920.000000	benchmarks/strcat.lua	luajit	tilera	"800000"	1	1	None	total
+3370.000000	benchmarks/strcat.lua	luajit	tilera	"800000"	1	1	None	pass1	total
+3350.000000	benchmarks/strcat.lua	luajit	tilera	"800000"	1	1	None	pass2	total
+7160.000000	benchmarks/strcat.lua-2.lua	luajit	tilera	"15000"	1	1	None	total
+3610.000000	benchmarks/strcat.lua-2.lua	luajit	tilera	"15000"	1	1	None	pass1	total
+3540.000000	benchmarks/strcat.lua-2.lua	luajit	tilera	"15000"	1	1	None	pass2	total
+7160.000000	benchmarks/strcat.lua-2.lua	luajit	tilera	"15000"	1	1	None	total
+3610.000000	benchmarks/strcat.lua-2.lua	luajit	tilera	"15000"	1	1	None	pass1	total
+3550.000000	benchmarks/strcat.lua-2.lua	luajit	tilera	"15000"	1	1	None	pass2	total
+3120.000000	benchmarks/takfp.lua	luajit	tilera	"8"	1	1	None	total
+1570.000000	benchmarks/takfp.lua	luajit	tilera	"8"	1	1	None	pass1	total
+1550.000000	benchmarks/takfp.lua	luajit	tilera	"8"	1	1	None	pass2	total
+3120.000000	benchmarks/takfp.lua	luajit	tilera	"8"	1	1	None	total
+1570.000000	benchmarks/takfp.lua	luajit	tilera	"8"	1	1	None	pass1	total
+1550.000000	benchmarks/takfp.lua	luajit	tilera	"8"	1	1	None	pass2	total
+33680.000000	benchmarks/ary.lua	lua	tilera	"10000"	1	1	None	total
+16840.000000	benchmarks/ary.lua	lua	tilera	"10000"	1	1	None	pass1	total
+16830.000000	benchmarks/ary.lua	lua	tilera	"10000"	1	1	None	pass2	total
+33690.000000	benchmarks/ary.lua	lua	tilera	"10000"	1	1	None	total
+16850.000000	benchmarks/ary.lua	lua	tilera	"10000"	1	1	None	pass1	total
+16840.000000	benchmarks/ary.lua	lua	tilera	"10000"	1	1	None	pass2	total
+4490.000000	benchmarks/binarytrees.lua-2.lua	lua	tilera	"10"	1	1	None	total
+2220.000000	benchmarks/binarytrees.lua-2.lua	lua	tilera	"10"	1	1	None	pass1	total
+2250.000000	benchmarks/binarytrees.lua-2.lua	lua	tilera	"10"	1	1	None	pass2	total
+4370.000000	benchmarks/binarytrees.lua-2.lua	lua	tilera	"10"	1	1	None	total
+2160.000000	benchmarks/binarytrees.lua-2.lua	lua	tilera	"10"	1	1	None	pass1	total
+2190.000000	benchmarks/binarytrees.lua-2.lua	lua	tilera	"10"	1	1	None	pass2	total
+4380.000000	benchmarks/binarytrees.lua-2.lua	lua	tilera	"10"	1	1	None	total
+2170.000000	benchmarks/binarytrees.lua-2.lua	lua	tilera	"10"	1	1	None	pass1	total
+2210.000000	benchmarks/binarytrees.lua-2.lua	lua	tilera	"10"	1	1	None	pass2	total
+4250.000000	benchmarks/binarytrees.lua-3.lua	lua	tilera	"10"	1	1	None	total
+2110.000000	benchmarks/binarytrees.lua-3.lua	lua	tilera	"10"	1	1	None	pass1	total
+2120.000000	benchmarks/binarytrees.lua-3.lua	lua	tilera	"10"	1	1	None	pass2	total
+4260.000000	benchmarks/binarytrees.lua-3.lua	lua	tilera	"10"	1	1	None	total
+2120.000000	benchmarks/binarytrees.lua-3.lua	lua	tilera	"10"	1	1	None	pass1	total
+2130.000000	benchmarks/binarytrees.lua-3.lua	lua	tilera	"10"	1	1	None	pass2	total
+4230.000000	benchmarks/binarytrees.lua-3.lua	lua	tilera	"10"	1	1	None	total
+2100.000000	benchmarks/binarytrees.lua-3.lua	lua	tilera	"10"	1	1	None	pass1	total
+2110.000000	benchmarks/binarytrees.lua-3.lua	lua	tilera	"10"	1	1	None	pass2	total
+9230.000000	benchmarks/chameneos.lua	lua	tilera	"200000"	1	1	None	total
+4590.000000	benchmarks/chameneos.lua	lua	tilera	"200000"	1	1	None	pass1	total
+4630.000000	benchmarks/chameneos.lua	lua	tilera	"200000"	1	1	None	pass2	total
+9140.000000	benchmarks/chameneos.lua	lua	tilera	"200000"	1	1	None	total
+4550.000000	benchmarks/chameneos.lua	lua	tilera	"200000"	1	1	None	pass1	total
+4590.000000	benchmarks/chameneos.lua	lua	tilera	"200000"	1	1	None	pass2	total
+9150.000000	benchmarks/chameneos.lua	lua	tilera	"200000"	1	1	None	total
+4560.000000	benchmarks/chameneos.lua	lua	tilera	"200000"	1	1	None	pass1	total
+4590.000000	benchmarks/chameneos.lua	lua	tilera	"200000"	1	1	None	pass2	total
+8250.000000	benchmarks/except.lua	lua	tilera	"250000"	1	1	None	total
+4130.000000	benchmarks/except.lua	lua	tilera	"250000"	1	1	None	pass1	total
+4120.000000	benchmarks/except.lua	lua	tilera	"250000"	1	1	None	pass2	total
+8250.000000	benchmarks/except.lua	lua	tilera	"250000"	1	1	None	total
+4130.000000	benchmarks/except.lua	lua	tilera	"250000"	1	1	None	pass1	total
+4110.000000	benchmarks/except.lua	lua	tilera	"250000"	1	1	None	pass2	total
+22030.000000	benchmarks/fannkuch.lua	lua	tilera	"9"	1	1	None	total
+11020.000000	benchmarks/fannkuch.lua	lua	tilera	"9"	1	1	None	pass1	total
+11010.000000	benchmarks/fannkuch.lua	lua	tilera	"9"	1	1	None	pass2	total
+22030.000000	benchmarks/fannkuch.lua	lua	tilera	"9"	1	1	None	total
+11010.000000	benchmarks/fannkuch.lua	lua	tilera	"9"	1	1	None	pass1	total
+11020.000000	benchmarks/fannkuch.lua	lua	tilera	"9"	1	1	None	pass2	total
+21360.000000	benchmarks/fannkuch.lua-2.lua	lua	tilera	"9"	1	1	None	total
+10680.000000	benchmarks/fannkuch.lua-2.lua	lua	tilera	"9"	1	1	None	pass1	total
+10680.000000	benchmarks/fannkuch.lua-2.lua	lua	tilera	"9"	1	1	None	pass2	total
+21330.000000	benchmarks/fannkuch.lua-2.lua	lua	tilera	"9"	1	1	None	total
+10670.000000	benchmarks/fannkuch.lua-2.lua	lua	tilera	"9"	1	1	None	pass1	total
+10660.000000	benchmarks/fannkuch.lua-2.lua	lua	tilera	"9"	1	1	None	pass2	total
+21290.000000	benchmarks/fannkuch.lua-2.lua	lua	tilera	"9"	1	1	None	total
+10640.000000	benchmarks/fannkuch.lua-2.lua	lua	tilera	"9"	1	1	None	pass1	total
+10650.000000	benchmarks/fannkuch.lua-2.lua	lua	tilera	"9"	1	1	None	pass2	total
+22980.000000	benchmarks/fannkuchredux.lua	lua	tilera	"9"	1	1	None	total
+11500.000000	benchmarks/fannkuchredux.lua	lua	tilera	"9"	1	1	None	pass1	total
+11480.000000	benchmarks/fannkuchredux.lua	lua	tilera	"9"	1	1	None	pass2	total
+22990.000000	benchmarks/fannkuchredux.lua	lua	tilera	"9"	1	1	None	total
+11500.000000	benchmarks/fannkuchredux.lua	lua	tilera	"9"	1	1	None	pass1	total
+11490.000000	benchmarks/fannkuchredux.lua	lua	tilera	"9"	1	1	None	pass2	total
+23920.000000	benchmarks/fasta.lua	lua	tilera	"200000"	1	1	None	total
+11970.000000	benchmarks/fasta.lua	lua	tilera	"200000"	1	1	None	pass1	total
+11950.000000	benchmarks/fasta.lua	lua	tilera	"200000"	1	1	None	pass2	total
+23880.000000	benchmarks/fasta.lua	lua	tilera	"200000"	1	1	None	total
+11930.000000	benchmarks/fasta.lua	lua	tilera	"200000"	1	1	None	pass1	total
+11950.000000	benchmarks/fasta.lua	lua	tilera	"200000"	1	1	None	pass2	total
+23960.000000	benchmarks/fasta.lua	lua	tilera	"200000"	1	1	None	total
+12000.000000	benchmarks/fasta.lua	lua	tilera	"200000"	1	1	None	pass1	total
+11960.000000	benchmarks/fasta.lua	lua	tilera	"200000"	1	1	None	pass2	total
+6690.000000	benchmarks/fibo.lua	lua	tilera	"30"	1	1	None	total
+3350.000000	benchmarks/fibo.lua	lua	tilera	"30"	1	1	None	pass1	total
+3340.000000	benchmarks/fibo.lua	lua	tilera	"30"	1	1	None	pass2	total
+6690.000000	benchmarks/fibo.lua	lua	tilera	"30"	1	1	None	total
+3350.000000	benchmarks/fibo.lua	lua	tilera	"30"	1	1	None	pass1	total
+3340.000000	benchmarks/fibo.lua	lua	tilera	"30"	1	1	None	pass2	total
+83250.000000	benchmarks/harmonic.lua	lua	tilera	"20000000"	1	1	None	total
+41630.000000	benchmarks/harmonic.lua	lua	tilera	"20000000"	1	1	None	pass1	total
+41620.000000	benchmarks/harmonic.lua	lua	tilera	"20000000"	1	1	None	pass2	total
+83250.000000	benchmarks/harmonic.lua	lua	tilera	"20000000"	1	1	None	total
+41630.000000	benchmarks/harmonic.lua	lua	tilera	"20000000"	1	1	None	pass1	total
+41620.000000	benchmarks/harmonic.lua	lua	tilera	"20000000"	1	1	None	pass2	total
+10130.000000	benchmarks/hash2.lua	lua	tilera	"200"	1	1	None	total
+5040.000000	benchmarks/hash2.lua	lua	tilera	"200"	1	1	None	pass1	total
+5050.000000	benchmarks/hash2.lua	lua	tilera	"200"	1	1	None	pass2	total
+10150.000000	benchmarks/hash2.lua	lua	tilera	"200"	1	1	None	total
+5060.000000	benchmarks/hash2.lua	lua	tilera	"200"	1	1	None	pass1	total
+5050.000000	benchmarks/hash2.lua	lua	tilera	"200"	1	1	None	pass2	total
+10170.000000	benchmarks/hash2.lua	lua	tilera	"200"	1	1	None	total
+5080.000000	benchmarks/hash2.lua	lua	tilera	"200"	1	1	None	pass1	total
+5050.000000	benchmarks/hash2.lua	lua	tilera	"200"	1	1	None	pass2	total
+10080.000000	benchmarks/hash.lua	lua	tilera	"150000"	1	1	None	total
+5010.000000	benchmarks/hash.lua	lua	tilera	"150000"	1	1	None	pass1	total
+3880.000000	benchmarks/hash.lua	lua	tilera	"150000"	1	1	None	pass2	total
+10130.000000	benchmarks/hash.lua	lua	tilera	"150000"	1	1	None	total
+5060.000000	benchmarks/hash.lua	lua	tilera	"150000"	1	1	None	pass1	total
+3900.000000	benchmarks/hash.lua	lua	tilera	"150000"	1	1	None	pass2	total
+10090.000000	benchmarks/hash.lua	lua	tilera	"150000"	1	1	None	total
+5020.000000	benchmarks/hash.lua	lua	tilera	"150000"	1	1	None	pass1	total
+3890.000000	benchmarks/hash.lua	lua	tilera	"150000"	1	1	None	pass2	total
+10.000000	benchmarks/hello.lua	lua	tilera	"None"	1	1	None	total
+10.000000	benchmarks/hello.lua	lua	tilera	"None"	1	1	None	pass1	total
+0.000000	benchmarks/hello.lua	lua	tilera	"None"	1	1	None	pass2	total
+10.000000	benchmarks/hello.lua	lua	tilera	"None"	1	1	None	total
+10.000000	benchmarks/hello.lua	lua	tilera	"None"	1	1	None	pass1	total
+0.000000	benchmarks/hello.lua	lua	tilera	"None"	1	1	None	pass2	total
+11080.000000	benchmarks/lists.lua	lua	tilera	"25"	1	1	None	total
+5550.000000	benchmarks/lists.lua	lua	tilera	"25"	1	1	None	pass1	total
+5530.000000	benchmarks/lists.lua	lua	tilera	"25"	1	1	None	pass2	total
+11080.000000	benchmarks/lists.lua	lua	tilera	"25"	1	1	None	total
+5550.000000	benchmarks/lists.lua	lua	tilera	"25"	1	1	None	pass1	total
+5530.000000	benchmarks/lists.lua	lua	tilera	"25"	1	1	None	pass2	total
+15750.000000	benchmarks/mandelbrot.lua	lua	tilera	"400"	1	1	None	total
+7880.000000	benchmarks/mandelbrot.lua	lua	tilera	"400"	1	1	None	pass1	total
+7860.000000	benchmarks/mandelbrot.lua	lua	tilera	"400"	1	1	None	pass2	total
+15760.000000	benchmarks/mandelbrot.lua	lua	tilera	"400"	1	1	None	total
+7870.000000	benchmarks/mandelbrot.lua	lua	tilera	"400"	1	1	None	pass1	total
+7870.000000	benchmarks/mandelbrot.lua	lua	tilera	"400"	1	1	None	pass2	total
+12090.000000	benchmarks/mandelbrot.lua-2.lua	lua	tilera	"350"	1	1	None	total
+6050.000000	benchmarks/mandelbrot.lua-2.lua	lua	tilera	"350"	1	1	None	pass1	total
+6040.000000	benchmarks/mandelbrot.lua-2.lua	lua	tilera	"350"	1	1	None	pass2	total
+12090.000000	benchmarks/mandelbrot.lua-2.lua	lua	tilera	"350"	1	1	None	total
+6040.000000	benchmarks/mandelbrot.lua-2.lua	lua	tilera	"350"	1	1	None	pass1	total
+6040.000000	benchmarks/mandelbrot.lua-2.lua	lua	tilera	"350"	1	1	None	pass2	total
+9470.000000	benchmarks/matrix.lua	lua	tilera	"100"	1	1	None	total
+4740.000000	benchmarks/matrix.lua	lua	tilera	"100"	1	1	None	pass1	total
+4730.000000	benchmarks/matrix.lua	lua	tilera	"100"	1	1	None	pass2	total
+9470.000000	benchmarks/matrix.lua	lua	tilera	"100"	1	1	None	total
+4740.000000	benchmarks/matrix.lua	lua	tilera	"100"	1	1	None	pass1	total
+4730.000000	benchmarks/matrix.lua	lua	tilera	"100"	1	1	None	pass2	total
+11290.000000	benchmarks/nbody.lua	lua	tilera	"30000"	1	1	None	total
+5650.000000	benchmarks/nbody.lua	lua	tilera	"30000"	1	1	None	pass1	total
+5640.000000	benchmarks/nbody.lua	lua	tilera	"30000"	1	1	None	pass2	total
+11320.000000	benchmarks/nbody.lua	lua	tilera	"30000"	1	1	None	total
+5670.000000	benchmarks/nbody.lua	lua	tilera	"30000"	1	1	None	pass1	total
+5650.000000	benchmarks/nbody.lua	lua	tilera	"30000"	1	1	None	pass2	total
+11370.000000	benchmarks/nbody.lua	lua	tilera	"30000"	1	1	None	total
+5690.000000	benchmarks/nbody.lua	lua	tilera	"30000"	1	1	None	pass1	total
+5680.000000	benchmarks/nbody.lua	lua	tilera	"30000"	1	1	None	pass2	total
+10730.000000	benchmarks/nbody.lua-2.lua	lua	tilera	"30000"	1	1	None	total
+5370.000000	benchmarks/nbody.lua-2.lua	lua	tilera	"30000"	1	1	None	pass1	total
+5360.000000	benchmarks/nbody.lua-2.lua	lua	tilera	"30000"	1	1	None	pass2	total
+10730.000000	benchmarks/nbody.lua-2.lua	lua	tilera	"30000"	1	1	None	total
+5370.000000	benchmarks/nbody.lua-2.lua	lua	tilera	"30000"	1	1	None	pass1	total
+5360.000000	benchmarks/nbody.lua-2.lua	lua	tilera	"30000"	1	1	None	pass2	total
+10780.000000	benchmarks/nbody.lua-4.lua	lua	tilera	"30000"	1	1	None	total
+5400.000000	benchmarks/nbody.lua-4.lua	lua	tilera	"30000"	1	1	None	pass1	total
+5380.000000	benchmarks/nbody.lua-4.lua	lua	tilera	"30000"	1	1	None	pass2	total
+10860.000000	benchmarks/nbody.lua-4.lua	lua	tilera	"30000"	1	1	None	total
+5370.000000	benchmarks/nbody.lua-4.lua	lua	tilera	"30000"	1	1	None	pass1	total
+5490.000000	benchmarks/nbody.lua-4.lua	lua	tilera	"30000"	1	1	None	pass2	total
+10730.000000	benchmarks/nbody.lua-4.lua	lua	tilera	"30000"	1	1	None	total
+5370.000000	benchmarks/nbody.lua-4.lua	lua	tilera	"30000"	1	1	None	pass1	total
+5360.000000	benchmarks/nbody.lua-4.lua	lua	tilera	"30000"	1	1	None	pass2	total
+8930.000000	benchmarks/nestedloop.lua	lua	tilera	"14"	1	1	None	total
+4470.000000	benchmarks/nestedloop.lua	lua	tilera	"14"	1	1	None	pass1	total
+4460.000000	benchmarks/nestedloop.lua	lua	tilera	"14"	1	1	None	pass2	total
+8930.000000	benchmarks/nestedloop.lua	lua	tilera	"14"	1	1	None	total
+4470.000000	benchmarks/nestedloop.lua	lua	tilera	"14"	1	1	None	pass1	total
+4460.000000	benchmarks/nestedloop.lua	lua	tilera	"14"	1	1	None	pass2	total
+16590.000000	benchmarks/nsievebits.lua	lua	tilera	"5"	1	1	None	total
+8290.000000	benchmarks/nsievebits.lua	lua	tilera	"5"	1	1	None	pass1	total
+8300.000000	benchmarks/nsievebits.lua	lua	tilera	"5"	1	1	None	pass2	total
+16660.000000	benchmarks/nsievebits.lua	lua	tilera	"5"	1	1	None	total
+8330.000000	benchmarks/nsievebits.lua	lua	tilera	"5"	1	1	None	pass1	total
+8330.000000	benchmarks/nsievebits.lua	lua	tilera	"5"	1	1	None	pass2	total
+16610.000000	benchmarks/nsievebits.lua	lua	tilera	"5"	1	1	None	total
+8300.000000	benchmarks/nsievebits.lua	lua	tilera	"5"	1	1	None	pass1	total
+8310.000000	benchmarks/nsievebits.lua	lua	tilera	"5"	1	1	None	pass2	total
+10350.000000	benchmarks/nsieve.lua-3.lua	lua	tilera	"6"	1	1	None	total
+5090.000000	benchmarks/nsieve.lua-3.lua	lua	tilera	"6"	1	1	None	pass1	total
+5070.000000	benchmarks/nsieve.lua-3.lua	lua	tilera	"6"	1	1	None	pass2	total
+10340.000000	benchmarks/nsieve.lua-3.lua	lua	tilera	"6"	1	1	None	total
+5080.000000	benchmarks/nsieve.lua-3.lua	lua	tilera	"6"	1	1	None	pass1	total
+5080.000000	benchmarks/nsieve.lua-3.lua	lua	tilera	"6"	1	1	None	pass2	total
+53960.000000	benchmarks/partialsums.lua-2.lua	lua	tilera	"500000"	1	1	None	total
+26990.000000	benchmarks/partialsums.lua-2.lua	lua	tilera	"500000"	1	1	None	pass1	total
+26970.000000	benchmarks/partialsums.lua-2.lua	lua	tilera	"500000"	1	1	None	pass2	total
+53740.000000	benchmarks/partialsums.lua-2.lua	lua	tilera	"500000"	1	1	None	total
+26880.000000	benchmarks/partialsums.lua-2.lua	lua	tilera	"500000"	1	1	None	pass1	total
+26860.000000	benchmarks/partialsums.lua-2.lua	lua	tilera	"500000"	1	1	None	pass2	total
+53570.000000	benchmarks/partialsums.lua-2.lua	lua	tilera	"500000"	1	1	None	total
+26790.000000	benchmarks/partialsums.lua-2.lua	lua	tilera	"500000"	1	1	None	pass1	total
+26780.000000	benchmarks/partialsums.lua-2.lua	lua	tilera	"500000"	1	1	None	pass2	total
+53980.000000	benchmarks/partialsums.lua-3.lua	lua	tilera	"500000"	1	1	None	total
+27000.000000	benchmarks/partialsums.lua-3.lua	lua	tilera	"500000"	1	1	None	pass1	total
+26980.000000	benchmarks/partialsums.lua-3.lua	lua	tilera	"500000"	1	1	None	pass2	total
+53910.000000	benchmarks/partialsums.lua-3.lua	lua	tilera	"500000"	1	1	None	total
+26980.000000	benchmarks/partialsums.lua-3.lua	lua	tilera	"500000"	1	1	None	pass1	total
+26930.000000	benchmarks/partialsums.lua-3.lua	lua	tilera	"500000"	1	1	None	pass2	total
+53800.000000	benchmarks/partialsums.lua-3.lua	lua	tilera	"500000"	1	1	None	total
+26910.000000	benchmarks/partialsums.lua-3.lua	lua	tilera	"500000"	1	1	None	pass1	total
+26890.000000	benchmarks/partialsums.lua-3.lua	lua	tilera	"500000"	1	1	None	pass2	total
+20.000000	benchmarks/process.lua	lua	tilera	"100"	1	1	None	total
+10.000000	benchmarks/process.lua	lua	tilera	"100"	1	1	None	pass1	total
+0.000000	benchmarks/process.lua	lua	tilera	"100"	1	1	None	pass2	total
+10.000000	benchmarks/process.lua	lua	tilera	"100"	1	1	None	total
+10.000000	benchmarks/process.lua	lua	tilera	"100"	1	1	None	pass1	total
+0.000000	benchmarks/process.lua	lua	tilera	"100"	1	1	None	pass2	total
+20.000000	benchmarks/process.lua	lua	tilera	"100"	1	1	None	total
+10.000000	benchmarks/process.lua	lua	tilera	"100"	1	1	None	pass1	total
+0.000000	benchmarks/process.lua	lua	tilera	"100"	1	1	None	pass2	total
+6620.000000	benchmarks/prodcons.lua	lua	tilera	"500000"	1	1	None	total
+3300.000000	benchmarks/prodcons.lua	lua	tilera	"500000"	1	1	None	pass1	total
+3320.000000	benchmarks/prodcons.lua	lua	tilera	"500000"	1	1	None	pass2	total
+6620.000000	benchmarks/prodcons.lua	lua	tilera	"500000"	1	1	None	total
+3300.000000	benchmarks/prodcons.lua	lua	tilera	"500000"	1	1	None	pass1	total
+3320.000000	benchmarks/prodcons.lua	lua	tilera	"500000"	1	1	None	pass2	total
+24430.000000	benchmarks/random.lua	lua	tilera	"2000000"	1	1	None	total
+12220.000000	benchmarks/random.lua	lua	tilera	"2000000"	1	1	None	pass1	total
+12210.000000	benchmarks/random.lua	lua	tilera	"2000000"	1	1	None	pass2	total
+24440.000000	benchmarks/random.lua	lua	tilera	"2000000"	1	1	None	total
+12220.000000	benchmarks/random.lua	lua	tilera	"2000000"	1	1	None	pass1	total
+12220.000000	benchmarks/random.lua	lua	tilera	"2000000"	1	1	None	pass2	total
+10190.000000	benchmarks/recursive.lua	lua	tilera	"4"	1	1	None	total
+5100.000000	benchmarks/recursive.lua	lua	tilera	"4"	1	1	None	pass1	total
+5090.000000	benchmarks/recursive.lua	lua	tilera	"4"	1	1	None	pass2	total
+10190.000000	benchmarks/recursive.lua	lua	tilera	"4"	1	1	None	total
+5100.000000	benchmarks/recursive.lua	lua	tilera	"4"	1	1	None	pass1	total
+5090.000000	benchmarks/recursive.lua	lua	tilera	"4"	1	1	None	pass2	total
+12700.000000	benchmarks/sieve.lua	lua	tilera	"200"	1	1	None	total
+6360.000000	benchmarks/sieve.lua	lua	tilera	"200"	1	1	None	pass1	total
+6340.000000	benchmarks/sieve.lua	lua	tilera	"200"	1	1	None	pass2	total
+12710.000000	benchmarks/sieve.lua	lua	tilera	"200"	1	1	None	total
+6360.000000	benchmarks/sieve.lua	lua	tilera	"200"	1	1	None	pass1	total
+6350.000000	benchmarks/sieve.lua	lua	tilera	"200"	1	1	None	pass2	total
+14600.000000	benchmarks/sieve.lua-2.lua	lua	tilera	"200"	1	1	None	total
+7310.000000	benchmarks/sieve.lua-2.lua	lua	tilera	"200"	1	1	None	pass1	total
+7290.000000	benchmarks/sieve.lua-2.lua	lua	tilera	"200"	1	1	None	pass2	total
+14580.000000	benchmarks/sieve.lua-2.lua	lua	tilera	"200"	1	1	None	total
+7310.000000	benchmarks/sieve.lua-2.lua	lua	tilera	"200"	1	1	None	pass1	total
+7270.000000	benchmarks/sieve.lua-2.lua	lua	tilera	"200"	1	1	None	pass2	total
+14600.000000	benchmarks/sieve.lua-2.lua	lua	tilera	"200"	1	1	None	total
+7310.000000	benchmarks/sieve.lua-2.lua	lua	tilera	"200"	1	1	None	pass1	total
+7290.000000	benchmarks/sieve.lua-2.lua	lua	tilera	"200"	1	1	None	pass2	total
+18690.000000	benchmarks/spectralnorm.lua	lua	tilera	"220"	1	1	None	total
+9350.000000	benchmarks/spectralnorm.lua	lua	tilera	"220"	1	1	None	pass1	total
+9340.000000	benchmarks/spectralnorm.lua	lua	tilera	"220"	1	1	None	pass2	total
+18690.000000	benchmarks/spectralnorm.lua	lua	tilera	"220"	1	1	None	total
+9350.000000	benchmarks/spectralnorm.lua	lua	tilera	"220"	1	1	None	pass1	total
+9340.000000	benchmarks/spectralnorm.lua	lua	tilera	"220"	1	1	None	pass2	total
+7180.000000	benchmarks/strcat.lua	lua	tilera	"800000"	1	1	None	total
+3460.000000	benchmarks/strcat.lua	lua	tilera	"800000"	1	1	None	pass1	total
+3400.000000	benchmarks/strcat.lua	lua	tilera	"800000"	1	1	None	pass2	total
+6920.000000	benchmarks/strcat.lua	lua	tilera	"800000"	1	1	None	total
+3290.000000	benchmarks/strcat.lua	lua	tilera	"800000"	1	1	None	pass1	total
+3310.000000	benchmarks/strcat.lua	lua	tilera	"800000"	1	1	None	pass2	total
+7020.000000	benchmarks/strcat.lua	lua	tilera	"800000"	1	1	None	total
+3350.000000	benchmarks/strcat.lua	lua	tilera	"800000"	1	1	None	pass1	total
+3340.000000	benchmarks/strcat.lua	lua	tilera	"800000"	1	1	None	pass2	total
+7180.000000	benchmarks/strcat.lua-2.lua	lua	tilera	"15000"	1	1	None	total
+3640.000000	benchmarks/strcat.lua-2.lua	lua	tilera	"15000"	1	1	None	pass1	total
+3540.000000	benchmarks/strcat.lua-2.lua	lua	tilera	"15000"	1	1	None	pass2	total
+7190.000000	benchmarks/strcat.lua-2.lua	lua	tilera	"15000"	1	1	None	total
+3640.000000	benchmarks/strcat.lua-2.lua	lua	tilera	"15000"	1	1	None	pass1	total
+3550.000000	benchmarks/strcat.lua-2.lua	lua	tilera	"15000"	1	1	None	pass2	total
+7190.000000	benchmarks/strcat.lua-2.lua	lua	tilera	"15000"	1	1	None	total
+3640.000000	benchmarks/strcat.lua-2.lua	lua	tilera	"15000"	1	1	None	pass1	total
+3550.000000	benchmarks/strcat.lua-2.lua	lua	tilera	"15000"	1	1	None	pass2	total
+5100.000000	benchmarks/takfp.lua	lua	tilera	"8"	1	1	None	total
+2560.000000	benchmarks/takfp.lua	lua	tilera	"8"	1	1	None	pass1	total
+2530.000000	benchmarks/takfp.lua	lua	tilera	"8"	1	1	None	pass2	total
+5100.000000	benchmarks/takfp.lua	lua	tilera	"8"	1	1	None	total
+2560.000000	benchmarks/takfp.lua	lua	tilera	"8"	1	1	None	pass1	total
+2540.000000	benchmarks/takfp.lua	lua	tilera	"8"	1	1	None	pass2	total
+1200.000000	benchmarks/ary.lua	lua-x86	tilera	"10000"	1	1	None	total
+620.000000	benchmarks/ary.lua	lua-x86	tilera	"10000"	1	1	None	pass1	total
+580.000000	benchmarks/ary.lua	lua-x86	tilera	"10000"	1	1	None	pass2	total
+1170.000000	benchmarks/ary.lua	lua-x86	tilera	"10000"	1	1	None	total
+580.000000	benchmarks/ary.lua	lua-x86	tilera	"10000"	1	1	None	pass1	total
+590.000000	benchmarks/ary.lua	lua-x86	tilera	"10000"	1	1	None	pass2	total
+1220.000000	benchmarks/ary.lua	lua-x86	tilera	"10000"	1	1	None	total
+610.000000	benchmarks/ary.lua	lua-x86	tilera	"10000"	1	1	None	pass1	total
+610.000000	benchmarks/ary.lua	lua-x86	tilera	"10000"	1	1	None	pass2	total
+210.000000	benchmarks/binarytrees.lua-2.lua	lua-x86	tilera	"10"	1	1	None	total
+100.000000	benchmarks/binarytrees.lua-2.lua	lua-x86	tilera	"10"	1	1	None	pass1	total
+110.000000	benchmarks/binarytrees.lua-2.lua	lua-x86	tilera	"10"	1	1	None	pass2	total
+220.000000	benchmarks/binarytrees.lua-2.lua	lua-x86	tilera	"10"	1	1	None	total
+100.000000	benchmarks/binarytrees.lua-2.lua	lua-x86	tilera	"10"	1	1	None	pass1	total
+110.000000	benchmarks/binarytrees.lua-2.lua	lua-x86	tilera	"10"	1	1	None	pass2	total
+240.000000	benchmarks/binarytrees.lua-2.lua	lua-x86	tilera	"10"	1	1	None	total
+120.000000	benchmarks/binarytrees.lua-2.lua	lua-x86	tilera	"10"	1	1	None	pass1	total
+120.000000	benchmarks/binarytrees.lua-2.lua	lua-x86	tilera	"10"	1	1	None	pass2	total
+220.000000	benchmarks/binarytrees.lua-3.lua	lua-x86	tilera	"10"	1	1	None	total
+100.000000	benchmarks/binarytrees.lua-3.lua	lua-x86	tilera	"10"	1	1	None	pass1	total
+120.000000	benchmarks/binarytrees.lua-3.lua	lua-x86	tilera	"10"	1	1	None	pass2	total
+240.000000	benchmarks/binarytrees.lua-3.lua	lua-x86	tilera	"10"	1	1	None	total
+130.000000	benchmarks/binarytrees.lua-3.lua	lua-x86	tilera	"10"	1	1	None	pass1	total
+110.000000	benchmarks/binarytrees.lua-3.lua	lua-x86	tilera	"10"	1	1	None	pass2	total
+220.000000	benchmarks/binarytrees.lua-3.lua	lua-x86	tilera	"10"	1	1	None	total
+110.000000	benchmarks/binarytrees.lua-3.lua	lua-x86	tilera	"10"	1	1	None	pass1	total
+110.000000	benchmarks/binarytrees.lua-3.lua	lua-x86	tilera	"10"	1	1	None	pass2	total
+510.000000	benchmarks/chameneos.lua	lua-x86	tilera	"200000"	1	1	None	total
+260.000000	benchmarks/chameneos.lua	lua-x86	tilera	"200000"	1	1	None	pass1	total
+250.000000	benchmarks/chameneos.lua	lua-x86	tilera	"200000"	1	1	None	pass2	total
+510.000000	benchmarks/chameneos.lua	lua-x86	tilera	"200000"	1	1	None	total
+250.000000	benchmarks/chameneos.lua	lua-x86	tilera	"200000"	1	1	None	pass1	total
+260.000000	benchmarks/chameneos.lua	lua-x86	tilera	"200000"	1	1	None	pass2	total
+530.000000	benchmarks/except.lua	lua-x86	tilera	"250000"	1	1	None	total
+270.000000	benchmarks/except.lua	lua-x86	tilera	"250000"	1	1	None	pass1	total
+260.000000	benchmarks/except.lua	lua-x86	tilera	"250000"	1	1	None	pass2	total
+540.000000	benchmarks/except.lua	lua-x86	tilera	"250000"	1	1	None	total
+270.000000	benchmarks/except.lua	lua-x86	tilera	"250000"	1	1	None	pass1	total
+270.000000	benchmarks/except.lua	lua-x86	tilera	"250000"	1	1	None	pass2	total
+530.000000	benchmarks/except.lua	lua-x86	tilera	"250000"	1	1	None	total
+260.000000	benchmarks/except.lua	lua-x86	tilera	"250000"	1	1	None	pass1	total
+270.000000	benchmarks/except.lua	lua-x86	tilera	"250000"	1	1	None	pass2	total
+1220.000000	benchmarks/fannkuch.lua	lua-x86	tilera	"9"	1	1	None	total
+610.000000	benchmarks/fannkuch.lua	lua-x86	tilera	"9"	1	1	None	pass1	total
+610.000000	benchmarks/fannkuch.lua	lua-x86	tilera	"9"	1	1	None	pass2	total
+1240.000000	benchmarks/fannkuch.lua	lua-x86	tilera	"9"	1	1	None	total
+630.000000	benchmarks/fannkuch.lua	lua-x86	tilera	"9"	1	1	None	pass1	total
+610.000000	benchmarks/fannkuch.lua	lua-x86	tilera	"9"	1	1	None	pass2	total
+1230.000000	benchmarks/fannkuch.lua	lua-x86	tilera	"9"	1	1	None	total
+610.000000	benchmarks/fannkuch.lua	lua-x86	tilera	"9"	1	1	None	pass1	total
+620.000000	benchmarks/fannkuch.lua	lua-x86	tilera	"9"	1	1	None	pass2	total
+1240.000000	benchmarks/fannkuch.lua-2.lua	lua-x86	tilera	"9"	1	1	None	total
+620.000000	benchmarks/fannkuch.lua-2.lua	lua-x86	tilera	"9"	1	1	None	pass1	total
+620.000000	benchmarks/fannkuch.lua-2.lua	lua-x86	tilera	"9"	1	1	None	pass2	total
+1240.000000	benchmarks/fannkuch.lua-2.lua	lua-x86	tilera	"9"	1	1	None	total
+620.000000	benchmarks/fannkuch.lua-2.lua	lua-x86	tilera	"9"	1	1	None	pass1	total
+620.000000	benchmarks/fannkuch.lua-2.lua	lua-x86	tilera	"9"	1	1	None	pass2	total
+1360.000000	benchmarks/fannkuchredux.lua	lua-x86	tilera	"9"	1	1	None	total
+680.000000	benchmarks/fannkuchredux.lua	lua-x86	tilera	"9"	1	1	None	pass1	total
+680.000000	benchmarks/fannkuchredux.lua	lua-x86	tilera	"9"	1	1	None	pass2	total
+1340.000000	benchmarks/fannkuchredux.lua	lua-x86	tilera	"9"	1	1	None	total
+680.000000	benchmarks/fannkuchredux.lua	lua-x86	tilera	"9"	1	1	None	pass1	total
+660.000000	benchmarks/fannkuchredux.lua	lua-x86	tilera	"9"	1	1	None	pass2	total
+1340.000000	benchmarks/fannkuchredux.lua	lua-x86	tilera	"9"	1	1	None	total
+670.000000	benchmarks/fannkuchredux.lua	lua-x86	tilera	"9"	1	1	None	pass1	total
+670.000000	benchmarks/fannkuchredux.lua	lua-x86	tilera	"9"	1	1	None	pass2	total
+570.000000	benchmarks/fasta.lua	lua-x86	tilera	"200000"	1	1	None	total
+280.000000	benchmarks/fasta.lua	lua-x86	tilera	"200000"	1	1	None	pass1	total
+290.000000	benchmarks/fasta.lua	lua-x86	tilera	"200000"	1	1	None	pass2	total
+580.000000	benchmarks/fasta.lua	lua-x86	tilera	"200000"	1	1	None	total
+290.000000	benchmarks/fasta.lua	lua-x86	tilera	"200000"	1	1	None	pass1	total
+290.000000	benchmarks/fasta.lua	lua-x86	tilera	"200000"	1	1	None	pass2	total
+570.000000	benchmarks/fasta.lua	lua-x86	tilera	"200000"	1	1	None	total
+290.000000	benchmarks/fasta.lua	lua-x86	tilera	"200000"	1	1	None	pass1	total
+280.000000	benchmarks/fasta.lua	lua-x86	tilera	"200000"	1	1	None	pass2	total
+440.000000	benchmarks/fibo.lua	lua-x86	tilera	"30"	1	1	None	total
+220.000000	benchmarks/fibo.lua	lua-x86	tilera	"30"	1	1	None	pass1	total
+220.000000	benchmarks/fibo.lua	lua-x86	tilera	"30"	1	1	None	pass2	total
+410.000000	benchmarks/fibo.lua	lua-x86	tilera	"30"	1	1	None	total
+200.000000	benchmarks/fibo.lua	lua-x86	tilera	"30"	1	1	None	pass1	total
+210.000000	benchmarks/fibo.lua	lua-x86	tilera	"30"	1	1	None	pass2	total
+410.000000	benchmarks/fibo.lua	lua-x86	tilera	"30"	1	1	None	total
+200.000000	benchmarks/fibo.lua	lua-x86	tilera	"30"	1	1	None	pass1	total
+210.000000	benchmarks/fibo.lua	lua-x86	tilera	"30"	1	1	None	pass2	total
+720.000000	benchmarks/harmonic.lua	lua-x86	tilera	"20000000"	1	1	None	total
+360.000000	benchmarks/harmonic.lua	lua-x86	tilera	"20000000"	1	1	None	pass1	total
+360.000000	benchmarks/harmonic.lua	lua-x86	tilera	"20000000"	1	1	None	pass2	total
+720.000000	benchmarks/harmonic.lua	lua-x86	tilera	"20000000"	1	1	None	total
+360.000000	benchmarks/harmonic.lua	lua-x86	tilera	"20000000"	1	1	None	pass1	total
+360.000000	benchmarks/harmonic.lua	lua-x86	tilera	"20000000"	1	1	None	pass2	total
+560.000000	benchmarks/hash2.lua	lua-x86	tilera	"200"	1	1	None	total
+290.000000	benchmarks/hash2.lua	lua-x86	tilera	"200"	1	1	None	pass1	total
+270.000000	benchmarks/hash2.lua	lua-x86	tilera	"200"	1	1	None	pass2	total
+530.000000	benchmarks/hash2.lua	lua-x86	tilera	"200"	1	1	None	total
+260.000000	benchmarks/hash2.lua	lua-x86	tilera	"200"	1	1	None	pass1	total
+260.000000	benchmarks/hash2.lua	lua-x86	tilera	"200"	1	1	None	pass2	total
+540.000000	benchmarks/hash2.lua	lua-x86	tilera	"200"	1	1	None	total
+270.000000	benchmarks/hash2.lua	lua-x86	tilera	"200"	1	1	None	pass1	total
+270.000000	benchmarks/hash2.lua	lua-x86	tilera	"200"	1	1	None	pass2	total
+720.000000	benchmarks/hash.lua	lua-x86	tilera	"150000"	1	1	None	total
+310.000000	benchmarks/hash.lua	lua-x86	tilera	"150000"	1	1	None	pass1	total
+280.000000	benchmarks/hash.lua	lua-x86	tilera	"150000"	1	1	None	pass2	total
+720.000000	benchmarks/hash.lua	lua-x86	tilera	"150000"	1	1	None	total
+310.000000	benchmarks/hash.lua	lua-x86	tilera	"150000"	1	1	None	pass1	total
+280.000000	benchmarks/hash.lua	lua-x86	tilera	"150000"	1	1	None	pass2	total
+0.000000	benchmarks/hello.lua	lua-x86	tilera	"None"	1	1	None	total
+0.000000	benchmarks/hello.lua	lua-x86	tilera	"None"	1	1	None	pass1	total
+0.000000	benchmarks/hello.lua	lua-x86	tilera	"None"	1	1	None	pass2	total
+0.000000	benchmarks/hello.lua	lua-x86	tilera	"None"	1	1	None	total
+0.000000	benchmarks/hello.lua	lua-x86	tilera	"None"	1	1	None	pass1	total
+0.000000	benchmarks/hello.lua	lua-x86	tilera	"None"	1	1	None	pass2	total
+0.000000	benchmarks/hello.lua	lua-x86	tilera	"None"	1	1	None	total
+0.000000	benchmarks/hello.lua	lua-x86	tilera	"None"	1	1	None	pass1	total
+0.000000	benchmarks/hello.lua	lua-x86	tilera	"None"	1	1	None	pass2	total
+650.000000	benchmarks/lists.lua	lua-x86	tilera	"25"	1	1	None	total
+330.000000	benchmarks/lists.lua	lua-x86	tilera	"25"	1	1	None	pass1	total
+320.000000	benchmarks/lists.lua	lua-x86	tilera	"25"	1	1	None	pass2	total
+640.000000	benchmarks/lists.lua	lua-x86	tilera	"25"	1	1	None	total
+320.000000	benchmarks/lists.lua	lua-x86	tilera	"25"	1	1	None	pass1	total
+320.000000	benchmarks/lists.lua	lua-x86	tilera	"25"	1	1	None	pass2	total
+670.000000	benchmarks/lists.lua	lua-x86	tilera	"25"	1	1	None	total
+350.000000	benchmarks/lists.lua	lua-x86	tilera	"25"	1	1	None	pass1	total
+320.000000	benchmarks/lists.lua	lua-x86	tilera	"25"	1	1	None	pass2	total
+500.000000	benchmarks/mandelbrot.lua	lua-x86	tilera	"400"	1	1	None	total
+250.000000	benchmarks/mandelbrot.lua	lua-x86	tilera	"400"	1	1	None	pass1	total
+250.000000	benchmarks/mandelbrot.lua	lua-x86	tilera	"400"	1	1	None	pass2	total
+500.000000	benchmarks/mandelbrot.lua	lua-x86	tilera	"400"	1	1	None	total
+250.000000	benchmarks/mandelbrot.lua	lua-x86	tilera	"400"	1	1	None	pass1	total
+250.000000	benchmarks/mandelbrot.lua	lua-x86	tilera	"400"	1	1	None	pass2	total
+530.000000	benchmarks/mandelbrot.lua-2.lua	lua-x86	tilera	"350"	1	1	None	total
+270.000000	benchmarks/mandelbrot.lua-2.lua	lua-x86	tilera	"350"	1	1	None	pass1	total
+260.000000	benchmarks/mandelbrot.lua-2.lua	lua-x86	tilera	"350"	1	1	None	pass2	total
+540.000000	benchmarks/mandelbrot.lua-2.lua	lua-x86	tilera	"350"	1	1	None	total
+280.000000	benchmarks/mandelbrot.lua-2.lua	lua-x86	tilera	"350"	1	1	None	pass1	total
+260.000000	benchmarks/mandelbrot.lua-2.lua	lua-x86	tilera	"350"	1	1	None	pass2	total
+540.000000	benchmarks/mandelbrot.lua-2.lua	lua-x86	tilera	"350"	1	1	None	total
+280.000000	benchmarks/mandelbrot.lua-2.lua	lua-x86	tilera	"350"	1	1	None	pass1	total
+260.000000	benchmarks/mandelbrot.lua-2.lua	lua-x86	tilera	"350"	1	1	None	pass2	total
+450.000000	benchmarks/matrix.lua	lua-x86	tilera	"100"	1	1	None	total
+220.000000	benchmarks/matrix.lua	lua-x86	tilera	"100"	1	1	None	pass1	total
+230.000000	benchmarks/matrix.lua	lua-x86	tilera	"100"	1	1	None	pass2	total
+450.000000	benchmarks/matrix.lua	lua-x86	tilera	"100"	1	1	None	total
+220.000000	benchmarks/matrix.lua	lua-x86	tilera	"100"	1	1	None	pass1	total
+230.000000	benchmarks/matrix.lua	lua-x86	tilera	"100"	1	1	None	pass2	total
+460.000000	benchmarks/nbody.lua	lua-x86	tilera	"30000"	1	1	None	total
+230.000000	benchmarks/nbody.lua	lua-x86	tilera	"30000"	1	1	None	pass1	total
+230.000000	benchmarks/nbody.lua	lua-x86	tilera	"30000"	1	1	None	pass2	total
+480.000000	benchmarks/nbody.lua	lua-x86	tilera	"30000"	1	1	None	total
+240.000000	benchmarks/nbody.lua	lua-x86	tilera	"30000"	1	1	None	pass1	total
+240.000000	benchmarks/nbody.lua	lua-x86	tilera	"30000"	1	1	None	pass2	total
+460.000000	benchmarks/nbody.lua	lua-x86	tilera	"30000"	1	1	None	total
+230.000000	benchmarks/nbody.lua	lua-x86	tilera	"30000"	1	1	None	pass1	total
+230.000000	benchmarks/nbody.lua	lua-x86	tilera	"30000"	1	1	None	pass2	total
+400.000000	benchmarks/nbody.lua-2.lua	lua-x86	tilera	"30000"	1	1	None	total
+200.000000	benchmarks/nbody.lua-2.lua	lua-x86	tilera	"30000"	1	1	None	pass1	total
+200.000000	benchmarks/nbody.lua-2.lua	lua-x86	tilera	"30000"	1	1	None	pass2	total
+410.000000	benchmarks/nbody.lua-2.lua	lua-x86	tilera	"30000"	1	1	None	total
+200.000000	benchmarks/nbody.lua-2.lua	lua-x86	tilera	"30000"	1	1	None	pass1	total
+210.000000	benchmarks/nbody.lua-2.lua	lua-x86	tilera	"30000"	1	1	None	pass2	total
+410.000000	benchmarks/nbody.lua-2.lua	lua-x86	tilera	"30000"	1	1	None	total
+200.000000	benchmarks/nbody.lua-2.lua	lua-x86	tilera	"30000"	1	1	None	pass1	total
+200.000000	benchmarks/nbody.lua-2.lua	lua-x86	tilera	"30000"	1	1	None	pass2	total
+410.000000	benchmarks/nbody.lua-4.lua	lua-x86	tilera	"30000"	1	1	None	total
+200.000000	benchmarks/nbody.lua-4.lua	lua-x86	tilera	"30000"	1	1	None	pass1	total
+210.000000	benchmarks/nbody.lua-4.lua	lua-x86	tilera	"30000"	1	1	None	pass2	total
+470.000000	benchmarks/nbody.lua-4.lua	lua-x86	tilera	"30000"	1	1	None	total
+240.000000	benchmarks/nbody.lua-4.lua	lua-x86	tilera	"30000"	1	1	None	pass1	total
+230.000000	benchmarks/nbody.lua-4.lua	lua-x86	tilera	"30000"	1	1	None	pass2	total
+420.000000	benchmarks/nbody.lua-4.lua	lua-x86	tilera	"30000"	1	1	None	total
+210.000000	benchmarks/nbody.lua-4.lua	lua-x86	tilera	"30000"	1	1	None	pass1	total
+210.000000	benchmarks/nbody.lua-4.lua	lua-x86	tilera	"30000"	1	1	None	pass2	total
+410.000000	benchmarks/nestedloop.lua	lua-x86	tilera	"14"	1	1	None	total
+200.000000	benchmarks/nestedloop.lua	lua-x86	tilera	"14"	1	1	None	pass1	total
+210.000000	benchmarks/nestedloop.lua	lua-x86	tilera	"14"	1	1	None	pass2	total
+410.000000	benchmarks/nestedloop.lua	lua-x86	tilera	"14"	1	1	None	total
+200.000000	benchmarks/nestedloop.lua	lua-x86	tilera	"14"	1	1	None	pass1	total
+210.000000	benchmarks/nestedloop.lua	lua-x86	tilera	"14"	1	1	None	pass2	total
+500.000000	benchmarks/nsievebits.lua	lua-x86	tilera	"5"	1	1	None	total
+240.000000	benchmarks/nsievebits.lua	lua-x86	tilera	"5"	1	1	None	pass1	total
+260.000000	benchmarks/nsievebits.lua	lua-x86	tilera	"5"	1	1	None	pass2	total
+490.000000	benchmarks/nsievebits.lua	lua-x86	tilera	"5"	1	1	None	total
+240.000000	benchmarks/nsievebits.lua	lua-x86	tilera	"5"	1	1	None	pass1	total
+250.000000	benchmarks/nsievebits.lua	lua-x86	tilera	"5"	1	1	None	pass2	total
+490.000000	benchmarks/nsievebits.lua	lua-x86	tilera	"5"	1	1	None	total
+240.000000	benchmarks/nsievebits.lua	lua-x86	tilera	"5"	1	1	None	pass1	total
+250.000000	benchmarks/nsievebits.lua	lua-x86	tilera	"5"	1	1	None	pass2	total
+410.000000	benchmarks/nsieve.lua-3.lua	lua-x86	tilera	"6"	1	1	None	total
+210.000000	benchmarks/nsieve.lua-3.lua	lua-x86	tilera	"6"	1	1	None	pass1	total
+200.000000	benchmarks/nsieve.lua-3.lua	lua-x86	tilera	"6"	1	1	None	pass2	total
+390.000000	benchmarks/nsieve.lua-3.lua	lua-x86	tilera	"6"	1	1	None	total
+190.000000	benchmarks/nsieve.lua-3.lua	lua-x86	tilera	"6"	1	1	None	pass1	total
+190.000000	benchmarks/nsieve.lua-3.lua	lua-x86	tilera	"6"	1	1	None	pass2	total
+400.000000	benchmarks/nsieve.lua-3.lua	lua-x86	tilera	"6"	1	1	None	total
+190.000000	benchmarks/nsieve.lua-3.lua	lua-x86	tilera	"6"	1	1	None	pass1	total
+190.000000	benchmarks/nsieve.lua-3.lua	lua-x86	tilera	"6"	1	1	None	pass2	total
+600.000000	benchmarks/partialsums.lua-2.lua	lua-x86	tilera	"500000"	1	1	None	total
+300.000000	benchmarks/partialsums.lua-2.lua	lua-x86	tilera	"500000"	1	1	None	pass1	total
+300.000000	benchmarks/partialsums.lua-2.lua	lua-x86	tilera	"500000"	1	1	None	pass2	total
+630.000000	benchmarks/partialsums.lua-2.lua	lua-x86	tilera	"500000"	1	1	None	total
+320.000000	benchmarks/partialsums.lua-2.lua	lua-x86	tilera	"500000"	1	1	None	pass1	total
+310.000000	benchmarks/partialsums.lua-2.lua	lua-x86	tilera	"500000"	1	1	None	pass2	total
+610.000000	benchmarks/partialsums.lua-2.lua	lua-x86	tilera	"500000"	1	1	None	total
+300.000000	benchmarks/partialsums.lua-2.lua	lua-x86	tilera	"500000"	1	1	None	pass1	total
+310.000000	benchmarks/partialsums.lua-2.lua	lua-x86	tilera	"500000"	1	1	None	pass2	total
+640.000000	benchmarks/partialsums.lua-3.lua	lua-x86	tilera	"500000"	1	1	None	total
+320.000000	benchmarks/partialsums.lua-3.lua	lua-x86	tilera	"500000"	1	1	None	pass1	total
+320.000000	benchmarks/partialsums.lua-3.lua	lua-x86	tilera	"500000"	1	1	None	pass2	total
+640.000000	benchmarks/partialsums.lua-3.lua	lua-x86	tilera	"500000"	1	1	None	total
+320.000000	benchmarks/partialsums.lua-3.lua	lua-x86	tilera	"500000"	1	1	None	pass1	total
+320.000000	benchmarks/partialsums.lua-3.lua	lua-x86	tilera	"500000"	1	1	None	pass2	total
+0.000000	benchmarks/process.lua	lua-x86	tilera	"100"	1	1	None	total
+0.000000	benchmarks/process.lua	lua-x86	tilera	"100"	1	1	None	pass1	total
+0.000000	benchmarks/process.lua	lua-x86	tilera	"100"	1	1	None	pass2	total
+0.000000	benchmarks/process.lua	lua-x86	tilera	"100"	1	1	None	total
+0.000000	benchmarks/process.lua	lua-x86	tilera	"100"	1	1	None	pass1	total
+0.000000	benchmarks/process.lua	lua-x86	tilera	"100"	1	1	None	pass2	total
+0.000000	benchmarks/process.lua	lua-x86	tilera	"100"	1	1	None	total
+0.000000	benchmarks/process.lua	lua-x86	tilera	"100"	1	1	None	pass1	total
+0.000000	benchmarks/process.lua	lua-x86	tilera	"100"	1	1	None	pass2	total
+530.000000	benchmarks/prodcons.lua	lua-x86	tilera	"500000"	1	1	None	total
+270.000000	benchmarks/prodcons.lua	lua-x86	tilera	"500000"	1	1	None	pass1	total
+260.000000	benchmarks/prodcons.lua	lua-x86	tilera	"500000"	1	1	None	pass2	total
+520.000000	benchmarks/prodcons.lua	lua-x86	tilera	"500000"	1	1	None	total
+260.000000	benchmarks/prodcons.lua	lua-x86	tilera	"500000"	1	1	None	pass1	total
+260.000000	benchmarks/prodcons.lua	lua-x86	tilera	"500000"	1	1	None	pass2	total
+530.000000	benchmarks/prodcons.lua	lua-x86	tilera	"500000"	1	1	None	total
+260.000000	benchmarks/prodcons.lua	lua-x86	tilera	"500000"	1	1	None	pass1	total
+270.000000	benchmarks/prodcons.lua	lua-x86	tilera	"500000"	1	1	None	pass2	total
+520.000000	benchmarks/random.lua	lua-x86	tilera	"2000000"	1	1	None	total
+260.000000	benchmarks/random.lua	lua-x86	tilera	"2000000"	1	1	None	pass1	total
+260.000000	benchmarks/random.lua	lua-x86	tilera	"2000000"	1	1	None	pass2	total
+510.000000	benchmarks/random.lua	lua-x86	tilera	"2000000"	1	1	None	total
+260.000000	benchmarks/random.lua	lua-x86	tilera	"2000000"	1	1	None	pass1	total
+250.000000	benchmarks/random.lua	lua-x86	tilera	"2000000"	1	1	None	pass2	total
+510.000000	benchmarks/random.lua	lua-x86	tilera	"2000000"	1	1	None	total
+260.000000	benchmarks/random.lua	lua-x86	tilera	"2000000"	1	1	None	pass1	total
+250.000000	benchmarks/random.lua	lua-x86	tilera	"2000000"	1	1	None	pass2	total
+580.000000	benchmarks/recursive.lua	lua-x86	tilera	"4"	1	1	None	total
+290.000000	benchmarks/recursive.lua	lua-x86	tilera	"4"	1	1	None	pass1	total
+290.000000	benchmarks/recursive.lua	lua-x86	tilera	"4"	1	1	None	pass2	total
+580.000000	benchmarks/recursive.lua	lua-x86	tilera	"4"	1	1	None	total
+290.000000	benchmarks/recursive.lua	lua-x86	tilera	"4"	1	1	None	pass1	total
+290.000000	benchmarks/recursive.lua	lua-x86	tilera	"4"	1	1	None	pass2	total
+400.000000	benchmarks/sieve.lua	lua-x86	tilera	"200"	1	1	None	total
+200.000000	benchmarks/sieve.lua	lua-x86	tilera	"200"	1	1	None	pass1	total
+200.000000	benchmarks/sieve.lua	lua-x86	tilera	"200"	1	1	None	pass2	total
+400.000000	benchmarks/sieve.lua	lua-x86	tilera	"200"	1	1	None	total
+200.000000	benchmarks/sieve.lua	lua-x86	tilera	"200"	1	1	None	pass1	total
+200.000000	benchmarks/sieve.lua	lua-x86	tilera	"200"	1	1	None	pass2	total
+490.000000	benchmarks/sieve.lua-2.lua	lua-x86	tilera	"200"	1	1	None	total
+240.000000	benchmarks/sieve.lua-2.lua	lua-x86	tilera	"200"	1	1	None	pass1	total
+250.000000	benchmarks/sieve.lua-2.lua	lua-x86	tilera	"200"	1	1	None	pass2	total
+490.000000	benchmarks/sieve.lua-2.lua	lua-x86	tilera	"200"	1	1	None	total
+240.000000	benchmarks/sieve.lua-2.lua	lua-x86	tilera	"200"	1	1	None	pass1	total
+250.000000	benchmarks/sieve.lua-2.lua	lua-x86	tilera	"200"	1	1	None	pass2	total
+450.000000	benchmarks/spectralnorm.lua	lua-x86	tilera	"220"	1	1	None	total
+220.000000	benchmarks/spectralnorm.lua	lua-x86	tilera	"220"	1	1	None	pass1	total
+230.000000	benchmarks/spectralnorm.lua	lua-x86	tilera	"220"	1	1	None	pass2	total
+450.000000	benchmarks/spectralnorm.lua	lua-x86	tilera	"220"	1	1	None	total
+220.000000	benchmarks/spectralnorm.lua	lua-x86	tilera	"220"	1	1	None	pass1	total
+230.000000	benchmarks/spectralnorm.lua	lua-x86	tilera	"220"	1	1	None	pass2	total
+550.000000	benchmarks/strcat.lua	lua-x86	tilera	"800000"	1	1	None	total
+270.000000	benchmarks/strcat.lua	lua-x86	tilera	"800000"	1	1	None	pass1	total
+270.000000	benchmarks/strcat.lua	lua-x86	tilera	"800000"	1	1	None	pass2	total
+560.000000	benchmarks/strcat.lua	lua-x86	tilera	"800000"	1	1	None	total
+270.000000	benchmarks/strcat.lua	lua-x86	tilera	"800000"	1	1	None	pass1	total
+280.000000	benchmarks/strcat.lua	lua-x86	tilera	"800000"	1	1	None	pass2	total
+560.000000	benchmarks/strcat.lua	lua-x86	tilera	"800000"	1	1	None	total
+270.000000	benchmarks/strcat.lua	lua-x86	tilera	"800000"	1	1	None	pass1	total
+290.000000	benchmarks/strcat.lua	lua-x86	tilera	"800000"	1	1	None	pass2	total
+320.000000	benchmarks/strcat.lua-2.lua	lua-x86	tilera	"15000"	1	1	None	total
+170.000000	benchmarks/strcat.lua-2.lua	lua-x86	tilera	"15000"	1	1	None	pass1	total
+150.000000	benchmarks/strcat.lua-2.lua	lua-x86	tilera	"15000"	1	1	None	pass2	total
+320.000000	benchmarks/strcat.lua-2.lua	lua-x86	tilera	"15000"	1	1	None	total
+160.000000	benchmarks/strcat.lua-2.lua	lua-x86	tilera	"15000"	1	1	None	pass1	total
+160.000000	benchmarks/strcat.lua-2.lua	lua-x86	tilera	"15000"	1	1	None	pass2	total
+290.000000	benchmarks/takfp.lua	lua-x86	tilera	"8"	1	1	None	total
+140.000000	benchmarks/takfp.lua	lua-x86	tilera	"8"	1	1	None	pass1	total
+150.000000	benchmarks/takfp.lua	lua-x86	tilera	"8"	1	1	None	pass2	total
+290.000000	benchmarks/takfp.lua	lua-x86	tilera	"8"	1	1	None	total
+140.000000	benchmarks/takfp.lua	lua-x86	tilera	"8"	1	1	None	pass1	total
+150.000000	benchmarks/takfp.lua	lua-x86	tilera	"8"	1	1	None	pass2	total

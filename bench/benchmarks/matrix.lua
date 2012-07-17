@@ -2,6 +2,8 @@
 -- http://shootout.alioth.debian.org/
 -- with help from Roberto Ierusalimschy
 
+require 'benchmarks/bench'
+
 local n = tonumber((arg and arg[1]) or 1)
 
 local size = 30
@@ -37,9 +39,16 @@ function mmult(rows, cols, m1, m2)
     return(m3)
 end
 
+for pass = 1,2 do
+
 local m1 = mkmatrix(size, size)
 local m2 = mkmatrix(size, size)
 for i=1,n do
     mm = mmult(size, size, m1, m2)
 end
 io.write(string.format("%d %d %d %d\n", mm[1][1], mm[3][4], mm[4][3], mm[5][5]))
+
+logPass(pass)
+end
+logEnd()
+

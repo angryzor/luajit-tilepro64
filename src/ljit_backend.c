@@ -28,8 +28,6 @@
 #include "ljit_hints.h"
 #include "ljit_dasm.h"
 
-#include "ljit_debug_gdb_jit_binding.h"
-
 /* ------------------------------------------------------------------------ */
 
 /* Get target of combined JMP op. */
@@ -239,17 +237,14 @@ nextdeopt:
   *J->mfm = JIT_MFM_STOP;
   jit_ins_last(J, maxpc, (char *)J->mfm - (char *)tempmfm);
 
-  status = luaJIT_link(J, &mcode, &sz);
-  if (status != JIT_S_OK)
-    return status;
-
   static i = 0;
   char b[100];
   memset(b,0,sizeof(b));
   sprintf(b,"jitted_func_%04d",i++);
-  debug_module* dm = debug_module_begin();
-  debug_module_add_symbol(dm,b,mcode);
-  debug_module_commit(dm);
+
+  status = luaJIT_link(J, &mcode, &sz, "ljit_tilepro64.dasc", b);
+  if (status != JIT_S_OK)
+    return status;
 
   jit_mfm_merge(J, tempmfm, JIT_MCMFM(mcode, sz), maxpc);
 #if 0

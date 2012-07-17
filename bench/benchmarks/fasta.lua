@@ -2,6 +2,8 @@
 -- http://shootout.alioth.debian.org/
 -- contributed by Mike Pall
 
+require 'benchmarks/bench'
+
 local Last = 42
 local function random(max)
   local y = (Last * 3877 + 29573) % 139968
@@ -92,7 +94,16 @@ local homosapiens = make_bisect{
   { "t", 0.3015094502008 },
 }
 
+for pass = 1,2 do
+
 local N = tonumber(arg and arg[1]) or 1000
 make_repeat_fasta('ONE', 'Homo sapiens alu', alu, N*2)
 make_random_fasta('TWO', 'IUB ambiguity codes', iub, N*3)
 make_random_fasta('THREE', 'Homo sapiens frequency', homosapiens, N*5)
+
+logPass(pass)
+
+end
+
+logEnd()
+

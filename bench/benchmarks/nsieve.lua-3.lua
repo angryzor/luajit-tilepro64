@@ -3,6 +3,7 @@
 -- contributed by Isaac Gouy
 -- modified by Mike Pall
 
+require 'benchmarks/bench'
 
 local function nsieve(m,isPrime)
    for i=2,m do
@@ -21,7 +22,8 @@ local function nsieve(m,isPrime)
    end
    return count
 end
- 
+
+for pass = 1,2 do
 
 local n = tonumber(arg and arg[1]) or 1
 if n < 2 then n = 2 end
@@ -35,3 +37,8 @@ io.write( string.format("Primes up to %8d %8d", m, nsieve(m,flags)), "\n")
 
 m = (2^(n-2))*10000 
 io.write( string.format("Primes up to %8d %8d", m, nsieve(m,flags)), "\n")
+
+logPass(pass)
+end
+logEnd()
+

@@ -1,6 +1,10 @@
 -- $Id: ary.lua,v 1.2 2004-05-22 07:25:00 bfulgham Exp $
 -- http://www.bagley.org/~doug/shootout/
 
+require 'benchmarks/bench'
+
+for pass = 1,2 do
+
 local n = tonumber((arg and arg[1]) or 1)
 
 local x, y = {}, {}
@@ -17,3 +21,8 @@ for k=1,1000 do
 end
 
 io.write(y[0], " ", y[last], "\n")
+
+logPass(pass)
+end
+
+logEnd()

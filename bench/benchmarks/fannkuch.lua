@@ -2,6 +2,8 @@
 -- http://shootout.alioth.debian.org/
 -- contributed by Mike Pall
 
+require 'benchmarks/bench'
+
 local function fannkuch(n)
   local p, q, s, odd, check, maxflips = {}, {}, {}, true, 0, 0
   for i=1,n do p[i] = i; q[i] = i; s[i] = i end
@@ -47,5 +49,14 @@ local function fannkuch(n)
   until false
 end
 
+for pass = 1,2 do
+
 local n = tonumber(arg and arg[1]) or 1
 io.write("Pfannkuchen(", n, ") = ", fannkuch(n), "\n")
+
+logPass(pass)
+
+end
+
+logEnd()
+

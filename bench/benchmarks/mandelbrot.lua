@@ -2,7 +2,12 @@
 -- http://shootout.alioth.debian.org/
 -- contributed by Mike Pall
 
+require 'benchmarks/bench'
+
 local write, char, unpack = io.write, string.char, unpack
+
+for pass = 1,2 do
+
 local N = tonumber(arg and arg[1]) or 100
 local M, ba, bb, buf = 2/N, 2^(N%8+1)-1, 2^(8-N%8), {}
 write("P4\n", N, " ", N, "\n")
@@ -22,5 +27,10 @@ for y=0,N-1 do
     if b >= 256 then p = p + 1; buf[p] = 511 - b; b = 1; end
   end
   if b ~= 1 then p = p + 1; buf[p] = (ba-b)*bb; end
-  write(char(unpack(buf, 1, p)))
+ -- write(char(unpack(buf, 1, p)))
 end
+
+logPass(pass)
+end
+logEnd()
+
