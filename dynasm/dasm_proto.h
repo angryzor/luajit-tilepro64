@@ -53,7 +53,7 @@ DASM_FDEF int dasm_link(Dst_DECL, size_t *szp);
 
 /* Encode sections into buffer. */
 //DASM_FDEF int dasm_encode(Dst_DECL, void *buffer);
-DASM_FDEF int dasm_encode(Dst_DECL, void *buffer, void** debugdata, size_t* ddatasize, const char* filename, const char* blockname);
+DASM_FDEF int dasm_encode(Dst_DECL, void *buffer, const char* blockname);
 
 /* Get PC label offset. */
 DASM_FDEF int dasm_getpclabel(Dst_DECL, unsigned int pc);

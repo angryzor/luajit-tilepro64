@@ -36,6 +36,8 @@ local wline, werror, wfatal, wwarn
 -- Action name list.
 -- CHECK: Keep this in sync with the C code!
 local action_names = {
+  "BLOCKSTART",
+  "BLOCKEND",
   "LINE",
   -- int arg, 1 buffer pos:
   "IMM",
@@ -212,6 +214,12 @@ end
 
 
 ------------------------------------------------------------------------------
+
+local function wblockend(name,filename)
+	waction("BLOCKEND")
+	waparam(name)
+	waparam(filename)
+end
 
 local function wputline(num)
 	waction("LINE")
@@ -956,20 +964,36 @@ map_op = {
 
 -- Pseudo-opcode to mark the position where the action list is to be emitted.
 map_op[".actionlist_1"] = function(params)
-  if not params then return "cvar" end
-  local name = params[1] -- No syntax check. You get to keep the pieces.
-  wline(function(out) writeactions(out, name) end)
+	if not params then return "cvar" end
+	local name = params[1] -- No syntax check. You get to keep the pieces.
+	wline(function(out) writeactions(out, name) end)
 end
 
 -- Pseudo-opcode to mark the position where the global enum is to be emitted.
 map_op[".globals_1"] = function(params)
-  if not params then return "prefix" end
-  local prefix = params[1] -- No syntax check. You get to keep the pieces.
-  wline(function(out) writeglobals(out, prefix) end)
+	if not params then return "prefix" end
+	local prefix = params[1] -- No syntax check. You get to keep the pieces.
+	wline(function(out) writeglobals(out, prefix) end)
 end
 
 map_op[".line_1"] = function(params)
-  current_line = params[1]
+	current_line = params[1]
+end
+
+map_op[".info_*"] = function(params)
+	print(unpack(params))
+end
+
+map_op[".blockstart_0"] = function(params)
+	waction("BLOCKSTART")
+end
+
+map_op[".blockend_2"] = function(params)
+	wblockend(params[1],params[2])
+end
+
+map_op[".blockend_1"] = function(params)
+	wblockend("NULL",params[1])
 end
 
 ------------------------------------------------------------------------------

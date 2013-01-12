@@ -237,12 +237,12 @@ nextdeopt:
   *J->mfm = JIT_MFM_STOP;
   jit_ins_last(J, maxpc, (char *)J->mfm - (char *)tempmfm);
 
-  static i = 0;
+  static int i = 0;
   char b[100];
   memset(b,0,sizeof(b));
   sprintf(b,"jitted_func_%04d",i++);
 
-  status = luaJIT_link(J, &mcode, &sz, "ljit_tilepro64.dasc", b);
+  status = luaJIT_link(J, &mcode, &sz, b);
   if (status != JIT_S_OK)
     return status;
 

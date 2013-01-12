@@ -5,6 +5,12 @@ tests_folder="testcases"
 monitor="tile-monitor"
 monitor_params="--pci --resume --rtc"
 
+if [[ "$1" == "--debug" ]]
+then
+	monitor_params="$monitor_params --debug-on-crash"
+	shift 1
+fi
+
 # ERROR CODES
 err_unknown_command=1
 err_test_failure=2

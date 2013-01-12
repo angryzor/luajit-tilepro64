@@ -45,6 +45,22 @@ static enum gdb_status get_frame_pointer (struct gdb_unwind_callbacks *cb,
 	return GDB_SUCCESS;
 }
 
+static enum gdb_status get_code_pointer(struct gdb_unwind_callbacks *cb, GDB_CORE_ADDR *code_pointer)
+{
+#ifdef LUAJIT_OMIT_CODE_POINTER
+#warn Cannot unwind frames when LUAJIT_OMIT_CODE_POINTER is enabled! Debugging will be difficult.
+	return GDB_FAIL;
+#endif
+
+	struct gdb_reg_value* r51 = cb->reg_get(cb, TILE64_REG_R51);
+	if(!r51->defined || r51->size != 4)
+		return GDB_FAIL;
+
+	*code_pointer = *(GDB_CORE_ADDR*)r51->value;
+
+	return GDB_SUCCESS;
+}
+
 void luajit_reg_value_free(struct gdb_reg_value *val)
 {
 	free(val);
@@ -82,18 +98,14 @@ struct gdb_frame_id luajit_get_frame_id (struct gdb_reader_funcs *self,
                                                 struct gdb_unwind_callbacks *cb)
 {
 	struct gdb_frame_id fid;
-	GDB_CORE_ADDR frame_pointer;
+	GDB_CORE_ADDR frame_pointer, code_pointer;
 	fid.code_address = 0;
 	fid.stack_address = 0;
 
-	if(!get_frame_pointer(cb,&frame_pointer))
+	if(!get_frame_pointer(cb,&frame_pointer) || !get_code_pointer(cb,&code_pointer))
 		return fid;
 
-	GDB_CORE_ADDR code;
-	if(!cb->target_read(frame_pointer - 4,&code,sizeof(code)))
-		return fid;
-
-	fid.code_address = code;
+	fid.code_address = code_pointer;
 	fid.stack_address = frame_pointer;
 }
 

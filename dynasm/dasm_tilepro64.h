@@ -7,7 +7,9 @@
 #define DASM_ARCH "tilepro64"
 
 enum {
-	DASM_LINE = 2147483635,
+	DASM_BLOCKSTART = 2147483633,
+	DASM_BLOCKEND,
+	DASM_LINE,
 	DASM_IMM,
 	DASM_L,
 	DASM_G,
@@ -24,6 +26,7 @@ enum {
 
 #include "dasm_tilepro64_encmodes.h"
 #include "../gdb-reader/luajit-reader-format.h"
+#include "../src/ljit_debug_gdb_jit_binding.h"
 
 /* Maximum number of section buffer positions for a single dasm_put() call. */
 #define DASM_MAXSECPOS		25
@@ -41,6 +44,7 @@ enum {
 #define DASM_S_UNDEF_PC		0x22000000
 
 #define DASM_LSIZE 20
+
 /* Core structure holding the DynASM encoding state. */
 struct dasm_State {
 	size_t psize; /* Allocated size of this structure. */
@@ -59,6 +63,7 @@ struct dasm_State {
 	int end_of_buffer_pos;
 	int code_offset;
 	unsigned long total_lines;
+	int code_block_size_loc;
 };
 
 /* Initialize DynASM state. */
@@ -162,8 +167,19 @@ void dasm_put( Dst_DECL, int start, ...) {
 	va_start(ap, start);
 	while (1) {
 		int action = *p++;
-		if (action < DASM_LINE)
+		if (action < DASM_BLOCKSTART)
 			ofs++;
+		else if (action == DASM_BLOCKSTART) {
+			D->total_lines = 0;
+			D->code_block_size_loc = pos++;
+		}
+		else if (action == DASM_BLOCKEND) {
+			const char* name = va_arg(ap,const char*);
+			const char* filename = va_arg(ap,const char*);
+			b[pos++] = (int)name;
+			b[pos++] = (int)filename;
+			b[D->code_block_size_loc] = D->total_lines;
+		}
 		else if (action == DASM_LINE) {
 			p++;										/* Constant line number */
 			D->total_lines++;
@@ -371,12 +387,12 @@ void debug_write_func_def( dasm_State* D, void *debugdata , GDB_CORE_ADDR begin,
 	strcpy(fdef->name, name);
 }
 
-size_t get_debug_bufsize( dasm_State* D ) {
-	return sizeof(struct ljit_reader_func_def) + D->total_lines * sizeof(struct ljit_reader_line_def);
+size_t get_debug_bufsize( int numLines ) {
+	return sizeof(struct ljit_reader_func_def) + numLines * sizeof(struct ljit_reader_line_def);
 }
 
 /* Pass 3: Encode sections. */
-int dasm_encode( Dst_DECL, void *buffer, void** debugdata, size_t* ddatasize, const char* filename, const char* blockname) {
+int dasm_encode( Dst_DECL, void *buffer, const char* blockname) {
 	dasm_State *D = Dst_REF;
 	unsigned long *base = (unsigned long *) buffer;
 	unsigned long *cp = base;
@@ -384,21 +400,44 @@ int dasm_encode( Dst_DECL, void *buffer, void** debugdata, size_t* ddatasize, co
 	int *b = D->buf;
 	int *endb = D->buf + D->buffer_pos;
 
-	size_t ddsize = get_debug_bufsize(D);
-	*ddatasize = ddsize;
-	void* dbgdata = malloc(ddsize);
-	struct ljit_reader_line_def *lines = debug_get_lines_offset(dbgdata);
+	size_t ddsize;
+	void* dbgdata;
+	struct ljit_reader_line_def *lines;
+	unsigned long *code_block_start = 0;
+	int in_code_block = 0;
+
 
 	while (b != endb) {
 		dasm_ActList p = D->actionlist + *b++;
 		while (1) {
 			int action = *p++;
-			int param = ((action >= DASM_IMM && action <= DASM_PC) || action == DASM_SPACE) ? *b++ : 0;
+			int param = ((action >= DASM_IMM && action <= DASM_PC) || action == DASM_SPACE || action == DASM_BLOCKSTART || action == DASM_BLOCKEND) ? *b++ : 0;
+			int param2 = (action == DASM_BLOCKEND) ? *b++ : 0;
 			jit_encmodes mode =	(action >= DASM_IMM && action <= DASM_PC) ? *p++ : 0;
 			int cparam = ((action >= DASM_L && action <= DASM_ALIGN && action != DASM_PC && action != DASM_LABEL_PC && action != DASM_SPACE) || action == DASM_LINE) ? *p++ : 0;
 
 			switch (action) {
+			case DASM_BLOCKSTART:
+				ddsize = get_debug_bufsize(param);
+				//printf("Allocating memory of size %d for %d lines",ddsize,
+				dbgdata = malloc(ddsize);
+				lines = debug_get_lines_offset(dbgdata);
+				code_block_start = cp;
+				in_code_block = 1;
+				break;
+			case DASM_BLOCKEND:
+				debug_write_func_def(	D,
+										dbgdata, 
+										(GDB_CORE_ADDR)code_block_start, 
+										(GDB_CORE_ADDR)(cp - 2), 
+										(const char*)param2, 
+										param == 0 ? blockname : (const char*)param);
+				debug_commit_debug_data(dbgdata, ddsize);
+				in_code_block = 0;
+				break;
 			case DASM_LINE:
+				if(!in_code_block)
+					break;
 				lines->line = cparam;
 				lines->addr = cp;
 				lines++;
@@ -440,9 +479,6 @@ int dasm_encode( Dst_DECL, void *buffer, void** debugdata, size_t* ddatasize, co
 		}
 		stop: (void) 0;
 	}
-
-	debug_write_func_def(D, dbgdata, (GDB_CORE_ADDR)base, (GDB_CORE_ADDR)(cp - 2), filename, blockname);
-	*debugdata = dbgdata;
 
 	if (base + D->codesize != cp) /* Check for phase errors. */
 		return DASM_S_PHASE;

@@ -263,6 +263,7 @@ static int jit_compile_jsub(jit_State *J)
 	|
 	|.align 64
 	|->GATE_JL:
+	|.blockstart
 	|	prologue 8
 	//jit_emit_custom_stackdump(J,"Entering JL gate");
 	|	move PROTO:r6, LCL->p
@@ -295,9 +296,11 @@ static int jit_compile_jsub(jit_State *J)
 	//jit_emit_custom_stackdump(J,"Returning from JL gate");
 	|	epilogue 8
 	|	jrp lr
+	|.blockend "JSub_GATE_JL", "ljit_tilepro64.dasc"
 	|
 	|.align 64
 	|->GATE_JC:
+	|.blockstart
 
 	jit_std_prologue(J, LUA_MINSTACK, 0);
 
@@ -332,6 +335,7 @@ static int jit_compile_jsub(jit_State *J)
 	//jit_emit_custom_stackdump(J,"Returning from JC gate");
 	|	epilogue LUAFUNC_STACK_SIZE
 	|	jrp lr
+	|.blockend "JSub_GATE_JC", "ljit_tilepro64.dasc"
 	|
 	|.align 64
 	|->GROW_STACK:
@@ -355,7 +359,7 @@ static int jit_compile_jsub(jit_State *J)
 	|.align 64
 	|//-----------------------------------------------------------------------
 
-	status = luaJIT_link(J, &J->jsubmcode, &J->szjsubmcode, "ljit_tilepro64.dasc", "JSUB");
+	status = luaJIT_link(J, &J->jsubmcode, &J->szjsubmcode, "JSUB");
 	if (status != JIT_S_OK)
 		return status;
 
@@ -457,9 +461,8 @@ static void jit_prologue(jit_State *J)
 static unsigned int returnHitCount = 0;
 static void jit_op_return(jit_State *J, int rbase, int nresults)
 {
-	jit_emit_counter_break(J,&returnHitCount,6);
-
 	/* TODO: RETURN hook */
+	jit_emit_break(J);
 
 	/* May need to close open upvalues. */
 	if (!fhint_isset(J, NOCLOSE)) {

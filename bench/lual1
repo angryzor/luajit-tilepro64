@@ -1,0 +1,235 @@
+
+main <benchmarks/lists.lua:0,0> (66 instructions, 264 bytes at 0x1019550)
+0+ params, 9 slots, 0 upvalues, 8 locals, 25 constants, 9 functions
+	1	[5]	GETGLOBAL	0 -1	; require
+	2	[5]	LOADK    	1 -2	; "benchmarks/bench"
+	3	[5]	CALL     	0 2 1
+	4	[12]	NEWTABLE 	0 0 2
+	5	[12]	SETTABLE 	0 -4 -5	; "first" 0
+	6	[12]	SETTABLE 	0 -6 -7	; "last" -1
+	7	[12]	SETGLOBAL	0 -3	; List
+	8	[14]	GETGLOBAL	0 -3	; List
+	9	[18]	CLOSURE  	1 0	; 0x1019870
+	10	[14]	SETTABLE 	0 -8 1	; "new" -
+	11	[20]	GETGLOBAL	0 -3	; List
+	12	[22]	CLOSURE  	1 1	; 0x1019790
+	13	[20]	SETTABLE 	0 -9 1	; "length" -
+	14	[24]	GETGLOBAL	0 -3	; List
+	15	[28]	CLOSURE  	1 2	; 0x101a4e0
+	16	[24]	SETTABLE 	0 -10 1	; "pushleft" -
+	17	[30]	GETGLOBAL	0 -3	; List
+	18	[34]	CLOSURE  	1 3	; 0x101aad0
+	19	[30]	SETTABLE 	0 -11 1	; "pushright" -
+	20	[36]	GETGLOBAL	0 -3	; List
+	21	[43]	CLOSURE  	1 4	; 0x101ac80
+	22	[36]	SETTABLE 	0 -12 1	; "popleft" -
+	23	[45]	GETGLOBAL	0 -3	; List
+	24	[52]	CLOSURE  	1 5	; 0x101b060
+	25	[45]	SETTABLE 	0 -13 1	; "popright" -
+	26	[54]	GETGLOBAL	0 -3	; List
+	27	[61]	CLOSURE  	1 6	; 0x101b810
+	28	[54]	SETTABLE 	0 -14 1	; "reverse" -
+	29	[63]	GETGLOBAL	0 -3	; List
+	30	[70]	CLOSURE  	1 7	; 0x101bd10
+	31	[63]	SETTABLE 	0 -15 1	; "equal" -
+	32	[104]	CLOSURE  	0 8	; 0x101c4c0
+	33	[77]	SETGLOBAL	0 -16	; test
+	34	[106]	LOADK    	0 -17	; 1
+	35	[106]	LOADK    	1 -18	; 2
+	36	[106]	LOADK    	2 -17	; 1
+	37	[106]	FORPREP  	0 25	; to 63
+	38	[108]	GETGLOBAL	4 -20	; tonumber
+	39	[108]	GETGLOBAL	5 -21	; arg
+	40	[108]	TEST     	5 0 0
+	41	[108]	JMP      	2	; to 44
+	42	[108]	GETGLOBAL	5 -21	; arg
+	43	[108]	GETTABLE 	5 5 -17	; 1
+	44	[108]	CALL     	4 2 2
+	45	[108]	TEST     	4 0 1
+	46	[108]	JMP      	1	; to 48
+	47	[108]	LOADK    	4 -17	; 1
+	48	[108]	SETGLOBAL	4 -19	; N
+	49	[109]	LOADK    	4 -17	; 1
+	50	[109]	GETGLOBAL	5 -19	; N
+	51	[109]	LOADK    	6 -17	; 1
+	52	[109]	FORPREP  	4 3	; to 56
+	53	[110]	GETGLOBAL	8 -16	; test
+	54	[110]	CALL     	8 1 2
+	55	[110]	SETGLOBAL	8 -22	; result
+	56	[109]	FORLOOP  	4 -4	; to 53
+	57	[112]	GETGLOBAL	4 -23	; print
+	58	[112]	GETGLOBAL	5 -22	; result
+	59	[112]	CALL     	4 2 1
+	60	[114]	GETGLOBAL	4 -24	; logPass
+	61	[114]	MOVE     	5 3
+	62	[114]	CALL     	4 2 1
+	63	[106]	FORLOOP  	0 -26	; to 38
+	64	[116]	GETGLOBAL	0 -25	; logEnd
+	65	[116]	CALL     	0 1 1
+	66	[116]	RETURN   	0 1
+
+function <benchmarks/lists.lua:14,18> (10 instructions, 40 bytes at 0x1019870)
+1 param, 8 slots, 0 upvalues, 7 locals, 1 constant, 0 functions
+	1	[15]	NEWTABLE 	1 0 0
+	2	[16]	GETGLOBAL	2 -1	; pairs
+	3	[16]	MOVE     	3 0
+	4	[16]	CALL     	2 2 4
+	5	[16]	JMP      	1	; to 7
+	6	[16]	SETTABLE 	1 5 6
+	7	[16]	TFORLOOP 	2 2
+	8	[16]	JMP      	-3	; to 6
+	9	[17]	RETURN   	1 2
+	10	[18]	RETURN   	0 1
+
+function <benchmarks/lists.lua:20,22> (6 instructions, 24 bytes at 0x1019790)
+1 param, 3 slots, 0 upvalues, 1 local, 3 constants, 0 functions
+	1	[21]	GETTABLE 	1 0 -1	; "last"
+	2	[21]	GETTABLE 	2 0 -2	; "first"
+	3	[21]	SUB      	1 1 2
+	4	[21]	ADD      	1 1 -3	; - 1
+	5	[21]	RETURN   	1 2
+	6	[22]	RETURN   	0 1
+
+function <benchmarks/lists.lua:24,28> (5 instructions, 20 bytes at 0x101a4e0)
+2 params, 3 slots, 0 upvalues, 3 locals, 2 constants, 0 functions
+	1	[25]	GETTABLE 	2 0 -1	; "first"
+	2	[25]	SUB      	2 2 -2	; - 1
+	3	[26]	SETTABLE 	0 -1 2	; "first" -
+	4	[27]	SETTABLE 	0 2 1
+	5	[28]	RETURN   	0 1
+
+function <benchmarks/lists.lua:30,34> (5 instructions, 20 bytes at 0x101aad0)
+2 params, 3 slots, 0 upvalues, 3 locals, 2 constants, 0 functions
+	1	[31]	GETTABLE 	2 0 -1	; "last"
+	2	[31]	ADD      	2 2 -2	; - 1
+	3	[32]	SETTABLE 	0 -1 2	; "last" -
+	4	[33]	SETTABLE 	0 2 1
+	5	[34]	RETURN   	0 1
+
+function <benchmarks/lists.lua:36,43> (13 instructions, 52 bytes at 0x101ac80)
+1 param, 4 slots, 0 upvalues, 3 locals, 6 constants, 0 functions
+	1	[37]	GETTABLE 	1 0 -1	; "first"
+	2	[38]	GETTABLE 	2 0 -2	; "last"
+	3	[38]	LT       	0 2 1
+	4	[38]	JMP      	3	; to 8
+	5	[38]	GETGLOBAL	2 -3	; error
+	6	[38]	LOADK    	3 -4	; "list is empty"
+	7	[38]	CALL     	2 2 1
+	8	[39]	GETTABLE 	2 0 1
+	9	[40]	SETTABLE 	0 1 -5	; - nil
+	10	[41]	ADD      	3 1 -6	; - 1
+	11	[41]	SETTABLE 	0 -1 3	; "first" -
+	12	[42]	RETURN   	2 2
+	13	[43]	RETURN   	0 1
+
+function <benchmarks/lists.lua:45,52> (13 instructions, 52 bytes at 0x101b060)
+1 param, 4 slots, 0 upvalues, 3 locals, 6 constants, 0 functions
+	1	[46]	GETTABLE 	1 0 -1	; "last"
+	2	[47]	GETTABLE 	2 0 -2	; "first"
+	3	[47]	LT       	0 1 2
+	4	[47]	JMP      	3	; to 8
+	5	[47]	GETGLOBAL	2 -3	; error
+	6	[47]	LOADK    	3 -4	; "list is empty"
+	7	[47]	CALL     	2 2 1
+	8	[48]	GETTABLE 	2 0 1
+	9	[49]	SETTABLE 	0 1 -5	; - nil
+	10	[50]	SUB      	3 1 -6	; - 1
+	11	[50]	SETTABLE 	0 -1 3	; "last" -
+	12	[51]	RETURN   	2 2
+	13	[52]	RETURN   	0 1
+
+function <benchmarks/lists.lua:54,61> (12 instructions, 48 bytes at 0x101b810)
+1 param, 5 slots, 0 upvalues, 3 locals, 3 constants, 0 functions
+	1	[55]	GETTABLE 	1 0 -1	; "first"
+	2	[55]	GETTABLE 	2 0 -2	; "last"
+	3	[56]	LT       	0 1 2
+	4	[56]	JMP      	7	; to 12
+	5	[57]	GETTABLE 	3 0 2
+	6	[57]	GETTABLE 	4 0 1
+	7	[57]	SETTABLE 	0 2 4
+	8	[57]	SETTABLE 	0 1 3
+	9	[58]	ADD      	1 1 -3	; - 1
+	10	[59]	SUB      	2 2 -3	; - 1
+	11	[59]	JMP      	-9	; to 3
+	12	[61]	RETURN   	0 1
+
+function <benchmarks/lists.lua:63,70> (26 instructions, 104 bytes at 0x101bd10)
+2 params, 9 slots, 0 upvalues, 7 locals, 4 constants, 0 functions
+	1	[64]	SELF     	2 0 -1	; "length"
+	2	[64]	CALL     	2 2 2
+	3	[64]	SELF     	3 1 -1	; "length"
+	4	[64]	CALL     	3 2 2
+	5	[64]	EQ       	1 2 3
+	6	[64]	JMP      	2	; to 9
+	7	[64]	LOADNIL  	2 2
+	8	[64]	RETURN   	2 2
+	9	[65]	GETTABLE 	2 1 -2	; "first"
+	10	[65]	GETTABLE 	3 0 -2	; "first"
+	11	[65]	SUB      	2 2 3
+	12	[66]	GETTABLE 	3 0 -2	; "first"
+	13	[66]	GETTABLE 	4 0 -3	; "last"
+	14	[66]	LOADK    	5 -4	; 1
+	15	[66]	FORPREP  	3 7	; to 23
+	16	[67]	GETTABLE 	7 0 6
+	17	[67]	ADD      	8 6 2
+	18	[67]	GETTABLE 	8 1 8
+	19	[67]	EQ       	1 7 8
+	20	[67]	JMP      	2	; to 23
+	21	[67]	LOADNIL  	7 7
+	22	[67]	RETURN   	7 2
+	23	[66]	FORLOOP  	3 -8	; to 16
+	24	[69]	LOADK    	3 -4	; 1
+	25	[69]	RETURN   	3 2
+	26	[70]	RETURN   	0 1
+
+function <benchmarks/lists.lua:77,104> (49 instructions, 196 bytes at 0x101c4c0)
+0 params, 9 slots, 0 upvalues, 8 locals, 11 constants, 0 functions
+	1	[78]	LOADK    	0 -1	; 10000
+	2	[80]	GETGLOBAL	1 -2	; List
+	3	[80]	SELF     	1 1 -3	; "new"
+	4	[80]	CALL     	1 2 2
+	5	[81]	LOADK    	2 -4	; 1
+	6	[81]	MOVE     	3 0
+	7	[81]	LOADK    	4 -4	; 1
+	8	[81]	FORPREP  	2 3	; to 12
+	9	[82]	SELF     	6 1 -5	; "pushright"
+	10	[82]	MOVE     	8 5
+	11	[82]	CALL     	6 3 1
+	12	[81]	FORLOOP  	2 -4	; to 9
+	13	[85]	SELF     	2 1 -3	; "new"
+	14	[85]	CALL     	2 2 2
+	15	[88]	GETGLOBAL	3 -2	; List
+	16	[88]	SELF     	3 3 -3	; "new"
+	17	[88]	CALL     	3 2 2
+	18	[89]	SELF     	4 2 -6	; "length"
+	19	[89]	CALL     	4 2 2
+	20	[89]	LT       	0 -7 4	; 0 -
+	21	[89]	JMP      	5	; to 27
+	22	[90]	SELF     	4 3 -5	; "pushright"
+	23	[90]	SELF     	6 2 -8	; "popleft"
+	24	[90]	CALL     	6 2 0
+	25	[90]	CALL     	4 0 1
+	26	[90]	JMP      	-9	; to 18
+	27	[94]	SELF     	4 3 -6	; "length"
+	28	[94]	CALL     	4 2 2
+	29	[94]	LT       	0 -7 4	; 0 -
+	30	[94]	JMP      	5	; to 36
+	31	[95]	SELF     	4 2 -5	; "pushright"
+	32	[95]	SELF     	6 3 -9	; "popright"
+	33	[95]	CALL     	6 2 0
+	34	[95]	CALL     	4 0 1
+	35	[95]	JMP      	-9	; to 27
+	36	[98]	SELF     	4 1 -10	; "reverse"
+	37	[98]	CALL     	4 2 1
+	38	[101]	SELF     	4 1 -11	; "equal"
+	39	[101]	MOVE     	6 2
+	40	[101]	CALL     	4 3 2
+	41	[101]	TEST     	4 0 1
+	42	[101]	JMP      	3	; to 46
+	43	[101]	LOADNIL  	4 4
+	44	[101]	RETURN   	4 2
+	45	[101]	JMP      	3	; to 49
+	46	[102]	SELF     	4 1 -6	; "length"
+	47	[102]	TAILCALL 	4 2 0
+	48	[102]	RETURN   	4 0
+	49	[104]	RETURN   	0 1

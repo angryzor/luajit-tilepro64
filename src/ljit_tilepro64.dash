@@ -69,16 +69,34 @@
 |// Stack-related
 |
 |.macro prologue, size
-|.if not LUAJIT_OMIT_FRAME_POINTER
-|	move r52, sp
-|.endif
+|.if LUAJIT_OMIT_FRAME_POINTER
+|.info Using OFP prologue
 |	sw sp, lr
 |	addi sp, sp, -size
+|.else // not LUAJIT_OMIT_FRAME_POINTER
+|.info Using !OFP prologue
+|7:
+|	storeonstack r51, -4
+|	storeonstack r52, -8
+|	move r52, sp
+|	sw sp, lr
+|	addi sp, sp, -(size + 8)
+|	movei r51, 0
+|.endif
 |.endmacro
 |
 |.macro epilogue, size
+|.if LUAJIT_OMIT_FRAME_POINTER
+|.info Using OFP epilogue
 |	addi sp, sp, size
 |	lw lr, sp
+|.else
+|.info Using !OFP epilogue
+|	addi sp, sp, size + 8
+|	lw lr, sp
+|	loadfromstack r52, -8
+|	loadfromstack r51, -4
+|.endif
 |.endmacro
 |
 |.macro loadfromstack, reg, idx

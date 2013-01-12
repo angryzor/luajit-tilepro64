@@ -43,7 +43,7 @@ debugger may check the version before we can set it.  */
 struct jit_descriptor __jit_debug_descriptor = { 1, 0, 0, 0 };
 
 void debug_commit_debug_data(void *debugdata, uint64_t size) {
-	struct jit_code_entry* jce = (struct jit_code_entry*)malloc(sizeof(struct jit_code_entry));
+	struct jit_code_entry* jce = malloc(sizeof(struct jit_code_entry));
 	jce->prev_entry = NULL;
 	jce->next_entry = __jit_debug_descriptor.first_entry;
 	jce->symfile_addr = (const char*)debugdata;

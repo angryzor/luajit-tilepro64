@@ -161,7 +161,7 @@ LUAI_FUNC void luaJIT_freemcode(jit_State *J, void *mcode, size_t sz);
 /* Free JIT structures in function prototype. */
 LUAI_FUNC void luaJIT_freeproto(lua_State *L, Proto *pt);
 /* Link generated code. */
-LUAI_FUNC int luaJIT_link(jit_State *J, void **mcodep, size_t *szp, const char* filename, const char* blockname);
+LUAI_FUNC int luaJIT_link(jit_State *J, void **mcodep, size_t *szp, const char* blockname);
 
 
 #endif

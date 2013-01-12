@@ -1,0 +1,4 @@
+bench pass1: iterations=1 runtime: 20040ms
+bench pass1: iterations=1 runtime: 120ms
+bench pass2: iterations=1 runtime: 100ms
+bench total: iterations=1 runtime: 220ms
